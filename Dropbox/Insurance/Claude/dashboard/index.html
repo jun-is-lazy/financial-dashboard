@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Dashboard — Lu Jia Jun</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  /* Surface */
+  --bg-base: #0b0e11;
+  --bg-raised: #111419;
+  --bg-card: #161b22;
+  --bg-card-alt: #1c2129;
+  --bg-hover: #1f252e;
+  --bg-input: #0d1017;
+  --border: rgba(255,255,255,.06);
+  --border-hover: rgba(255,255,255,.12);
+  --border-focus: rgba(207,181,116,.4);
+
+  /* Text */
+  --text-primary: #f0f2f5;
+  --text-secondary: #8b929a;
+  --text-tertiary: #5a6170;
+  --text-inverse: #0b0e11;
+
+  /* Brand — warm champagne gold */
+  --gold: #cfb574;
+  --gold-light: #e2d09e;
+  --gold-dim: rgba(207,181,116,.1);
+  --gold-glow: rgba(207,181,116,.06);
+
+  /* Semantic */
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,.1);
+  --red: #f06060;
+  --red-dim: rgba(240,96,96,.1);
+  --blue: #579dff;
+  --blue-dim: rgba(87,157,255,.1);
+  --purple: #b28dff;
+  --purple-dim: rgba(178,141,255,.1);
+  --cyan: #56d4dd;
+  --cyan-dim: rgba(86,212,221,.1);
+  --amber: #f0b429;
+  --amber-dim: rgba(240,180,41,.1);
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Outfit', -apple-system, sans-serif;
+
+  /* Spacing & Shape */
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle grain */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@keyframes glow-line { 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+@keyframes slide-tab { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+
+.anim { animation: rise .55s cubic-bezier(.23,1,.32,1) both; }
+.d1{animation-delay:.06s} .d2{animation-delay:.12s} .d3{animation-delay:.18s}
+.d4{animation-delay:.24s} .d5{animation-delay:.3s} .d6{animation-delay:.36s}
+
+/* ═══════════════════════════════════════════
+   SETUP FORM OVERLAY
+   ═══════════════════════════════════════════ */
+.setup-overlay {
+  position:fixed; inset:0; z-index:1000;
+  background: var(--bg-base);
+  overflow-y:auto;
+  display:flex; justify-content:center;
+  padding: 48px 24px 80px;
+}
+.setup-overlay.hidden { display:none; }
+
+.setup-wrap { max-width:720px; width:100%; }
+
+.setup-masthead {
+  text-align:center; margin-bottom:48px;
+  position:relative;
+}
+.setup-masthead::after {
+  content:''; display:block; width:48px; height:1px; margin:20px auto 0;
+  background: var(--gold); animation: glow-line 3s ease infinite;
+}
+.setup-masthead h1 {
+  font-family: var(--font-display);
+  font-size: 2.6rem; font-weight:500;
+  color: var(--gold-light);
+  letter-spacing: .02em;
+}
+.setup-masthead p {
+  margin-top:10px; color:var(--text-secondary); font-weight:300; font-size:.95rem;
+}
+
+/* Cards */
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 14px;
+  transition: border-color .35s;
+}
+.form-card:hover { border-color: var(--border-hover); }
+.form-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight:600;
+  color: var(--gold-light);
+  margin-bottom:22px;
+  padding-left:14px;
+  border-left: 2px solid var(--gold);
+}
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-group label {
+  font-size:.68rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--text-tertiary);
+}
+.form-group input, .form-group select {
+  padding: 11px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size:.88rem;
+  transition: all .25s;
+}
+.form-group input::placeholder { color: var(--text-tertiary); }
+.form-group input:focus, .form-group select:focus {
+  outline:none; border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--gold-dim);
+}
+.form-group select option { background:var(--bg-card); }
+
+/* Repeaters */
+.repeater {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding:18px; margin-bottom:10px;
+  position:relative;
+}
+.repeater .form-grid { gap:12px; }
+.btn-del {
+  position:absolute; top:10px; right:10px;
+  width:24px; height:24px; border-radius:6px;
+  background: var(--red-dim); color:var(--red);
+  border:none; cursor:pointer; font-size:.75rem;
+  display:flex; align-items:center; justify-content:center;
+  transition: all .2s;
+}
+.btn-del:hover { background:var(--red); color:#fff; }
+
+.btn-add-row {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 18px;
+  background:transparent;
+  border:1px dashed rgba(255,255,255,.1);
+  border-radius:var(--radius-sm);
+  color:var(--text-tertiary);
+  font-family:var(--font-body); font-size:.82rem;
+  cursor:pointer; transition:all .25s;
+}
+.btn-add-row:hover { border-color:var(--gold); color:var(--gold); }
+
+/* Generate Button */
+.btn-go {
+  display:block; width:100%; margin-top:12px;
+  padding:18px;
+  background: linear-gradient(135deg, var(--gold), #a68d4b);
+  color: var(--text-inverse);
+  border:none; border-radius:var(--radius-md);
+  font-family:var(--font-body);
+  font-size:1rem; font-weight:700;
+  letter-spacing:.04em;
+  cursor:pointer;
+  position:relative; overflow:hidden;
+  transition: transform .2s, box-shadow .3s;
+}
+.btn-go:hover {
+  transform:translateY(-2px);
+  box-shadow: 0 12px 40px rgba(207,181,116,.25);
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD SHELL
+   ═══════════════════════════════════════════ */
+.dash.hidden { display:none; }
+
+/* Top Bar */
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background: rgba(11,14,17,.82);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+}
+.topbar-inner {
+  max-width:1280px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  height:60px;
+}
+.topbar-brand {
+  display:flex; align-items:baseline; gap:12px;
+}
+.topbar-brand h1 {
+  font-family:var(--font-display);
+  font-size:1.2rem; font-weight:600;
+  color:var(--gold-light);
+}
+.topbar-brand .divider {
+  width:1px; height:16px; background:var(--border); align-self:center;
+}
+.topbar-brand .client {
+  font-size:.88rem; color:var(--text-secondary); font-weight:400;
+}
+.topbar-actions { display:flex; gap:6px; }
+.btn-top {
+  padding:7px 16px;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-secondary);
+  font-family:var(--font-body);
+  font-size:.78rem; font-weight:500;
+  cursor:pointer; transition:all .2s;
+}
+.btn-top:hover { border-color:var(--border-hover); color:var(--text-primary); background:var(--bg-hover); }
+
+/* Tab Strip */
+.tabs {
+  max-width:1280px; margin:0 auto;
+  display:flex; gap:0; padding:0 40px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  position:relative;
+  padding:14px 22px;
+  background:none; border:none;
+  font-family:var(--font-body);
+  font-size:.82rem; font-weight:500;
+  color:var(--text-tertiary);
+  cursor:pointer; transition:color .2s;
+  white-space:nowrap;
+}
+.tab:hover { color:var(--text-secondary); }
+.tab.on { color:var(--gold); }
+.tab.on::after {
+  content:''; position:absolute;
+  left:14px; right:14px; bottom:-1px; height:2px;
+  background:var(--gold);
+  border-radius:1px 1px 0 0;
+  animation: slide-tab .3s ease;
+  transform-origin: left;
+}
+
+/* Main Container */
+.main { max-width:1280px; margin:0 auto; padding:28px 40px 60px; }
+
+/* Panels */
+.panel { display:none; }
+.panel.on { display:block; }
+
+/* ═══════════════════════════════════════════
+   KPI STRIP
+   ═══════════════════════════════════════════ */
+.kpis {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:14px; margin-bottom:28px;
+}
+.kpi {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:22px 26px;
+  position:relative; overflow:hidden;
+  transition: transform .25s, border-color .3s, box-shadow .3s;
+}
+.kpi:hover {
+  transform:translateY(-3px);
+  border-color:var(--border-hover);
+  box-shadow: 0 12px 32px rgba(0,0,0,.35);
+}
+.kpi-bar { position:absolute; top:0; left:0; right:0; height:2px; }
+.kpi-label {
+  font-size:.65rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.12em; color:var(--text-tertiary); margin-bottom:10px;
+}
+.kpi-val {
+  font-family:var(--font-display);
+  font-size:1.7rem; font-weight:600;
+  color:var(--text-primary);
+  letter-spacing:-.02em;
+  line-height:1.2;
+}
+.kpi-sub { font-size:.76rem; color:var(--text-tertiary); margin-top:5px; font-weight:400; }
+
+/* ═══════════════════════════════════════════
+   SECTION CARDS
+   ═══════════════════════════════════════════ */
+.card {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px;
+  margin-bottom:18px;
+  transition:border-color .3s;
+}
+.card:hover { border-color:var(--border-hover); }
+.card-title {
+  font-family:var(--font-display);
+  font-size:1.15rem; font-weight:600;
+  color:var(--text-primary);
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:10px;
+}
+.card-title .accent {
+  width:5px; height:5px; border-radius:50%;
+  background:var(--gold);
+  flex-shrink:0;
+}
+
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+
+/* ═══════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════ */
+table { width:100%; border-collapse:collapse; font-size:.84rem; }
+thead th {
+  text-align:left; padding:9px 14px;
+  font-size:.66rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.1em;
+  color:var(--text-tertiary);
+  border-bottom:1px solid var(--border);
+  background:transparent;
+}
+td {
+  padding:10px 14px;
+  border-bottom:1px solid rgba(255,255,255,.03);
+  color:var(--text-secondary);
+}
+tr:last-child td { border-bottom:none; }
+tbody tr { transition:background .15s; }
+tbody tr:hover td { background:rgba(255,255,255,.015); }
+.num { text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
+.pos { color:var(--green); }
+.neg { color:var(--red); }
+.tr-section td { font-weight:700; color:var(--text-primary)!important; font-size:.74rem; text-transform:uppercase; letter-spacing:.06em; padding-top:16px; }
+.tr-total-green td { background:var(--green-dim)!important; font-weight:700; color:var(--green)!important; }
+.tr-total-red td { background:var(--red-dim)!important; font-weight:700; color:var(--red)!important; }
+.tr-total-gold td { background:var(--gold-dim)!important; font-weight:700; }
+.tr-total-gold td:last-child { color:var(--gold-light)!important; font-size:.95rem; }
+
+/* Charts */
+.chart-box { position:relative; height:300px; }
+.chart-box.sm { height:240px; }
+
+/* Progress */
+.prog { display:flex; align-items:center; gap:14px; margin:10px 0; }
+.prog-label { min-width:110px; font-size:.82rem; color:var(--text-secondary); }
+.prog-track { flex:1; height:6px; background:rgba(255,255,255,.05); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),var(--gold-light)); transition:width .9s cubic-bezier(.16,1,.3,1); }
+.prog-val { min-width:50px; text-align:right; font-size:.82rem; font-weight:600; color:var(--gold); }
+
+/* Insurance grid */
+.ins-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; }
+.ins-card {
+  background:var(--bg-card-alt);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:22px;
+  position:relative; overflow:hidden;
+  transition:all .3s;
+}
+.ins-card:hover { border-color:rgba(207,181,116,.18); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.3); }
+.ins-card::before {
+  content:''; position:absolute; top:0; left:0; width:40px; height:2px;
+  background:var(--gold); opacity:0; transition:all .3s;
+}
+.ins-card:hover::before { opacity:1; width:100%; }
+.ins-type { font-size:.63rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gold); }
+.ins-name { font-family:var(--font-display); font-size:1.1rem; font-weight:600; margin:6px 0 12px; color:var(--text-primary); }
+.ins-row { font-size:.8rem; color:var(--text-tertiary); margin-bottom:3px; }
+.ins-row span { color:var(--text-secondary); font-weight:600; }
+
+/* Footer */
+.footer {
+  text-align:center; padding:28px 0; margin-top:36px;
+  border-top:1px solid var(--border);
+  color:var(--text-tertiary); font-size:.76rem;
+}
+.footer strong { color:var(--gold); font-weight:600; }
+
+/* Color dot for legend tables */
+.cdot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; vertical-align:middle; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media(max-width:960px) { .kpis{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:700px) {
+  .cols2{grid-template-columns:1fr;}
+  .kpis{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .topbar,.tabs,.main{padding-left:20px;padding-right:20px;}
+  .setup-overlay{padding:24px 16px 60px;}
+  .form-card{padding:22px;}
+  .tab{padding:12px 14px;font-size:.76rem;}
+  .kpi-val{font-size:1.35rem;}
+}
+
+/* ═══════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════ */
+@media print {
+  body{background:#fff;color:#1a1a1a;}
+  body::after{display:none;}
+  .topbar{position:static;background:#fff;backdrop-filter:none;border-bottom:2px solid #e5e7eb;}
+  .topbar-brand h1{color:#8b7330;}
+  .tabs,.btn-top{display:none!important;}
+  .panel{display:block!important;page-break-before:auto;}
+  .card,.kpi{background:#fff;border:1px solid #e5e7eb;break-inside:avoid;}
+  .kpi-val,.card-title{color:#1a1a1a;}
+  .kpi-label,.kpi-sub,td{color:#4b5563;}
+  .ins-card{background:#f9fafb;border-color:#e5e7eb;}
+  .footer strong{color:#8b7330;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SETUP FORM ═══════ -->
+<div class="setup-overlay" id="setupOverlay">
+<div class="setup-wrap">
+  <div class="setup-masthead">
+    <h1>Financial Dashboard</h1>
+    <p>Enter client data to generate a personalised financial overview</p>
+  </div>
+
+  <div class="form-card">
+    <h3>Client Information</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Client Name</label><input id="clientName" placeholder="e.g. John Tan"></div>
+      <div class="form-group"><label>Age</label><input id="clientAge" type="number" placeholder="e.g. 35"></div>
+      <div class="form-group"><label>Dashboard Date</label><input id="dashDate" type="date"></div>
+      <div class="form-group"><label>Currency</label>
+        <select id="currency"><option value="SGD">SGD ($)</option><option value="USD">USD ($)</option><option value="MYR">MYR (RM)</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Cash &amp; Savings</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Cash / Bank Savings</label><input id="cash" type="number" placeholder="0"></div>
+      <div class="form-group"><label>CPF OA</label><input id="cpfOA" type="number" placeholder="0"></div>
+      <div class="form-group"><label>CPF SA</label><input id="cpfSA" type="number" placeholder="0"></div>
+      <div class="form-group"><label>CPF MA</label><input id="cpfMA" type="number" placeholder="0"></div>
+      <div class="form-group"><label>SRS Balance</label><input id="srs" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Investments</h3>
+    <div id="invList"></div>
+    <button class="btn-add-row" onclick="addInv()">+ Add Investment</button>
+  </div>
+
+  <div class="form-card">
+    <h3>Property</h3>
+    <div id="propList"></div>
+    <button class="btn-add-row" onclick="addProp()">+ Add Property</button>
+  </div>
+
+  <div class="form-card">
+    <h3>Liabilities</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Home Loan</label><input id="homeLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Car Loan</label><input id="carLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Student Loan</label><input id="studentLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Other Loans / Credit</label><input id="otherLoan" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Monthly Income</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Salary</label><input id="salary" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Rental Income</label><input id="rentalIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Dividends / Interest</label><input id="dividendIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Side Income / Freelance</label><input id="sideIncome" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Monthly Expenses</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Housing</label><input id="expHousing" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Food &amp; Dining</label><input id="expFood" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Transport</label><input id="expTransport" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Utilities</label><input id="expUtilities" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Insurance Premiums</label><input id="expInsurance" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Shopping</label><input id="expShopping" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Entertainment</label><input id="expEntertainment" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Education</label><input id="expEducation" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Healthcare</label><input id="expHealthcare" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Family / Allowances</label><input id="expFamily" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Savings / Investments</label><input id="expSavings" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Others</label><input id="expOthers" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Insurance Policies</h3>
+    <div id="insList"></div>
+    <button class="btn-add-row" onclick="addIns()">+ Add Policy</button>
+  </div>
+
+  <button class="btn-go" onclick="generate()">Generate Dashboard</button>
+</div>
+</div>
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div class="dash hidden" id="dash">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <h1>Financial Dashboard</h1>
+        <div class="divider"></div>
+        <span class="client" id="dClient"></span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-top" onclick="editData()">Edit</button>
+        <button class="btn-top" onclick="window.print()">Export PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabStrip">
+    <button class="tab on" data-t="overview">Overview</button>
+    <button class="tab" data-t="investments">Investments</button>
+    <button class="tab" data-t="cashflow">Cashflow</button>
+    <button class="tab" data-t="property">Property</button>
+    <button class="tab" data-t="insurance">Insurance</button>
+  </div>
+
+  <div class="main">
+    <div class="panel on" id="p-overview">
+      <div class="kpis" id="kpiGrid"></div>
+      <div class="cols2">
+        <div class="card anim"><div class="card-title"><span class="accent"></span>Net Worth Composition</div><div class="chart-box"><canvas id="cNW"></canvas></div></div>
+        <div class="card anim d1"><div class="card-title"><span class="accent"></span>Balance Sheet</div><table id="tBal"></table></div>
+      </div>
+    </div>
+    <div class="panel" id="p-investments">
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
+        <div class="cols2"><div><table id="tInv"></table></div><div class="chart-box sm"><canvas id="cInv"></canvas></div></div>
+      </div>
+    </div>
+    <div class="panel" id="p-cashflow">
+      <div class="cols2">
+        <div class="card anim"><div class="card-title"><span class="accent"></span>Monthly Cashflow</div><div class="chart-box"><canvas id="cCF"></canvas></div></div>
+        <div class="card anim d1"><div class="card-title"><span class="accent"></span>Passive Income</div><table id="tPassive"></table><div id="passiveBar" style="margin-top:18px"></div></div>
+      </div>
+      <div class="card anim d2" style="margin-top:18px">
+        <div class="card-title"><span class="accent"></span>Spending Breakdown</div>
+        <div class="cols2"><div class="chart-box"><canvas id="cSpend"></canvas></div><div><table id="tSpend"></table></div></div>
+      </div>
+    </div>
+    <div class="panel" id="p-property">
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Property Portfolio</div><table id="tProp"></table></div>
+    </div>
+    <div class="panel" id="p-insurance">
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Insurance Coverage</div><div class="ins-grid" id="insGrid"></div></div>
+    </div>
+
+    <div class="footer">
+      Prepared by <strong>Lu Jia Jun &#65288;&#21346;&#23478;&#39567;&#65289;</strong> &middot; Great Eastern Financial Advisers (OCBC Group) &middot; Rep No: LJJ300837068<br>
+      Mobile: 86602521 &middot; LuJiaJun@rep.greateasternfa.sg
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id), v=id=>parseFloat($(id).value)||0;
+let sym='$', charts={};
+const fmt=n=>sym+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const fmts=n=>(n<0?'-':'')+fmt(n);
+
+// ── Tabs ──
+document.addEventListener('click',e=>{
+  if(!e.target.classList.contains('tab'))return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  e.target.classList.add('on');
+  $('p-'+e.target.dataset.t).classList.add('on');
+});
+
+// ── Repeaters ──
+let ic=0,pc=0,sc=0;
+function addInv(){
+  const d=document.createElement('div');d.className='repeater';const i=ic++;
+  d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
+  <div class="form-grid">
+    <div class="form-group"><label>Name</label><input id="iN${i}" placeholder="e.g. STI ETF"></div>
+    <div class="form-group"><label>Type</label><select id="iT${i}"><option>Stocks</option><option>ETF</option><option>Bonds</option><option>Unit Trust</option><option>ILP</option><option>Endowment</option><option>Crypto</option><option>Other</option></select></div>
+    <div class="form-group"><label>Current Value</label><input id="iV${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Cost Basis</label><input id="iC${i}" type="number" placeholder="0"></div>
+  </div>`;
+  $('invList').appendChild(d);
+}
+function addProp(){
+  const d=document.createElement('div');d.className='repeater';const i=pc++;
+  d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
+  <div class="form-grid">
+    <div class="form-group"><label>Property Name</label><input id="pN${i}" placeholder="e.g. HDB 4-Room"></div>
+    <div class="form-group"><label>Type</label><select id="pT${i}"><option>HDB</option><option>Condo</option><option>Landed</option><option>Commercial</option><option>Other</option></select></div>
+    <div class="form-group"><label>Market Value</label><input id="pV${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Loan Outstanding</label><input id="pL${i}" type="number" placeholder="0"></div>
+  </div>`;
+  $('propList').appendChild(d);
+}
+function addIns(){
+  const d=document.createElement('div');d.className='repeater';const i=sc++;
+  d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
+  <div class="form-grid">
+    <div class="form-group"><label>Policy Name</label><input id="sN${i}" placeholder="e.g. GREAT SupremeHealth"></div>
+    <div class="form-group"><label>Type</label><select id="sT${i}"><option>Health / Hospitalisation</option><option>Life / Death</option><option>Critical Illness</option><option>Disability</option><option>Accident</option><option>Endowment</option><option>Whole Life</option><option>Term Life</option><option>Other</option></select></div>
+    <div class="form-group"><label>Sum Assured</label><input id="sC${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Monthly Premium</label><input id="sP${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Insurer</label><input id="sI${i}" placeholder="e.g. Great Eastern"></div>
+    <div class="form-group"><label>Cash Value</label><input id="sV${i}" type="number" placeholder="0"></div>
+  </div>`;
+  $('insList').appendChild(d);
+}
+
+$('dashDate').value=new Date().toISOString().split('T')[0];
+
+function collectData(){
+  const cur=$('currency').value; sym=cur==='MYR'?'RM ':'$';
+  const d={
+    client:$('clientName').value||'Client', age:v('clientAge'), date:$('dashDate').value, cur,
+    cash:v('cash'), cpfOA:v('cpfOA'), cpfSA:v('cpfSA'), cpfMA:v('cpfMA'), srs:v('srs'),
+    homeLoan:v('homeLoan'), carLoan:v('carLoan'), studentLoan:v('studentLoan'), otherLoan:v('otherLoan'),
+    salary:v('salary'), rental:v('rentalIncome'), dividends:v('dividendIncome'), side:v('sideIncome'),
+    exp:{Housing:v('expHousing'),'Food & Dining':v('expFood'),Transport:v('expTransport'),Utilities:v('expUtilities'),Insurance:v('expInsurance'),Shopping:v('expShopping'),Entertainment:v('expEntertainment'),Education:v('expEducation'),Healthcare:v('expHealthcare'),'Family':v('expFamily'),'Savings':v('expSavings'),Others:v('expOthers')},
+    inv:[], prop:[], ins:[]
+  };
+  document.querySelectorAll('#invList .repeater').forEach((el,idx)=>{
+    const n=el.querySelector('[id^="iN"]'),t=el.querySelector('[id^="iT"]'),val=el.querySelector('[id^="iV"]'),c=el.querySelector('[id^="iC"]');
+    if(n)d.inv.push({name:n.value||'Investment '+(idx+1),type:t?.value||'',value:+(val?.value)||0,cost:+(c?.value)||0});
+  });
+  document.querySelectorAll('#propList .repeater').forEach((el,idx)=>{
+    const n=el.querySelector('[id^="pN"]'),t=el.querySelector('[id^="pT"]'),val=el.querySelector('[id^="pV"]'),l=el.querySelector('[id^="pL"]');
+    if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',value:+(val?.value)||0,loan:+(l?.value)||0});
+  });
+  document.querySelectorAll('#insList .repeater').forEach((el,idx)=>{
+    const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]');
+    if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:+(c?.value)||0,premium:+(p?.value)||0,insurer:ins?.value||'',cv:+(cv?.value)||0});
+  });
+  return d;
+}
+
+function destroyCharts(){Object.values(charts).forEach(c=>c.destroy());charts={};}
+
+// Chart.js defaults
+Chart.defaults.color='#5a6170';
+Chart.defaults.borderColor='rgba(255,255,255,.04)';
+Chart.defaults.font.family="'Outfit',sans-serif";
+
+const COLS=['#3ecf8e','#579dff','#b28dff','#f0b429','#f06060','#56d4dd','#f472b6','#818cf8','#fb923c','#84cc16','#e879f9','#6b7280'];
+
+function generate(){
+  const d=collectData(); destroyCharts();
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totPropV=d.prop.reduce((s,p)=>s+p.value,0);
+  const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
+  const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
+  const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
+  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const nw=totAssets-totLiab;
+  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const totExp=Object.values(d.exp).reduce((s,v)=>s+v,0);
+  const surplus=inflow-totExp;
+  const passive=d.rental+d.dividends;
+  const passiveR=inflow>0?passive/inflow*100:0;
+  const savRate=inflow>0?surplus/inflow*100:0;
+
+  $('setupOverlay').classList.add('hidden');
+  $('dash').classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelector('[data-t="overview"]').classList.add('on');
+  $('p-overview').classList.add('on');
+
+  $('dClient').textContent=d.client+(d.age?', '+d.age:'')+(d.date?' \u2022 As of '+d.date:'');
+
+  // KPIs
+  const kpis=[
+    {l:'Net Worth',v:fmts(nw),s:'Total assets '+fmt(totAssets),c:'var(--gold)'},
+    {l:'Monthly Inflow',v:fmt(inflow),s:'Salary + passive',c:'var(--green)'},
+    {l:'Monthly Surplus',v:fmts(surplus),s:'Savings rate '+savRate.toFixed(1)+'%',c:surplus>=0?'var(--cyan)':'var(--red)'},
+    {l:'Passive Income',v:fmt(passive)+'/mo',s:passiveR.toFixed(1)+'% of income',c:'var(--purple)'},
+    {l:'Investments',v:fmt(totInv),s:d.inv.length+' holdings',c:'var(--blue)'},
+    {l:'Liabilities',v:fmt(totLiab),s:'Debt-to-asset '+(totAssets>0?(totLiab/totAssets*100).toFixed(1):0)+'%',c:'var(--red)'},
+  ];
+  $('kpiGrid').innerHTML=kpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // Net Worth Donut
+  const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
+  const nwD=[d.cash,cpf,d.srs,totInv,totPropV,insCV];
+  charts.nw=new Chart($('cNW'),{type:'doughnut',data:{labels:nwL,datasets:[{data:nwD,backgroundColor:COLS.slice(0,6),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:14,usePointStyle:true,pointStyle:'circle'}}}}});
+
+  // Balance Sheet
+  let b=`<thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+    <tr class="tr-section"><td>Assets</td><td></td></tr>
+    <tr><td>Cash & Savings</td><td class="num pos">${fmt(d.cash)}</td></tr>
+    <tr><td>CPF (OA+SA+MA)</td><td class="num pos">${fmt(cpf)}</td></tr>
+    <tr><td>SRS</td><td class="num pos">${fmt(d.srs)}</td></tr>
+    <tr><td>Investments</td><td class="num pos">${fmt(totInv)}</td></tr>
+    <tr><td>Property</td><td class="num pos">${fmt(totPropV)}</td></tr>
+    <tr><td>Insurance Cash Value</td><td class="num pos">${fmt(insCV)}</td></tr>
+    <tr class="tr-total-green"><td>Total Assets</td><td class="num">${fmt(totAssets)}</td></tr>
+    <tr class="tr-section"><td>Liabilities</td><td></td></tr>`;
+  if(d.homeLoan) b+=`<tr><td>Home Loan</td><td class="num neg">\u2212${fmt(d.homeLoan)}</td></tr>`;
+  if(d.carLoan) b+=`<tr><td>Car Loan</td><td class="num neg">\u2212${fmt(d.carLoan)}</td></tr>`;
+  if(d.studentLoan) b+=`<tr><td>Student Loan</td><td class="num neg">\u2212${fmt(d.studentLoan)}</td></tr>`;
+  if(d.otherLoan) b+=`<tr><td>Other Loans</td><td class="num neg">\u2212${fmt(d.otherLoan)}</td></tr>`;
+  if(totPropL) b+=`<tr><td>Property Loans</td><td class="num neg">\u2212${fmt(totPropL)}</td></tr>`;
+  b+=`<tr class="tr-total-red"><td>Total Liabilities</td><td class="num">\u2212${fmt(totLiab)}</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Net Worth</td><td class="num">${fmts(nw)}</td></tr></tbody>`;
+  $('tBal').innerHTML=b;
+
+  // Investments
+  let iv='<thead><tr><th>Name</th><th>Type</th><th style="text-align:right">Value</th><th style="text-align:right">P&L</th></tr></thead><tbody>';
+  d.inv.forEach(x=>{const gl=x.value-x.cost;iv+=`<tr><td style="color:var(--text-primary)">${x.name}</td><td>${x.type}</td><td class="num">${fmt(x.value)}</td><td class="num ${gl>=0?'pos':'neg'}">${gl>=0?'+':'\u2212'}${fmt(Math.abs(gl))}</td></tr>`;});
+  if(!d.inv.length) iv+='<tr><td colspan="4" style="text-align:center;color:var(--text-tertiary);padding:28px">No investments entered</td></tr>';
+  iv+='</tbody>';$('tInv').innerHTML=iv;
+  if(d.inv.length){
+    charts.inv=new Chart($('cInv'),{type:'doughnut',data:{labels:d.inv.map(i=>i.name),datasets:[{data:d.inv.map(i=>i.value),backgroundColor:COLS.slice(0,d.inv.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:11}}}}}});
+  }
+
+  // Cashflow
+  charts.cf=new Chart($('cCF'),{type:'bar',data:{labels:['Salary','Rental','Dividends','Side Income','Expenses'],datasets:[{data:[d.salary,d.rental,d.dividends,d.side,-totExp],backgroundColor:[COLS[0],COLS[5],COLS[2],COLS[1],COLS[4]],borderRadius:8,borderSkipped:false,barThickness:32}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{callback:v=>fmts(v)}},x:{grid:{display:false}}}}});
+
+  // Passive
+  $('tPassive').innerHTML=`<thead><tr><th>Source</th><th style="text-align:right">Monthly</th><th style="text-align:right">Annual</th></tr></thead><tbody>
+    <tr><td>Rental</td><td class="num">${fmt(d.rental)}</td><td class="num">${fmt(d.rental*12)}</td></tr>
+    <tr><td>Dividends</td><td class="num">${fmt(d.dividends)}</td><td class="num">${fmt(d.dividends*12)}</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(passive)}</td><td class="num" style="color:var(--gold-light)">${fmt(passive*12)}</td></tr></tbody>`;
+  $('passiveBar').innerHTML=`<div class="prog"><span class="prog-label">Passive ratio</span><div class="prog-track"><div class="prog-fill" style="width:${Math.min(passiveR,100)}%"></div></div><span class="prog-val">${passiveR.toFixed(1)}%</span></div>`;
+
+  // Spending
+  const sL=Object.keys(d.exp).filter(k=>d.exp[k]>0), sD=sL.map(k=>d.exp[k]);
+  if(sL.length){
+    charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+    let st='<thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr></thead><tbody>';
+    sL.forEach((l,i)=>{st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${fmt(sD[i])}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;});
+    st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExp)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
+    $('tSpend').innerHTML=st;
+  }
+
+  // Property
+  let pr='<thead><tr><th>Property</th><th>Type</th><th style="text-align:right">Value</th><th style="text-align:right">Loan</th><th style="text-align:right">Equity</th></tr></thead><tbody>';
+  d.prop.forEach(p=>{const eq=p.value-p.loan;pr+=`<tr><td style="color:var(--text-primary)">${p.name}</td><td>${p.type}</td><td class="num">${fmt(p.value)}</td><td class="num neg">\u2212${fmt(p.loan)}</td><td class="num pos">${fmt(eq)}</td></tr>`;});
+  if(d.prop.length>1){const te=totPropV-totPropL;pr+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td></td><td class="num" style="color:var(--gold-light)">${fmt(totPropV)}</td><td class="num" style="color:var(--red)">\u2212${fmt(totPropL)}</td><td class="num" style="color:var(--green)">${fmt(te)}</td></tr>`;}
+  if(!d.prop.length) pr+='<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:28px">No properties entered</td></tr>';
+  pr+='</tbody>';$('tProp').innerHTML=pr;
+
+  // Insurance
+  let ih='';
+  d.ins.forEach((p,i)=>{ih+=`<div class="ins-card anim d${Math.min(i+1,6)}"><div class="ins-type">${p.type}</div><div class="ins-name">${p.name}</div><div class="ins-row">Insurer: <span>${p.insurer||'\u2014'}</span></div><div class="ins-row">Coverage: <span>${fmt(p.cover)}</span></div><div class="ins-row">Premium: <span>${fmt(p.premium)}/mo</span></div>${p.cv?`<div class="ins-row">Cash Value: <span>${fmt(p.cv)}</span></div>`:''}
+  </div>`;});
+  if(!d.ins.length) ih='<p style="color:var(--text-tertiary);text-align:center;padding:28px">No insurance policies entered</p>';
+  $('insGrid').innerHTML=ih;
+}
+
+function editData(){$('setupOverlay').classList.remove('hidden');$('dash').classList.add('hidden');}
+</script>
+</body>
+</html>
