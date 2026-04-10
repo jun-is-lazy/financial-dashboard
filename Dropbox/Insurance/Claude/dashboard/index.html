@@ -983,29 +983,29 @@ function buildGaps(d) {
 
   const strategies = {
     passive: [
-      { id:'reit', name:'REITs / Dividend ETFs', icon:'&#128200;', detail:'+$300-800/mo yield', income: 500 },
-      { id:'rental', name:'Rental Property', icon:'&#127968;', detail:'+$1,500-3,000/mo', income: 2000 },
-      { id:'endow', name:'Endowment Plan', icon:'&#128176;', detail:'+$200-500/mo at maturity', income: 350 },
-      { id:'bond', name:'Bond Portfolio', icon:'&#128196;', detail:'+$150-400/mo coupon', income: 250 },
-      { id:'annuity', name:'Retirement Annuity', icon:'&#128179;', detail:'+$500-1,500/mo from 65', income: 800 },
+      { id:'reit', name:'REITs / Dividend ETFs', icon:'&#128200;', detail:'Quarterly distributions', income: 500 },
+      { id:'rental', name:'Rental Property', icon:'&#127968;', detail:'Monthly rental yield', income: 2000 },
+      { id:'endow', name:'Endowment Plan', icon:'&#128176;', detail:'Guaranteed payouts at maturity', income: 350 },
+      { id:'bond', name:'Bond Portfolio', icon:'&#128196;', detail:'Regular coupon payments', income: 250 },
+      { id:'annuity', name:'Retirement Annuity', icon:'&#128179;', detail:'Lifetime income from retirement', income: 800 },
     ],
     life: [
-      { id:'term25', name:'Term Life 25yr', icon:'&#128737;', detail:'$500k cover, ~$50/mo', cover: 500000, premium: 50 },
-      { id:'term30', name:'Term Life 30yr', icon:'&#128737;', detail:'$500k cover, ~$65/mo', cover: 500000, premium: 65 },
-      { id:'whole', name:'Whole Life Plan', icon:'&#127775;', detail:'$200k cover, ~$180/mo', cover: 200000, premium: 180 },
-      { id:'decr', name:'Decreasing Term (Mortgage)', icon:'&#127968;', detail:'Covers loan balance', cover: 300000, premium: 35 },
+      { id:'term25', name:'Term Life (25yr)', icon:'&#128737;', detail:'High cover, low cost', cover: 500000, premium: 50 },
+      { id:'term30', name:'Term Life (30yr)', icon:'&#128737;', detail:'Extended protection', cover: 500000, premium: 65 },
+      { id:'whole', name:'Whole Life Plan', icon:'&#127775;', detail:'Lifetime cover + cash value', cover: 200000, premium: 180 },
+      { id:'decr', name:'Decreasing Term', icon:'&#127968;', detail:'Mortgage protection', cover: 300000, premium: 35 },
     ],
     ci: [
-      { id:'earlyci', name:'Early CI Coverage', icon:'&#129657;', detail:'$100k, ~$70/mo', cover: 100000, premium: 70 },
-      { id:'multici', name:'Multi-pay CI Plan', icon:'&#128153;', detail:'$200k, ~$130/mo', cover: 200000, premium: 130 },
-      { id:'ciacc', name:'CI + Accident Rider', icon:'&#9889;', detail:'$150k, ~$90/mo', cover: 150000, premium: 90 },
+      { id:'earlyci', name:'Early CI Coverage', icon:'&#129657;', detail:'Covers early-stage CI', cover: 100000, premium: 70 },
+      { id:'multici', name:'Multi-pay CI Plan', icon:'&#128153;', detail:'Multiple claims allowed', cover: 200000, premium: 130 },
+      { id:'ciacc', name:'CI + Accident Rider', icon:'&#9889;', detail:'Combined CI & accident', cover: 150000, premium: 90 },
     ],
     invest: [
-      { id:'etf', name:'Global Equity ETF', icon:'&#127758;', detail:'~7% avg return', growth: 0.02 },
-      { id:'rsp', name:'Regular Savings Plan', icon:'&#128197;', detail:'+$500/mo DCA', monthly: 500 },
-      { id:'srs', name:'SRS Top-up', icon:'&#127981;', detail:'Tax relief + growth', monthly: 300 },
-      { id:'ilp', name:'Investment-Linked Plan', icon:'&#128202;', detail:'Insurance + growth', monthly: 400 },
-      { id:'roboadv', name:'Robo-Advisor', icon:'&#129302;', detail:'+$500/mo automated', monthly: 500 },
+      { id:'etf', name:'Global Equity ETF', icon:'&#127758;', detail:'Broad market exposure', growth: 0.02 },
+      { id:'rsp', name:'Regular Savings Plan', icon:'&#128197;', detail:'Dollar-cost averaging', monthly: 500 },
+      { id:'srs', name:'SRS Top-up', icon:'&#127981;', detail:'Tax relief + investment growth', monthly: 300 },
+      { id:'ilp', name:'Investment-Linked Plan', icon:'&#128202;', detail:'Protection + investment', monthly: 400 },
+      { id:'roboadv', name:'Robo-Advisor', icon:'&#129302;', detail:'Automated portfolio management', monthly: 500 },
     ]
   };
 
