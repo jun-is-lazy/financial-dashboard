@@ -588,8 +588,9 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
   .topbar-meta { font-size:.6rem !important; }
   .tabs, .btn-top { display:none !important; }
 
-  /* Show all panels, no page breaks */
-  .panel { display:block !important; padding:0 !important; margin:0 !important; }
+  /* Only show Overview + Gaps in print; hide detail tabs */
+  .panel { display:none !important; padding:0 !important; margin:0 !important; }
+  #p-overview, #p-gaps { display:block !important; }
 
   /* Compact container */
   .container { max-width:100% !important; padding:2px 10px !important; }
@@ -604,9 +605,12 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
   .kpi-sub { font-size:.5rem !important; }
 
   /* Charts — very short */
-  .chart-box { height:100px !important; }
-  .chart-box.sm { height:80px !important; }
+  .chart-box { height:90px !important; }
+  .chart-box.sm { height:70px !important; }
   canvas { max-width:100% !important; }
+
+  /* Overview cols — balance sheet gets more space */
+  #p-overview .cols2 { grid-template-columns:2fr 3fr !important; }
 
   /* Grid layouts */
   .cols2 { gap:6px !important; }
