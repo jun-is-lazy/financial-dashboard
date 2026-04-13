@@ -577,17 +577,77 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
    PRINT
    ═══════════════════════════════════════════ */
 @media print {
-  body{background:#fff;color:#1a1a1a;}
-  body::after{display:none;}
-  .topbar{position:static;background:#fff;backdrop-filter:none;border-bottom:2px solid #e5e7eb;}
-  .topbar-brand h1{color:#8b7330;}
-  .tabs,.btn-top{display:none!important;}
-  .panel{display:block!important;page-break-before:auto;}
-  .card,.kpi{background:#fff;border:1px solid #e5e7eb;break-inside:avoid;}
-  .kpi-val,.card-title{color:#1a1a1a;}
-  .kpi-label,.kpi-sub,td{color:#4b5563;}
-  .ins-card{background:#f9fafb;border-color:#e5e7eb;}
-  .footer strong{color:#8b7330;}
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body { background:#fff !important; color:#1a1a1a !important; }
+  body::after { display:none !important; }
+  .setup-overlay { display:none !important; }
+
+  /* Topbar */
+  .topbar { position:static; background:#fff !important; backdrop-filter:none; border-bottom:2px solid #e5e7eb; }
+  .topbar-brand h1 { color:#8b7330 !important; }
+  .tabs, .btn-top { display:none !important; }
+
+  /* Show all panels */
+  .panel { display:block !important; page-break-before:auto; }
+
+  /* Cards & KPIs */
+  .card, .kpi { background:#fff !important; border:1px solid #e5e7eb !important; break-inside:avoid; page-break-inside:avoid; }
+  .kpi-val, .card-title { color:#1a1a1a !important; }
+  .kpi-label, .kpi-sub, td { color:#4b5563 !important; }
+  .card-title .accent { background:#8b7330 !important; }
+
+  /* Insurance cards */
+  .ins-card { background:#f9fafb !important; border-color:#e5e7eb !important; }
+  .ins-type, .ins-provider { color:#4b5563 !important; }
+  .ins-name { color:#1a1a1a !important; }
+
+  /* Charts - give fixed height and ensure canvas prints */
+  .chart-box { height:250px !important; break-inside:avoid; page-break-inside:avoid; }
+  .chart-box.sm { height:200px !important; }
+  canvas { max-width:100% !important; }
+
+  /* Grid layouts - tighter for print */
+  .kpis { gap:10px !important; }
+  .cols2 { gap:16px !important; }
+
+  /* Gap cards - light theme for print */
+  .gap-cards { gap:12px !important; }
+  .gap-card { background:#fff !important; border:1px solid #d1d5db !important; break-inside:avoid; page-break-inside:avoid; }
+  .gap-header { cursor:default; padding:16px 20px 14px !important; }
+  .gap-icon { background:#f3f4f6 !important; }
+  .gap-title { color:#1a1a1a !important; }
+  .gap-subtitle { color:#6b7280 !important; }
+  .gap-meter-track { background:#e5e7eb !important; }
+  .gap-meter-val { color:#1a1a1a !important; }
+  .gap-shortfall { border:1px solid currentColor !important; }
+  .gap-shortfall.danger { background:#fef2f2 !important; color:#dc2626 !important; }
+  .gap-shortfall.warning { background:#fffbeb !important; color:#d97706 !important; }
+  .gap-shortfall.good { background:#f0fdf4 !important; color:#16a34a !important; }
+
+  /* Hide interactive-only elements in print */
+  .gap-chevron { display:none !important; }
+  .gap-body { display:none !important; }
+  .gap-cta { display:none !important; }
+  .strat-btn, .strat-label, .strat-impact { display:none !important; }
+
+  /* Tables */
+  table { font-size:.8rem !important; }
+  th { color:#1a1a1a !important; border-bottom-color:#d1d5db !important; }
+  td { border-bottom-color:#e5e7eb !important; }
+  .cdot { print-color-adjust:exact !important; }
+
+  /* Property cards */
+  .prop-card { background:#f9fafb !important; border:1px solid #e5e7eb !important; }
+  .prop-label { color:#6b7280 !important; }
+  .prop-val { color:#1a1a1a !important; }
+
+  /* Footer */
+  .footer { border-top-color:#e5e7eb !important; }
+  .footer strong { color:#8b7330 !important; }
+
+  /* Page break helpers - add breaks between major sections */
+  .panel + .panel { page-break-before:always; }
+  .panel:first-child { page-break-before:avoid; }
 }
 </style>
 </head>
