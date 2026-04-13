@@ -604,13 +604,13 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
   .kpi-label { font-size:.5rem !important; }
   .kpi-sub { font-size:.5rem !important; }
 
-  /* Charts — very short */
-  .chart-box { height:90px !important; }
-  .chart-box.sm { height:70px !important; }
+  /* Charts — more space for pie */
+  .chart-box { height:160px !important; }
+  .chart-box.sm { height:80px !important; }
   canvas { max-width:100% !important; }
 
-  /* Overview cols — balance sheet gets more space */
-  #p-overview .cols2 { grid-template-columns:2fr 3fr !important; }
+  /* Overview cols — equal space for chart and balance sheet */
+  #p-overview .cols2 { grid-template-columns:1fr 1fr !important; }
 
   /* Grid layouts */
   .cols2 { gap:6px !important; }
@@ -945,7 +945,7 @@ function generate(){
   // Net Worth Donut
   const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
   const nwD=[d.cash,cpf,d.srs,totInv,totPropV,insCV];
-  charts.nw=new Chart($('cNW'),{type:'doughnut',data:{labels:nwL,datasets:[{data:nwD,backgroundColor:COLS.slice(0,6),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:14,usePointStyle:true,pointStyle:'circle'}}}}});
+  charts.nw=new Chart($('cNW'),{type:'pie',data:{labels:nwL,datasets:[{data:nwD,backgroundColor:COLS.slice(0,6),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:10}}}}}});
 
   // Balance Sheet
   let b=`<thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead><tbody>
