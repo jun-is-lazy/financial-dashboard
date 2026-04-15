@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Dashboard — Lu Jia Jun</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  /* Surface */
+  --bg-base: #0b0e11;
+  --bg-raised: #111419;
+  --bg-card: #161b22;
+  --bg-card-alt: #1c2129;
+  --bg-hover: #1f252e;
+  --bg-input: #0d1017;
+  --border: rgba(255,255,255,.06);
+  --border-hover: rgba(255,255,255,.12);
+  --border-focus: rgba(207,181,116,.4);
+
+  /* Text */
+  --text-primary: #f0f2f5;
+  --text-secondary: #8b929a;
+  --text-tertiary: #5a6170;
+  --text-inverse: #0b0e11;
+
+  /* Brand — warm champagne gold */
+  --gold: #cfb574;
+  --gold-light: #e2d09e;
+  --gold-dim: rgba(207,181,116,.1);
+  --gold-glow: rgba(207,181,116,.06);
+
+  /* Semantic */
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,.1);
+  --red: #f06060;
+  --red-dim: rgba(240,96,96,.1);
+  --blue: #579dff;
+  --blue-dim: rgba(87,157,255,.1);
+  --purple: #b28dff;
+  --purple-dim: rgba(178,141,255,.1);
+  --cyan: #56d4dd;
+  --cyan-dim: rgba(86,212,221,.1);
+  --amber: #f0b429;
+  --amber-dim: rgba(240,180,41,.1);
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Outfit', -apple-system, sans-serif;
+
+  /* Spacing & Shape */
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle grain */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@keyframes glow-line { 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+@keyframes slide-tab { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+
+.anim { animation: rise .55s cubic-bezier(.23,1,.32,1) both; }
+.d1{animation-delay:.06s} .d2{animation-delay:.12s} .d3{animation-delay:.18s}
+.d4{animation-delay:.24s} .d5{animation-delay:.3s} .d6{animation-delay:.36s}
+
+/* ═══════════════════════════════════════════
+   SETUP FORM OVERLAY
+   ═══════════════════════════════════════════ */
+.setup-overlay {
+  position:fixed; inset:0; z-index:1000;
+  background: var(--bg-base);
+  overflow-y:auto;
+  display:flex; justify-content:center;
+  padding: 48px 24px 80px;
+}
+.setup-overlay.hidden { display:none; }
+
+.setup-wrap { max-width:720px; width:100%; }
+
+.setup-masthead {
+  text-align:center; margin-bottom:48px;
+  position:relative;
+}
+.setup-masthead::after {
+  content:''; display:block; width:48px; height:1px; margin:20px auto 0;
+  background: var(--gold); animation: glow-line 3s ease infinite;
+}
+.setup-masthead h1 {
+  font-family: var(--font-display);
+  font-size: 2.6rem; font-weight:500;
+  color: var(--gold-light);
+  letter-spacing: .02em;
+}
+.setup-masthead p {
+  margin-top:10px; color:var(--text-secondary); font-weight:300; font-size:.95rem;
+}
+
+/* Cards */
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 14px;
+  transition: border-color .35s;
+}
+.form-card:hover { border-color: var(--border-hover); }
+.form-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight:600;
+  color: var(--gold-light);
+  margin-bottom:22px;
+  padding-left:14px;
+  border-left: 2px solid var(--gold);
+}
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-group label {
+  font-size:.68rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--text-tertiary);
+}
+.form-group input, .form-group select {
+  padding: 11px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size:.88rem;
+  transition: all .25s;
+}
+.form-group input::placeholder { color: var(--text-tertiary); }
+.form-group input:focus, .form-group select:focus {
+  outline:none; border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--gold-dim);
+}
+.form-group select option { background:var(--bg-card); }
+
+/* Repeaters */
+.repeater {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding:18px; margin-bottom:10px;
+  position:relative;
+}
+.repeater .form-grid { gap:12px; }
+.btn-del {
+  position:absolute; top:10px; right:10px;
+  width:24px; height:24px; border-radius:6px;
+  background: var(--red-dim); color:var(--red);
+  border:none; cursor:pointer; font-size:.75rem;
+  display:flex; align-items:center; justify-content:center;
+  transition: all .2s;
+}
+.btn-del:hover { background:var(--red); color:#fff; }
+
+.btn-add-row {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 18px;
+  background:transparent;
+  border:1px dashed rgba(255,255,255,.1);
+  border-radius:var(--radius-sm);
+  color:var(--text-tertiary);
+  font-family:var(--font-body); font-size:.82rem;
+  cursor:pointer; transition:all .25s;
+}
+.btn-add-row:hover { border-color:var(--gold); color:var(--gold); }
+
+/* Generate Button */
+.btn-go {
+  display:block; width:100%; margin-top:12px;
+  padding:18px;
+  background: linear-gradient(135deg, var(--gold), #a68d4b);
+  color: var(--text-inverse);
+  border:none; border-radius:var(--radius-md);
+  font-family:var(--font-body);
+  font-size:1rem; font-weight:700;
+  letter-spacing:.04em;
+  cursor:pointer;
+  position:relative; overflow:hidden;
+  transition: transform .2s, box-shadow .3s;
+}
+.btn-go:hover {
+  transform:translateY(-2px);
+  box-shadow: 0 12px 40px rgba(207,181,116,.25);
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD SHELL
+   ═══════════════════════════════════════════ */
+.dash.hidden { display:none; }
+
+/* Top Bar */
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background: rgba(11,14,17,.82);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+}
+.topbar-inner {
+  max-width:1280px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  height:60px;
+}
+.topbar-brand {
+  display:flex; align-items:baseline; gap:12px;
+}
+.topbar-brand h1 {
+  font-family:var(--font-display);
+  font-size:1.2rem; font-weight:600;
+  color:var(--gold-light);
+}
+.topbar-brand .divider {
+  width:1px; height:16px; background:var(--border); align-self:center;
+}
+.topbar-brand .client {
+  font-size:.88rem; color:var(--text-secondary); font-weight:400;
+}
+.topbar-actions { display:flex; gap:6px; }
+.btn-top {
+  padding:7px 16px;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-secondary);
+  font-family:var(--font-body);
+  font-size:.78rem; font-weight:500;
+  cursor:pointer; transition:all .2s;
+}
+.btn-top:hover { border-color:var(--border-hover); color:var(--text-primary); background:var(--bg-hover); }
+
+/* Tab Strip */
+.tabs {
+  max-width:1280px; margin:0 auto;
+  display:flex; gap:0; padding:0 40px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  position:relative;
+  padding:14px 22px;
+  background:none; border:none;
+  font-family:var(--font-body);
+  font-size:.82rem; font-weight:500;
+  color:var(--text-tertiary);
+  cursor:pointer; transition:color .2s;
+  white-space:nowrap;
+}
+.tab:hover { color:var(--text-secondary); }
+.tab.on { color:var(--gold); }
+.tab.on::after {
+  content:''; position:absolute;
+  left:14px; right:14px; bottom:-1px; height:2px;
+  background:var(--gold);
+  border-radius:1px 1px 0 0;
+  animation: slide-tab .3s ease;
+  transform-origin: left;
+}
+
+/* Main Container */
+.main { max-width:1280px; margin:0 auto; padding:28px 40px 60px; }
+
+/* Panels */
+.panel { display:none; }
+.panel.on { display:block; }
+.print-section-title { display:none; }
+
+/* ═══════════════════════════════════════════
+   KPI STRIP
+   ═══════════════════════════════════════════ */
+.kpis {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:14px; margin-bottom:28px;
+}
+.kpi {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:22px 26px;
+  position:relative; overflow:hidden;
+  transition: transform .25s, border-color .3s, box-shadow .3s;
+}
+.kpi:hover {
+  transform:translateY(-3px);
+  border-color:var(--border-hover);
+  box-shadow: 0 12px 32px rgba(0,0,0,.35);
+}
+.kpi-bar { position:absolute; top:0; left:0; right:0; height:2px; }
+.kpi-label {
+  font-size:.65rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.12em; color:var(--text-tertiary); margin-bottom:10px;
+}
+.kpi-val {
+  font-family:var(--font-display);
+  font-size:1.7rem; font-weight:600;
+  color:var(--text-primary);
+  letter-spacing:-.02em;
+  line-height:1.2;
+}
+.kpi-sub { font-size:.76rem; color:var(--text-tertiary); margin-top:5px; font-weight:400; }
+
+/* ═══════════════════════════════════════════
+   SECTION CARDS
+   ═══════════════════════════════════════════ */
+.card {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px;
+  margin-bottom:18px;
+  transition:border-color .3s;
+}
+.card:hover { border-color:var(--border-hover); }
+.card-title {
+  font-family:var(--font-display);
+  font-size:1.15rem; font-weight:600;
+  color:var(--text-primary);
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:10px;
+}
+.card-title .accent {
+  width:5px; height:5px; border-radius:50%;
+  background:var(--gold);
+  flex-shrink:0;
+}
+
+.cols2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+
+/* ═══════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════ */
+table { width:100%; border-collapse:collapse; font-size:.84rem; }
+thead th {
+  text-align:left; padding:9px 14px;
+  font-size:.66rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.1em;
+  color:var(--text-tertiary);
+  border-bottom:1px solid var(--border);
+  background:transparent;
+}
+td {
+  padding:10px 14px;
+  border-bottom:1px solid rgba(255,255,255,.03);
+  color:var(--text-secondary);
+}
+tr:last-child td { border-bottom:none; }
+tbody tr { transition:background .15s; }
+tbody tr:hover td { background:rgba(255,255,255,.015); }
+.num { text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
+.pos { color:var(--green); }
+.neg { color:var(--red); }
+.tr-section td { font-weight:700; color:var(--text-primary)!important; font-size:.74rem; text-transform:uppercase; letter-spacing:.06em; padding-top:16px; }
+.tr-total-green td { background:var(--green-dim)!important; font-weight:700; color:var(--green)!important; }
+.tr-total-red td { background:var(--red-dim)!important; font-weight:700; color:var(--red)!important; }
+.tr-total-gold td { background:var(--gold-dim)!important; font-weight:700; }
+.tr-total-gold td:last-child { color:var(--gold-light)!important; font-size:.95rem; }
+
+/* Charts */
+.chart-box { position:relative; height:300px; }
+.chart-box.sm { height:240px; }
+
+/* Progress */
+.prog { display:flex; align-items:center; gap:14px; margin:10px 0; }
+.prog-label { min-width:110px; font-size:.82rem; color:var(--text-secondary); }
+.prog-track { flex:1; height:6px; background:rgba(255,255,255,.05); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),var(--gold-light)); transition:width .9s cubic-bezier(.16,1,.3,1); }
+.prog-val { min-width:50px; text-align:right; font-size:.82rem; font-weight:600; color:var(--gold); }
+
+/* Insurance grid */
+.ins-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; }
+.ins-card {
+  background:var(--bg-card-alt);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:22px;
+  position:relative; overflow:hidden;
+  transition:all .3s;
+}
+.ins-card:hover { border-color:rgba(207,181,116,.18); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.3); }
+.ins-card::before {
+  content:''; position:absolute; top:0; left:0; width:40px; height:2px;
+  background:var(--gold); opacity:0; transition:all .3s;
+}
+.ins-card:hover::before { opacity:1; width:100%; }
+.ins-type { font-size:.63rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gold); }
+.ins-name { font-family:var(--font-display); font-size:1.1rem; font-weight:600; margin:6px 0 12px; color:var(--text-primary); }
+.ins-row { font-size:.8rem; color:var(--text-tertiary); margin-bottom:3px; }
+.ins-row span { color:var(--text-secondary); font-weight:600; }
+
+/* ═══════════════════════════════════════════
+   GAP ANALYSIS CARDS
+   ═══════════════════════════════════════════ */
+.gap-cards { display:grid; grid-template-columns:1fr; gap:18px; }
+.gap-card {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  transition:border-color .3s;
+}
+.gap-card:hover { border-color:var(--border-hover); }
+.gap-header {
+  padding:24px 28px 20px;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+  cursor:pointer; user-select:none;
+}
+.gap-header:hover { background:rgba(255,255,255,.01); }
+.gap-info { flex:1; }
+.gap-icon {
+  width:44px; height:44px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem; flex-shrink:0;
+}
+.gap-title {
+  font-family:var(--font-display);
+  font-size:1.1rem; font-weight:600;
+  color:var(--text-primary);
+  margin-bottom:4px;
+}
+.gap-subtitle { font-size:.82rem; color:var(--text-secondary); }
+.gap-meter { margin-top:14px; }
+.gap-meter-row {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:6px;
+}
+.gap-meter-label { font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text-tertiary); min-width:60px; }
+.gap-meter-track {
+  flex:1; height:8px; background:rgba(255,255,255,.06);
+  border-radius:4px; overflow:hidden; position:relative;
+}
+.gap-meter-fill {
+  height:100%; border-radius:4px;
+  transition: width .8s cubic-bezier(.16,1,.3,1);
+}
+.gap-meter-val { font-size:.82rem; font-weight:600; min-width:90px; text-align:right; }
+.gap-shortfall {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 12px; border-radius:20px;
+  font-size:.76rem; font-weight:600;
+  margin-top:8px;
+}
+.gap-shortfall.danger { background:var(--red-dim); color:var(--red); }
+.gap-shortfall.warning { background:var(--amber-dim); color:var(--amber); }
+.gap-shortfall.good { background:var(--green-dim); color:var(--green); }
+
+.gap-chevron {
+  width:28px; height:28px; border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.04); color:var(--text-tertiary);
+  font-size:.7rem; transition:all .3s; flex-shrink:0; margin-top:4px;
+}
+.gap-card.open .gap-chevron { transform:rotate(180deg); color:var(--gold); background:var(--gold-dim); }
+
+/* Strategy builder inside gap card */
+.gap-body {
+  max-height:0; overflow:hidden;
+  transition: max-height .45s cubic-bezier(.23,1,.32,1);
+}
+.gap-card.open .gap-body { max-height:800px; }
+.gap-body-inner {
+  padding:0 28px 24px;
+  border-top:1px solid var(--border);
+}
+.strat-label {
+  font-size:.72rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--text-tertiary);
+  margin:18px 0 12px;
+}
+.strat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+.strat-btn {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px;
+  background:var(--bg-card-alt);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  font-family:var(--font-body);
+  color:var(--text-secondary);
+  font-size:.82rem;
+  transition:all .25s;
+  text-align:left;
+}
+.strat-btn:hover { border-color:var(--gold); color:var(--gold); background:var(--gold-glow); }
+.strat-btn.active { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+.strat-btn .strat-icon { font-size:1.1rem; }
+.strat-btn .strat-detail { font-size:.7rem; color:var(--text-tertiary); margin-top:1px; }
+.strat-btn.active .strat-detail { color:var(--green); opacity:.7; }
+
+.strat-impact {
+  margin-top:16px; padding:14px 18px;
+  background:var(--bg-card-alt);
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  font-size:.84rem;
+}
+.strat-impact-title {
+  font-size:.68rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--gold); margin-bottom:8px;
+}
+.strat-impact-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:4px 0; color:var(--text-secondary);
+}
+.strat-impact-row .val { font-weight:600; }
+.strat-impact-row .val.pos { color:var(--green); }
+.strat-impact-row .val.neg { color:var(--red); }
+
+.gap-cta {
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:14px; padding:10px 20px;
+  background:linear-gradient(135deg, var(--gold), #a68d4b);
+  color:var(--text-inverse);
+  border:none; border-radius:var(--radius-sm);
+  font-family:var(--font-body);
+  font-size:.82rem; font-weight:600;
+  cursor:pointer; transition:all .25s;
+}
+.gap-cta:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(207,181,116,.25); }
+
+/* Footer */
+.footer {
+  text-align:center; padding:28px 0; margin-top:36px;
+  border-top:1px solid var(--border);
+  color:var(--text-tertiary); font-size:.76rem;
+}
+.footer strong { color:var(--gold); font-weight:600; }
+
+/* Color dot for legend tables */
+.cdot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; vertical-align:middle; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media(max-width:960px) { .kpis{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:700px) {
+  .cols2{grid-template-columns:1fr;}
+  .kpis{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .topbar,.tabs,.main{padding-left:20px;padding-right:20px;}
+  .setup-overlay{padding:24px 16px 60px;}
+  .form-card{padding:22px;}
+  .tab{padding:12px 14px;font-size:.76rem;}
+  .kpi-val{font-size:1.35rem;}
+}
+
+/* ═══════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════ */
+@media print {
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body { background:#0b0e11 !important; color:#f0f2f5 !important; margin:0 !important; padding:0 !important; font-size:11px !important; }
+  body::after { display:none !important; }
+  .setup-overlay { display:none !important; }
+
+  /* CRITICAL: kill all animations so elements are visible */
+  *, *::before, *::after { animation:none !important; opacity:1 !important; transform:none !important; transition:none !important; }
+
+  /* Topbar — compact dark header */
+  .topbar { position:static; background:#0b0e11 !important; backdrop-filter:none; border-bottom:1px solid rgba(255,255,255,.06); padding:6px 14px !important; min-height:0 !important; }
+  .topbar-brand h1 { font-size:.85rem !important; }
+  .topbar-meta { font-size:.6rem !important; }
+  .tabs, .btn-top { display:none !important; }
+
+  /* Show ALL panels in print */
+  .panel { display:block !important; padding:0 !important; margin:0 !important; }
+
+  /* Section headers visible only in print */
+  .print-section-title { display:block !important; font-family:var(--font-display); font-size:.9rem; font-weight:600; color:var(--gold-light); margin:8px 0 4px; padding:3px 0; border-bottom:1px solid rgba(207,181,116,.2); }
+
+  /* Page breaks — only before cashflow (natural split point) */
+  #p-cashflow { page-break-before:always; }
+  /* Prevent cards from splitting across pages */
+  .card, .gap-card, .ins-card { page-break-inside:avoid !important; }
+
+  /* Compact container */
+  .container { max-width:100% !important; padding:2px 10px !important; }
+
+  /* Cards & KPIs */
+  .card { background:#161b22 !important; border:1px solid rgba(255,255,255,.06) !important; padding:6px 10px !important; margin-bottom:4px !important; border-radius:6px !important; }
+  .card-title { font-size:.65rem !important; margin-bottom:3px !important; }
+  .kpis { gap:4px !important; margin-bottom:4px !important; }
+  .kpi { background:#161b22 !important; border:1px solid rgba(255,255,255,.06) !important; padding:6px 8px !important; border-radius:6px !important; }
+  .kpi-val { font-size:.85rem !important; }
+  .kpi-label { font-size:.5rem !important; }
+  .kpi-sub { font-size:.5rem !important; }
+
+  /* Charts — constrained sizes to prevent stretching */
+  .chart-box { height:150px !important; width:150px !important; margin:0 auto !important; }
+  .chart-box.sm { height:70px !important; width:70px !important; margin:0 auto !important; }
+  canvas { max-width:100% !important; max-height:100% !important; }
+
+  /* Cashflow charts — bar chart needs width, donuts need square */
+  #p-cashflow .cols2:first-child .chart-box { height:120px !important; width:100% !important; }
+  #p-cashflow .card:last-child .chart-box { height:120px !important; width:120px !important; }
+
+  /* Overview cols */
+  #p-overview .cols2 { grid-template-columns:1fr 1fr !important; align-items:start !important; }
+
+  /* Grid layouts */
+  .cols2 { gap:6px !important; }
+
+  /* Reduce spacing between panels and within sections */
+  .panel + .panel { margin-top:2px !important; }
+  .card[style*="margin-top"] { margin-top:4px !important; }
+  .main { padding:8px 10px 10px !important; }
+
+  /* Tables */
+  table { font-size:.6rem !important; }
+  th { font-size:.5rem !important; padding:2px 4px !important; }
+  td { padding:2px 4px !important; }
+
+  /* Insurance cards */
+  .ins-grid { gap:4px !important; grid-template-columns:1fr 1fr 1fr !important; }
+  .ins-card { background:#1c2129 !important; padding:5px 8px !important; }
+  .ins-type { font-size:.5rem !important; }
+  .ins-name { font-size:.7rem !important; margin:2px 0 4px !important; }
+  .ins-row { font-size:.55rem !important; padding:1px 0 !important; }
+  .ins-card::before { display:none !important; }
+
+  /* Gap cards — 2-column grid */
+  .gap-cards { gap:4px !important; display:grid !important; grid-template-columns:1fr 1fr !important; }
+  .gap-card { background:#161b22 !important; border:1px solid rgba(255,255,255,.06) !important; }
+  .gap-header { cursor:default; padding:6px 8px 5px !important; gap:8px !important; }
+  .gap-icon { width:24px !important; height:24px !important; font-size:.75rem !important; border-radius:6px !important; }
+  .gap-title { font-size:.7rem !important; }
+  .gap-subtitle { font-size:.55rem !important; }
+  .gap-meter { margin-top:6px !important; }
+  .gap-meter-row { margin-bottom:2px !important; gap:6px !important; }
+  .gap-meter-label { font-size:.5rem !important; min-width:40px !important; }
+  .gap-meter-track { height:4px !important; }
+  .gap-meter-val { font-size:.55rem !important; min-width:50px !important; }
+  .gap-shortfall { font-size:.5rem !important; padding:2px 6px !important; margin-top:3px !important; }
+
+  /* Hide interactive-only elements */
+  .gap-chevron { display:none !important; }
+  .gap-body { display:none !important; }
+  .gap-cta { display:none !important; }
+  .strat-btn, .strat-label, .strat-impact { display:none !important; }
+
+  /* Property */
+  .prop-card { background:#1c2129 !important; padding:5px 8px !important; }
+  .prop-label { font-size:.55rem !important; }
+  .prop-val { font-size:.7rem !important; }
+
+  /* Footer */
+  .footer { padding:4px 0 !important; margin-top:4px !important; font-size:.55rem !important; border-top:1px solid rgba(255,255,255,.06) !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SETUP FORM ═══════ -->
+<div class="setup-overlay" id="setupOverlay">
+<div class="setup-wrap">
+  <div class="setup-masthead">
+    <h1>Financial Dashboard</h1>
+    <p>Enter client data to generate a personalised financial overview</p>
+  </div>
+
+  <div class="form-card">
+    <h3>Client Information</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Client Name</label><input id="clientName" placeholder="e.g. John Tan"></div>
+      <div class="form-group"><label>Age</label><input id="clientAge" type="number" placeholder="e.g. 35"></div>
+      <div class="form-group"><label>Dashboard Date</label><input id="dashDate" type="date"></div>
+      <div class="form-group"><label>Currency</label>
+        <select id="currency"><option value="SGD">SGD ($)</option><option value="USD">USD ($)</option><option value="MYR">MYR (RM)</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Cash &amp; Savings</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Cash / Bank Savings</label><input id="cash" type="number" placeholder="0"></div>
+      <div class="form-group"><label>CPF OA</label><input id="cpfOA" type="number" placeholder="0"></div>
+      <div class="form-group"><label>CPF SA</label><input id="cpfSA" type="number" placeholder="0"></div>
+      <div class="form-group"><label>CPF MA</label><input id="cpfMA" type="number" placeholder="0"></div>
+      <div class="form-group"><label>SRS Balance</label><input id="srs" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Investments</h3>
+    <div id="invList"></div>
+    <button class="btn-add-row" onclick="addInv()">+ Add Investment</button>
+  </div>
+
+  <div class="form-card">
+    <h3>Property</h3>
+    <div id="propList"></div>
+    <button class="btn-add-row" onclick="addProp()">+ Add Property</button>
+  </div>
+
+  <div class="form-card">
+    <h3>Liabilities</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Home Loan</label><input id="homeLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Car Loan</label><input id="carLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Student Loan</label><input id="studentLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Other Loans / Credit</label><input id="otherLoan" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Monthly Income</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Salary</label><input id="salary" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Rental Income</label><input id="rentalIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Dividends / Interest</label><input id="dividendIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Side Income / Freelance</label><input id="sideIncome" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Monthly Expenses</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Housing</label><input id="expHousing" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Food &amp; Dining</label><input id="expFood" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Transport</label><input id="expTransport" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Utilities</label><input id="expUtilities" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Insurance Premiums</label><input id="expInsurance" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Shopping</label><input id="expShopping" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Entertainment</label><input id="expEntertainment" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Education</label><input id="expEducation" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Healthcare</label><input id="expHealthcare" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Family / Allowances</label><input id="expFamily" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Savings / Investments</label><input id="expSavings" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Others</label><input id="expOthers" type="number" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Insurance Policies</h3>
+    <div id="insList"></div>
+    <button class="btn-add-row" onclick="addIns()">+ Add Policy</button>
+  </div>
+
+  <button class="btn-go" onclick="generate()">Generate Dashboard</button>
+</div>
+</div>
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div class="dash hidden" id="dash">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <h1>Financial Dashboard</h1>
+        <div class="divider"></div>
+        <span class="client" id="dClient"></span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-top" onclick="editData()">Edit</button>
+        <button class="btn-top" onclick="exportPDF()">Export PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabStrip">
+    <button class="tab on" data-t="overview">Overview</button>
+    <button class="tab" data-t="investments">Investments</button>
+    <button class="tab" data-t="cashflow">Cashflow</button>
+    <button class="tab" data-t="property">Property</button>
+    <button class="tab" data-t="insurance">Insurance</button>
+    <button class="tab" data-t="gaps" style="color:var(--amber)">Gaps &amp; Advice</button>
+  </div>
+
+  <div class="main">
+    <div class="panel on" id="p-overview">
+      <div class="print-section-title">Overview</div>
+      <div class="kpis" id="kpiGrid"></div>
+      <div class="cols2">
+        <div class="card anim"><div class="card-title"><span class="accent"></span>Net Worth Composition</div><div class="chart-box"><canvas id="cNW"></canvas></div></div>
+        <div class="card anim d1"><div class="card-title"><span class="accent"></span>Balance Sheet</div><table id="tBal"></table></div>
+      </div>
+    </div>
+    <div class="panel" id="p-investments">
+      <div class="print-section-title">Investments</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
+        <div class="cols2"><div><table id="tInv"></table></div><div class="chart-box sm"><canvas id="cInv"></canvas></div></div>
+      </div>
+    </div>
+    <div class="panel" id="p-cashflow">
+      <div class="print-section-title">Cashflow</div>
+      <div class="cols2">
+        <div class="card anim"><div class="card-title"><span class="accent"></span>Monthly Cashflow</div><div class="chart-box"><canvas id="cCF"></canvas></div></div>
+        <div class="card anim d1"><div class="card-title"><span class="accent"></span>Passive Income</div><table id="tPassive"></table><div id="passiveBar" style="margin-top:18px"></div></div>
+      </div>
+      <div class="card anim d2" style="margin-top:18px">
+        <div class="card-title"><span class="accent"></span>Spending Breakdown</div>
+        <div class="cols2"><div class="chart-box"><canvas id="cSpend"></canvas></div><div><table id="tSpend"></table></div></div>
+      </div>
+    </div>
+    <div class="panel" id="p-property">
+      <div class="print-section-title">Property</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Property Portfolio</div><table id="tProp"></table></div>
+    </div>
+    <div class="panel" id="p-insurance">
+      <div class="print-section-title">Insurance Coverage</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Insurance Coverage</div><div class="ins-grid" id="insGrid"></div></div>
+    </div>
+
+    <div class="panel" id="p-gaps">
+      <div class="print-section-title">Gaps &amp; Advice</div>
+      <div class="gap-cards" id="gapCards"></div>
+    </div>
+
+    <div class="footer">
+      Prepared by <strong>Lu Jia Jun &#65288;&#21346;&#23478;&#39567;&#65289;</strong> &middot; Great Eastern Financial Advisers (OCBC Group) &middot; Rep No: LJJ300837068<br>
+      Mobile: 86602521 &middot; LuJiaJun@rep.greateasternfa.sg
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id), v=id=>parseFloat($(id).value)||0;
+let sym='$', charts={};
+const fmt=n=>sym+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const fmts=n=>(n<0?'-':'')+fmt(n);
+
+// ── Tabs ──
+document.addEventListener('click',e=>{
+  if(!e.target.classList.contains('tab'))return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  e.target.classList.add('on');
+  $('p-'+e.target.dataset.t).classList.add('on');
+});
+
+// ── Repeaters ──
+let ic=0,pc=0,sc=0;
+function addInv(){
+  const d=document.createElement('div');d.className='repeater';const i=ic++;
+  d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
+  <div class="form-grid">
+    <div class="form-group"><label>Name</label><input id="iN${i}" placeholder="e.g. STI ETF"></div>
+    <div class="form-group"><label>Type</label><select id="iT${i}"><option>Stocks</option><option>ETF</option><option>Bonds</option><option>Unit Trust</option><option>ILP</option><option>Endowment</option><option>Crypto</option><option>Other</option></select></div>
+    <div class="form-group"><label>Current Value</label><input id="iV${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Cost Basis</label><input id="iC${i}" type="number" placeholder="0"></div>
+  </div>`;
+  $('invList').appendChild(d);
+}
+function addProp(){
+  const d=document.createElement('div');d.className='repeater';const i=pc++;
+  d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
+  <div class="form-grid">
+    <div class="form-group"><label>Property Name</label><input id="pN${i}" placeholder="e.g. HDB 4-Room"></div>
+    <div class="form-group"><label>Type</label><select id="pT${i}"><option>HDB</option><option>Condo</option><option>Landed</option><option>Commercial</option><option>Other</option></select></div>
+    <div class="form-group"><label>Market Value</label><input id="pV${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Loan Outstanding</label><input id="pL${i}" type="number" placeholder="0"></div>
+  </div>`;
+  $('propList').appendChild(d);
+}
+function addIns(){
+  const d=document.createElement('div');d.className='repeater';const i=sc++;
+  d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
+  <div class="form-grid">
+    <div class="form-group"><label>Policy Name</label><input id="sN${i}" placeholder="e.g. GREAT SupremeHealth"></div>
+    <div class="form-group"><label>Type</label><select id="sT${i}"><option>Health / Hospitalisation</option><option>Life / Death</option><option>Critical Illness</option><option>Disability</option><option>Accident</option><option>Endowment</option><option>Whole Life</option><option>Term Life</option><option>Other</option></select></div>
+    <div class="form-group"><label>Sum Assured</label><input id="sC${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Monthly Premium</label><input id="sP${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Insurer</label><input id="sI${i}" placeholder="e.g. Great Eastern"></div>
+    <div class="form-group"><label>Cash Value</label><input id="sV${i}" type="number" placeholder="0"></div>
+  </div>`;
+  $('insList').appendChild(d);
+}
+
+$('dashDate').value=new Date().toISOString().split('T')[0];
+
+function collectData(){
+  const cur=$('currency').value; sym=cur==='MYR'?'RM ':'$';
+  const d={
+    client:$('clientName').value||'Client', age:v('clientAge'), date:$('dashDate').value, cur,
+    cash:v('cash'), cpfOA:v('cpfOA'), cpfSA:v('cpfSA'), cpfMA:v('cpfMA'), srs:v('srs'),
+    homeLoan:v('homeLoan'), carLoan:v('carLoan'), studentLoan:v('studentLoan'), otherLoan:v('otherLoan'),
+    salary:v('salary'), rental:v('rentalIncome'), dividends:v('dividendIncome'), side:v('sideIncome'),
+    exp:{Housing:v('expHousing'),'Food & Dining':v('expFood'),Transport:v('expTransport'),Utilities:v('expUtilities'),Insurance:v('expInsurance'),Shopping:v('expShopping'),Entertainment:v('expEntertainment'),Education:v('expEducation'),Healthcare:v('expHealthcare'),'Family':v('expFamily'),'Savings':v('expSavings'),Others:v('expOthers')},
+    inv:[], prop:[], ins:[]
+  };
+  document.querySelectorAll('#invList .repeater').forEach((el,idx)=>{
+    const n=el.querySelector('[id^="iN"]'),t=el.querySelector('[id^="iT"]'),val=el.querySelector('[id^="iV"]'),c=el.querySelector('[id^="iC"]');
+    if(n)d.inv.push({name:n.value||'Investment '+(idx+1),type:t?.value||'',value:+(val?.value)||0,cost:+(c?.value)||0});
+  });
+  document.querySelectorAll('#propList .repeater').forEach((el,idx)=>{
+    const n=el.querySelector('[id^="pN"]'),t=el.querySelector('[id^="pT"]'),val=el.querySelector('[id^="pV"]'),l=el.querySelector('[id^="pL"]');
+    if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',value:+(val?.value)||0,loan:+(l?.value)||0});
+  });
+  document.querySelectorAll('#insList .repeater').forEach((el,idx)=>{
+    const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]');
+    if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:+(c?.value)||0,premium:+(p?.value)||0,insurer:ins?.value||'',cv:+(cv?.value)||0});
+  });
+  return d;
+}
+
+function destroyCharts(){Object.values(charts).forEach(c=>c.destroy());charts={};}
+
+// Chart.js defaults
+Chart.defaults.color='#5a6170';
+Chart.defaults.borderColor='rgba(255,255,255,.04)';
+Chart.defaults.font.family="'Outfit',sans-serif";
+
+const COLS=['#3ecf8e','#579dff','#b28dff','#f0b429','#f06060','#56d4dd','#f472b6','#818cf8','#fb923c','#84cc16','#e879f9','#6b7280'];
+
+function generate(){
+  const d=collectData(); destroyCharts();
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totPropV=d.prop.reduce((s,p)=>s+p.value,0);
+  const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
+  const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
+  const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
+  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const nw=totAssets-totLiab;
+  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const totExp=Object.values(d.exp).reduce((s,v)=>s+v,0);
+  const surplus=inflow-totExp;
+  const passive=d.rental+d.dividends;
+  const passiveR=inflow>0?passive/inflow*100:0;
+  const savRate=inflow>0?surplus/inflow*100:0;
+
+  $('setupOverlay').classList.add('hidden');
+  $('dash').classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelector('[data-t="overview"]').classList.add('on');
+  $('p-overview').classList.add('on');
+
+  $('dClient').textContent=d.client+(d.age?', '+d.age:'')+(d.date?' \u2022 As of '+d.date:'');
+
+  // KPIs
+  const kpis=[
+    {l:'Net Worth',v:fmts(nw),s:'Total assets '+fmt(totAssets),c:'var(--gold)'},
+    {l:'Monthly Inflow',v:fmt(inflow),s:'Salary + passive',c:'var(--green)'},
+    {l:'Monthly Surplus',v:fmts(surplus),s:'Savings rate '+savRate.toFixed(1)+'%',c:surplus>=0?'var(--cyan)':'var(--red)'},
+    {l:'Passive Income',v:fmt(passive)+'/mo',s:passiveR.toFixed(1)+'% of income',c:'var(--purple)'},
+    {l:'Investments',v:fmt(totInv),s:d.inv.length+' holdings',c:'var(--blue)'},
+    {l:'Liabilities',v:fmt(totLiab),s:'Debt-to-asset '+(totAssets>0?(totLiab/totAssets*100).toFixed(1):0)+'%',c:'var(--red)'},
+  ];
+  $('kpiGrid').innerHTML=kpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // Net Worth Donut
+  const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
+  const nwD=[d.cash,cpf,d.srs,totInv,totPropV,insCV];
+  charts.nw=new Chart($('cNW'),{type:'pie',data:{labels:nwL,datasets:[{data:nwD,backgroundColor:COLS.slice(0,6),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:10}}}}}});
+
+  // Balance Sheet
+  let b=`<thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+    <tr class="tr-section"><td>Assets</td><td></td></tr>
+    <tr><td>Cash & Savings</td><td class="num pos">${fmt(d.cash)}</td></tr>
+    <tr><td>CPF (OA+SA+MA)</td><td class="num pos">${fmt(cpf)}</td></tr>
+    <tr><td>SRS</td><td class="num pos">${fmt(d.srs)}</td></tr>
+    <tr><td>Investments</td><td class="num pos">${fmt(totInv)}</td></tr>
+    <tr><td>Property</td><td class="num pos">${fmt(totPropV)}</td></tr>
+    <tr><td>Insurance Cash Value</td><td class="num pos">${fmt(insCV)}</td></tr>
+    <tr class="tr-total-green"><td>Total Assets</td><td class="num">${fmt(totAssets)}</td></tr>
+    <tr class="tr-section"><td>Liabilities</td><td></td></tr>`;
+  if(d.homeLoan) b+=`<tr><td>Home Loan</td><td class="num neg">\u2212${fmt(d.homeLoan)}</td></tr>`;
+  if(d.carLoan) b+=`<tr><td>Car Loan</td><td class="num neg">\u2212${fmt(d.carLoan)}</td></tr>`;
+  if(d.studentLoan) b+=`<tr><td>Student Loan</td><td class="num neg">\u2212${fmt(d.studentLoan)}</td></tr>`;
+  if(d.otherLoan) b+=`<tr><td>Other Loans</td><td class="num neg">\u2212${fmt(d.otherLoan)}</td></tr>`;
+  if(totPropL) b+=`<tr><td>Property Loans</td><td class="num neg">\u2212${fmt(totPropL)}</td></tr>`;
+  b+=`<tr class="tr-total-red"><td>Total Liabilities</td><td class="num">\u2212${fmt(totLiab)}</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Net Worth</td><td class="num">${fmts(nw)}</td></tr></tbody>`;
+  $('tBal').innerHTML=b;
+
+  // Investments
+  let iv='<thead><tr><th>Name</th><th>Type</th><th style="text-align:right">Value</th><th style="text-align:right">P&L</th></tr></thead><tbody>';
+  d.inv.forEach(x=>{const gl=x.value-x.cost;iv+=`<tr><td style="color:var(--text-primary)">${x.name}</td><td>${x.type}</td><td class="num">${fmt(x.value)}</td><td class="num ${gl>=0?'pos':'neg'}">${gl>=0?'+':'\u2212'}${fmt(Math.abs(gl))}</td></tr>`;});
+  if(!d.inv.length) iv+='<tr><td colspan="4" style="text-align:center;color:var(--text-tertiary);padding:28px">No investments entered</td></tr>';
+  iv+='</tbody>';$('tInv').innerHTML=iv;
+  if(d.inv.length){
+    charts.inv=new Chart($('cInv'),{type:'doughnut',data:{labels:d.inv.map(i=>i.name),datasets:[{data:d.inv.map(i=>i.value),backgroundColor:COLS.slice(0,d.inv.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:11}}}}}});
+  }
+
+  // Cashflow
+  charts.cf=new Chart($('cCF'),{type:'bar',data:{labels:['Salary','Rental','Dividends','Side Income','Expenses'],datasets:[{data:[d.salary,d.rental,d.dividends,d.side,-totExp],backgroundColor:[COLS[0],COLS[5],COLS[2],COLS[1],COLS[4]],borderRadius:8,borderSkipped:false,barThickness:32}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{callback:v=>fmts(v)}},x:{grid:{display:false}}}}});
+
+  // Passive
+  $('tPassive').innerHTML=`<thead><tr><th>Source</th><th style="text-align:right">Monthly</th><th style="text-align:right">Annual</th></tr></thead><tbody>
+    <tr><td>Rental</td><td class="num">${fmt(d.rental)}</td><td class="num">${fmt(d.rental*12)}</td></tr>
+    <tr><td>Dividends</td><td class="num">${fmt(d.dividends)}</td><td class="num">${fmt(d.dividends*12)}</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(passive)}</td><td class="num" style="color:var(--gold-light)">${fmt(passive*12)}</td></tr></tbody>`;
+  $('passiveBar').innerHTML=`<div class="prog"><span class="prog-label">Passive ratio</span><div class="prog-track"><div class="prog-fill" style="width:${Math.min(passiveR,100)}%"></div></div><span class="prog-val">${passiveR.toFixed(1)}%</span></div>`;
+
+  // Spending
+  const sL=Object.keys(d.exp).filter(k=>d.exp[k]>0), sD=sL.map(k=>d.exp[k]);
+  if(sL.length){
+    charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+    let st='<thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr></thead><tbody>';
+    sL.forEach((l,i)=>{st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${fmt(sD[i])}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;});
+    st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExp)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
+    $('tSpend').innerHTML=st;
+  }
+
+  // Property
+  let pr='<thead><tr><th>Property</th><th>Type</th><th style="text-align:right">Value</th><th style="text-align:right">Loan</th><th style="text-align:right">Equity</th></tr></thead><tbody>';
+  d.prop.forEach(p=>{const eq=p.value-p.loan;pr+=`<tr><td style="color:var(--text-primary)">${p.name}</td><td>${p.type}</td><td class="num">${fmt(p.value)}</td><td class="num neg">\u2212${fmt(p.loan)}</td><td class="num pos">${fmt(eq)}</td></tr>`;});
+  if(d.prop.length>1){const te=totPropV-totPropL;pr+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td></td><td class="num" style="color:var(--gold-light)">${fmt(totPropV)}</td><td class="num" style="color:var(--red)">\u2212${fmt(totPropL)}</td><td class="num" style="color:var(--green)">${fmt(te)}</td></tr>`;}
+  if(!d.prop.length) pr+='<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:28px">No properties entered</td></tr>';
+  pr+='</tbody>';$('tProp').innerHTML=pr;
+
+  // Insurance
+  let ih='';
+  d.ins.forEach((p,i)=>{ih+=`<div class="ins-card anim d${Math.min(i+1,6)}"><div class="ins-type">${p.type}</div><div class="ins-name">${p.name}</div><div class="ins-row">Insurer: <span>${p.insurer||'\u2014'}</span></div><div class="ins-row">Coverage: <span>${fmt(p.cover)}</span></div><div class="ins-row">Premium: <span>${fmt(p.premium)}/mo</span></div>${p.cv?`<div class="ins-row">Cash Value: <span>${fmt(p.cv)}</span></div>`:''}
+  </div>`;});
+  if(!d.ins.length) ih='<p style="color:var(--text-tertiary);text-align:center;padding:28px">No insurance policies entered</p>';
+  $('insGrid').innerHTML=ih;
+
+  // Gap Analysis
+  gapState = { active: gapState.active || {}, open: gapState.open || null, lastData: d };
+  buildGaps(d);
+}
+
+// ═══════════════════════════════════════════
+// GAP ANALYSIS ENGINE
+// ═══════════════════════════════════════════
+let gapState = {};
+
+function buildGaps(d) {
+  const inflow = d.salary + d.rental + d.dividends + d.side;
+  const totExp = Object.values(d.exp).reduce((s,v) => s+v, 0);
+  const passive = d.rental + d.dividends;
+  const annualIncome = d.salary * 12;
+  const totInv = d.inv.reduce((s,i) => s+i.value, 0);
+
+  // Insurance coverage by type
+  const lifeCover = d.ins.filter(p => /life|death|whole|term/i.test(p.type)).reduce((s,p) => s+p.cover, 0);
+  const ciCover = d.ins.filter(p => /critical/i.test(p.type)).reduce((s,p) => s+p.cover, 0);
+  const worryFreeExp = totExp * 12 * 4; // 4 years of expenses as CI benchmark
+
+  // Targets
+  const passiveTarget = totExp; // passive = expenses = financial freedom
+  const lifeTarget = Math.max(annualIncome * 9, 500000); // 9x annual income
+  const ciTarget = Math.max(worryFreeExp, 200000); // 4 years expenses or 200k
+  const retireAge = 65;
+  const yearsToRetire = Math.max(retireAge - (d.age || 35), 1);
+  const retireFund = totExp * 12 * 20; // 20 years of expenses in retirement
+  const projectedInv = totInv * Math.pow(1.05, yearsToRetire); // 5% annual growth
+  const monthlySavings = (d.exp.Savings || 0);
+  const futureSavings = monthlySavings * 12 * ((Math.pow(1.05, yearsToRetire) - 1) / 0.05);
+  const projectedTotal = projectedInv + futureSavings;
+
+  gapState.lastData = d;
+  if (!gapState.active) gapState.active = {};
+
+  const strategies = {
+    passive: [
+      { id:'reit', name:'REITs / Dividend ETFs', icon:'&#128200;', detail:'Quarterly distributions', income: 500 },
+      { id:'rental', name:'Rental Property', icon:'&#127968;', detail:'Monthly rental yield', income: 2000 },
+      { id:'endow', name:'Endowment Plan', icon:'&#128176;', detail:'Guaranteed payouts at maturity', income: 350 },
+      { id:'bond', name:'Bond Portfolio', icon:'&#128196;', detail:'Regular coupon payments', income: 250 },
+      { id:'annuity', name:'Retirement Annuity', icon:'&#128179;', detail:'Lifetime income from retirement', income: 800 },
+    ],
+    life: [
+      { id:'term25', name:'Term Life (25yr)', icon:'&#128737;', detail:'High cover, low cost', cover: 500000, premium: 50 },
+      { id:'term30', name:'Term Life (30yr)', icon:'&#128737;', detail:'Extended protection', cover: 500000, premium: 65 },
+      { id:'whole', name:'Whole Life Plan', icon:'&#127775;', detail:'Lifetime cover + cash value', cover: 200000, premium: 180 },
+      { id:'decr', name:'Decreasing Term', icon:'&#127968;', detail:'Mortgage protection', cover: 300000, premium: 35 },
+    ],
+    ci: [
+      { id:'earlyci', name:'Early CI Coverage', icon:'&#129657;', detail:'Covers early-stage CI', cover: 100000, premium: 70 },
+      { id:'multici', name:'Multi-pay CI Plan', icon:'&#128153;', detail:'Multiple claims allowed', cover: 200000, premium: 130 },
+      { id:'ciacc', name:'CI + Accident Rider', icon:'&#9889;', detail:'Combined CI & accident', cover: 150000, premium: 90 },
+    ],
+    invest: [
+      { id:'etf', name:'Global Equity ETF', icon:'&#127758;', detail:'Broad market exposure', growth: 0.02 },
+      { id:'rsp', name:'Regular Savings Plan', icon:'&#128197;', detail:'Dollar-cost averaging', monthly: 500 },
+      { id:'srs', name:'SRS Top-up', icon:'&#127981;', detail:'Tax relief + investment growth', monthly: 300 },
+      { id:'ilp', name:'Investment-Linked Plan', icon:'&#128202;', detail:'Protection + investment', monthly: 400 },
+      { id:'roboadv', name:'Robo-Advisor', icon:'&#129302;', detail:'Automated portfolio management', monthly: 500 },
+    ]
+  };
+
+  function pct(current, target) { return target > 0 ? Math.min(current / target * 100, 100) : 100; }
+  function shortfallClass(current, target) { const r = current/target; return r >= 1 ? 'good' : r >= 0.5 ? 'warning' : 'danger'; }
+  function shortfallLabel(current, target) {
+    if (current >= target) return '<span style="font-size:.9em">&#10003;</span> On track';
+    return '<span style="font-size:.9em">&#9888;</span> Shortfall: ' + fmt(target - current) + '/mo';
+  }
+
+  const gaps = [
+    {
+      key: 'passive',
+      title: 'Passive Income Gap',
+      subtitle: `Target: cover monthly expenses of ${fmt(totExp)} with passive income`,
+      icon: '&#128179;', iconBg: 'var(--purple-dim)', iconColor: 'var(--purple)',
+      current: passive, target: passiveTarget,
+      currentLabel: 'Current', targetLabel: 'Target',
+      barColor: 'var(--purple)',
+      shortfallType: shortfallClass(passive, passiveTarget),
+      shortfallText: passive >= passiveTarget
+        ? '<span style="font-size:.9em">&#10003;</span> Financially free'
+        : '<span style="font-size:.9em">&#9888;</span> Gap: ' + fmt(passiveTarget - passive) + '/mo',
+      strategies: strategies.passive,
+      impactCalc: (active) => {
+        const added = strategies.passive.filter(s => active[s.id]).reduce((s,x) => s+x.income, 0);
+        return { newVal: passive + added, items: [
+          { label: 'Current passive', val: fmt(passive), cls: '' },
+          { label: 'From strategies', val: '+' + fmt(added), cls: 'pos' },
+          { label: 'New passive income', val: fmt(passive + added) + '/mo', cls: passive+added >= passiveTarget ? 'pos' : '' },
+          { label: 'Remaining gap', val: passive+added >= passiveTarget ? 'None' : fmt(passiveTarget - passive - added) + '/mo', cls: passive+added >= passiveTarget ? 'pos' : 'neg' },
+        ]};
+      }
+    },
+    {
+      key: 'life',
+      title: 'Life Insurance Gap',
+      subtitle: `Benchmark: 9x annual income (${fmt(lifeTarget)})`,
+      icon: '&#128737;', iconBg: 'var(--blue-dim)', iconColor: 'var(--blue)',
+      current: lifeCover, target: lifeTarget,
+      currentLabel: 'Covered', targetLabel: 'Recommended',
+      barColor: 'var(--blue)',
+      fmtOverride: true,
+      shortfallType: shortfallClass(lifeCover, lifeTarget),
+      shortfallText: lifeCover >= lifeTarget
+        ? '<span style="font-size:.9em">&#10003;</span> Adequately covered'
+        : '<span style="font-size:.9em">&#9888;</span> Shortfall: ' + fmt(lifeTarget - lifeCover),
+      strategies: strategies.life,
+      impactCalc: (active) => {
+        const added = strategies.life.filter(s => active[s.id]).reduce((s,x) => s+x.cover, 0);
+        const addedPrem = strategies.life.filter(s => active[s.id]).reduce((s,x) => s+x.premium, 0);
+        return { newVal: lifeCover + added, items: [
+          { label: 'Current coverage', val: fmt(lifeCover), cls: '' },
+          { label: 'Added coverage', val: '+' + fmt(added), cls: 'pos' },
+          { label: 'New total', val: fmt(lifeCover + added), cls: lifeCover+added >= lifeTarget ? 'pos' : '' },
+          { label: 'Additional premium', val: '+' + fmt(addedPrem) + '/mo', cls: '' },
+          { label: 'Remaining gap', val: lifeCover+added >= lifeTarget ? 'None' : fmt(lifeTarget - lifeCover - added), cls: lifeCover+added >= lifeTarget ? 'pos' : 'neg' },
+        ]};
+      }
+    },
+    {
+      key: 'ci',
+      title: 'Critical Illness Gap',
+      subtitle: `Benchmark: 4 years of expenses (${fmt(ciTarget)})`,
+      icon: '&#129657;', iconBg: 'var(--cyan-dim)', iconColor: 'var(--cyan)',
+      current: ciCover, target: ciTarget,
+      currentLabel: 'Covered', targetLabel: 'Recommended',
+      barColor: 'var(--cyan)',
+      fmtOverride: true,
+      shortfallType: shortfallClass(ciCover, ciTarget),
+      shortfallText: ciCover >= ciTarget
+        ? '<span style="font-size:.9em">&#10003;</span> Adequately covered'
+        : '<span style="font-size:.9em">&#9888;</span> Shortfall: ' + fmt(ciTarget - ciCover),
+      strategies: strategies.ci,
+      impactCalc: (active) => {
+        const added = strategies.ci.filter(s => active[s.id]).reduce((s,x) => s+x.cover, 0);
+        const addedPrem = strategies.ci.filter(s => active[s.id]).reduce((s,x) => s+x.premium, 0);
+        return { newVal: ciCover + added, items: [
+          { label: 'Current coverage', val: fmt(ciCover), cls: '' },
+          { label: 'Added coverage', val: '+' + fmt(added), cls: 'pos' },
+          { label: 'New total', val: fmt(ciCover + added), cls: ciCover+added >= ciTarget ? 'pos' : '' },
+          { label: 'Additional premium', val: '+' + fmt(addedPrem) + '/mo', cls: '' },
+          { label: 'Remaining gap', val: ciCover+added >= ciTarget ? 'None' : fmt(ciTarget - ciCover - added), cls: ciCover+added >= ciTarget ? 'pos' : 'neg' },
+        ]};
+      }
+    },
+    {
+      key: 'invest',
+      title: 'Retirement Readiness',
+      subtitle: `Target: ${fmt(retireFund)} by age 65 (20yrs expenses). Projected: ${fmt(Math.round(projectedTotal))}`,
+      icon: '&#127793;', iconBg: 'var(--green-dim)', iconColor: 'var(--green)',
+      current: Math.round(projectedTotal), target: retireFund,
+      currentLabel: 'Projected', targetLabel: 'Target',
+      barColor: 'var(--green)',
+      fmtOverride: true,
+      shortfallType: shortfallClass(projectedTotal, retireFund),
+      shortfallText: projectedTotal >= retireFund
+        ? '<span style="font-size:.9em">&#10003;</span> On track for retirement'
+        : '<span style="font-size:.9em">&#9888;</span> Shortfall: ' + fmt(Math.round(retireFund - projectedTotal)),
+      strategies: strategies.invest,
+      impactCalc: (active) => {
+        let extraGrowth = 0;
+        let extraMonthly = 0;
+        strategies.invest.forEach(s => {
+          if (!active[s.id]) return;
+          if (s.growth) extraGrowth += s.growth;
+          if (s.monthly) extraMonthly += s.monthly;
+        });
+        const newRate = 0.05 + extraGrowth;
+        const newProj = totInv * Math.pow(1 + newRate, yearsToRetire);
+        const newSav = (monthlySavings + extraMonthly) * 12 * ((Math.pow(1 + newRate, yearsToRetire) - 1) / newRate);
+        const newTotal = Math.round(newProj + newSav);
+        return { newVal: newTotal, items: [
+          { label: 'Current projected', val: fmt(Math.round(projectedTotal)), cls: '' },
+          { label: 'With strategies', val: fmt(newTotal), cls: newTotal >= retireFund ? 'pos' : '' },
+          { label: 'Extra monthly commitment', val: '+' + fmt(extraMonthly) + '/mo', cls: '' },
+          { label: 'Remaining gap', val: newTotal >= retireFund ? 'None' : fmt(Math.round(retireFund - newTotal)), cls: newTotal >= retireFund ? 'pos' : 'neg' },
+        ]};
+      }
+    }
+  ];
+
+  // Render
+  let html = '';
+  gaps.forEach(g => {
+    const p = pct(g.current, g.target);
+    const activeStrats = gapState.active[g.key] || {};
+    const impact = g.impactCalc(activeStrats);
+    const hasActive = Object.values(activeStrats).some(v => v);
+    const newPct = hasActive ? pct(impact.newVal, g.target) : p;
+
+    html += `<div class="gap-card${gapState.open === g.key ? ' open' : ''}" data-gap="${g.key}">
+      <div class="gap-header" onclick="toggleGap('${g.key}')">
+        <div class="gap-icon" style="background:${g.iconBg};color:${g.iconColor}">${g.icon}</div>
+        <div class="gap-info">
+          <div class="gap-title">${g.title}</div>
+          <div class="gap-subtitle">${g.subtitle}</div>
+          <div class="gap-meter">
+            <div class="gap-meter-row">
+              <span class="gap-meter-label">${g.currentLabel}</span>
+              <div class="gap-meter-track">
+                <div class="gap-meter-fill" style="width:${newPct}%;background:${hasActive ? 'var(--green)' : g.barColor}"></div>
+              </div>
+              <span class="gap-meter-val" style="color:${hasActive ? 'var(--green)' : g.barColor}">${g.fmtOverride ? fmt(hasActive ? impact.newVal : g.current) : fmt(hasActive ? impact.newVal : g.current) + '/mo'}</span>
+            </div>
+          </div>
+          <div class="gap-shortfall ${hasActive && impact.newVal >= g.target ? 'good' : g.shortfallType}">
+            ${hasActive && impact.newVal >= g.target ? '<span style="font-size:.9em">&#10003;</span> Gap closed with strategies' : g.shortfallText}
+          </div>
+        </div>
+        <div class="gap-chevron">&#9660;</div>
+      </div>
+      <div class="gap-body"><div class="gap-body-inner">
+        <div class="strat-label">Add strategies to close the gap</div>
+        <div class="strat-grid">
+          ${g.strategies.map(s => `
+            <button class="strat-btn${activeStrats[s.id] ? ' active' : ''}" onclick="toggleStrat('${g.key}','${s.id}')">
+              <span class="strat-icon">${s.icon}</span>
+              <div><div>${s.name}</div><div class="strat-detail">${s.detail}</div></div>
+            </button>
+          `).join('')}
+        </div>
+        ${hasActive ? `<div class="strat-impact">
+          <div class="strat-impact-title">Impact Analysis</div>
+          ${impact.items.map(r => `<div class="strat-impact-row"><span>${r.label}</span><span class="val ${r.cls}">${r.val}</span></div>`).join('')}
+        </div>
+        <button class="gap-cta" onclick="alert('Schedule a review session to discuss this plan.')">&#128172; Discuss This Plan</button>` : ''}
+      </div></div>
+    </div>`;
+  });
+  $('gapCards').innerHTML = html;
+}
+
+function toggleGap(key) {
+  gapState.open = gapState.open === key ? null : key;
+  // Re-render to toggle open state
+  document.querySelectorAll('.gap-card').forEach(c => {
+    c.classList.toggle('open', c.dataset.gap === gapState.open);
+  });
+}
+
+function toggleStrat(gapKey, stratId) {
+  if (!gapState.active[gapKey]) gapState.active[gapKey] = {};
+  gapState.active[gapKey][stratId] = !gapState.active[gapKey][stratId];
+  // Re-render gaps with current data
+  buildGaps(gapState.lastData);
+  // Keep the card open
+  gapState.open = gapKey;
+  document.querySelectorAll('.gap-card').forEach(c => {
+    c.classList.toggle('open', c.dataset.gap === gapState.open);
+  });
+}
+
+function editData(){$('setupOverlay').classList.remove('hidden');$('dash').classList.add('hidden');}
+
+function exportPDF(){
+  // Show all panels so charts can render at proper size
+  const panels = document.querySelectorAll('.panel');
+  const activePanel = document.querySelector('.panel.on');
+  panels.forEach(p => p.classList.add('on'));
+
+  // Force Chart.js to resize all canvases while visible
+  Object.values(charts).forEach(c => { if(c && c.resize) c.resize(); });
+
+  // Small delay to let charts render, then print
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print();
+      // Restore: hide all panels, show only the one that was active
+      panels.forEach(p => p.classList.remove('on'));
+      if(activePanel) activePanel.classList.add('on');
+    });
+  });
+}
+</script>
+</body>
+</html>
