@@ -598,8 +598,10 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
   /* Section headers visible only in print */
   .print-section-title { display:block !important; font-family:var(--font-display); font-size:.9rem; font-weight:600; color:var(--gold-light); margin:8px 0 4px; padding:3px 0; border-bottom:1px solid rgba(207,181,116,.2); }
 
-  /* Page breaks — only before cashflow (natural split point); let everything else flow */
+  /* Page breaks — only before cashflow; force everything else to flow continuously */
   #p-cashflow { page-break-before:always; }
+  #p-overview, #p-investments, #p-property, #p-insurance, #p-gaps { page-break-before:auto !important; }
+  .panel, .card, .gap-cards, .ins-grid { overflow:visible !important; }
 
   /* Compact container */
   .container { max-width:100% !important; padding:2px 10px !important; }
@@ -613,15 +615,15 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
   .kpi-label { font-size:.5rem !important; }
   .kpi-sub { font-size:.5rem !important; }
 
-  /* Charts — perfect circles for pie/donut, fixed aspect ratio */
-  .chart-box { height:140px !important; width:140px !important; margin:0 auto !important; aspect-ratio:1/1 !important; }
-  .chart-box.sm { height:65px !important; width:65px !important; margin:0 auto !important; aspect-ratio:1/1 !important; }
-  canvas { max-width:100% !important; max-height:100% !important; display:block !important; }
+  /* Charts — let Chart.js maintainAspectRatio handle circles; just constrain max size */
+  .chart-box { max-height:140px !important; max-width:140px !important; margin:0 auto !important; overflow:visible !important; }
+  .chart-box.sm { max-height:70px !important; max-width:70px !important; margin:0 auto !important; overflow:visible !important; }
+  canvas { display:block !important; }
 
   /* Cashflow bar chart — needs full width, not square */
-  #p-cashflow .cols2:first-child .chart-box { height:110px !important; width:100% !important; aspect-ratio:auto !important; }
-  /* Cashflow spending donut — square */
-  #p-cashflow .card:last-child .chart-box { height:110px !important; width:110px !important; aspect-ratio:1/1 !important; }
+  #p-cashflow .cols2:first-child .chart-box { max-height:110px !important; max-width:100% !important; }
+  /* Cashflow spending donut */
+  #p-cashflow .card:last-child .chart-box { max-height:110px !important; max-width:110px !important; }
 
   /* Overview cols */
   #p-overview .cols2 { grid-template-columns:1fr 1fr !important; align-items:start !important; }
@@ -974,7 +976,7 @@ function generate(){
   // Net Worth Donut
   const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
   const nwD=[d.cash,cpf,d.srs,totInv,totPropV,insCV];
-  charts.nw=new Chart($('cNW'),{type:'pie',data:{labels:nwL,datasets:[{data:nwD,backgroundColor:COLS.slice(0,6),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:10}}}}}});
+  charts.nw=new Chart($('cNW'),{type:'pie',data:{labels:nwL,datasets:[{data:nwD,backgroundColor:COLS.slice(0,6),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:10}}}}}});
 
   // Balance Sheet
   let b=`<thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead><tbody>
@@ -1002,7 +1004,7 @@ function generate(){
   if(!d.inv.length) iv+='<tr><td colspan="4" style="text-align:center;color:var(--text-tertiary);padding:28px">No investments entered</td></tr>';
   iv+='</tbody>';$('tInv').innerHTML=iv;
   if(d.inv.length){
-    charts.inv=new Chart($('cInv'),{type:'doughnut',data:{labels:d.inv.map(i=>i.name),datasets:[{data:d.inv.map(i=>i.value),backgroundColor:COLS.slice(0,d.inv.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:11}}}}}});
+    charts.inv=new Chart($('cInv'),{type:'doughnut',data:{labels:d.inv.map(i=>i.name),datasets:[{data:d.inv.map(i=>i.value),backgroundColor:COLS.slice(0,d.inv.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:11}}}}}});
   }
 
   // Cashflow
@@ -1018,7 +1020,7 @@ function generate(){
   // Spending
   const sL=Object.keys(d.exp).filter(k=>d.exp[k]>0), sD=sL.map(k=>d.exp[k]);
   if(sL.length){
-    charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+    charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{display:false}}}});
     let st='<thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr></thead><tbody>';
     sL.forEach((l,i)=>{st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${fmt(sD[i])}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;});
     st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExp)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
