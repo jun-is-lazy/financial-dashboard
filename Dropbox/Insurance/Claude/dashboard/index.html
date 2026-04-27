@@ -548,6 +548,101 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
 }
 .gap-cta:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(207,181,116,.25); }
 
+/* ═══════════════════════════════════════════
+   HEALTH SCORE
+   ═══════════════════════════════════════════ */
+.health-card {
+  display:flex; align-items:center; gap:24px;
+  padding:22px 26px; margin-bottom:18px;
+  background:linear-gradient(135deg, rgba(207,181,116,.08), rgba(62,207,142,.04));
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+}
+.health-ring { position:relative; width:110px; height:110px; flex-shrink:0; }
+.health-ring svg { transform:rotate(-90deg); width:100%; height:100%; }
+.health-ring circle { fill:none; stroke-width:10; }
+.health-ring .bg { stroke:rgba(255,255,255,.06); }
+.health-ring .fg { stroke:var(--gold); stroke-linecap:round; transition:stroke-dasharray .8s cubic-bezier(.16,1,.3,1); }
+.health-num {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:2rem; font-weight:600; color:var(--text-primary);
+}
+.health-num small { font-size:.6rem; font-weight:400; color:var(--text-tertiary); letter-spacing:.1em; text-transform:uppercase; }
+.health-info { flex:1; }
+.health-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.15em; color:var(--text-tertiary); margin-bottom:6px; }
+.health-status { font-family:var(--font-display); font-size:1.4rem; font-weight:600; margin-bottom:4px; }
+.health-status.green { color:var(--green); }
+.health-status.amber { color:var(--amber); }
+.health-status.red { color:var(--red); }
+.health-detail { font-size:.85rem; color:var(--text-secondary); }
+
+/* ═══════════════════════════════════════════
+   GUIDANCE SIDEBAR (Advisor View)
+   ═══════════════════════════════════════════ */
+.guidance {
+  position:fixed; top:0; right:0; bottom:0; width:340px; z-index:200;
+  background:var(--bg-raised); border-left:1px solid var(--border);
+  padding:24px 22px 28px;
+  overflow-y:auto;
+  transform:translateX(100%); transition:transform .35s cubic-bezier(.23,1,.32,1);
+  box-shadow:-12px 0 40px rgba(0,0,0,.3);
+}
+body.advisor .guidance { transform:translateX(0); }
+body.advisor .dash > .topbar,
+body.advisor .dash > .tabs,
+body.advisor .dash > .main { margin-right:340px; }
+.guidance-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.guidance-eyebrow { font-size:.7rem; font-weight:600; letter-spacing:.15em; text-transform:uppercase; color:var(--gold); }
+.guidance-close { background:none; border:none; color:var(--text-tertiary); font-size:1.4rem; cursor:pointer; line-height:1; }
+.guidance-close:hover { color:var(--text-primary); }
+.guidance-section { margin-bottom:22px; }
+.guidance-section-title { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gold); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.guidance-section-title::before { content:''; width:14px; height:1px; background:var(--gold); }
+.guidance-section ul { list-style:none; padding:0; margin:0; }
+.guidance-section li { padding:6px 0 6px 14px; position:relative; font-size:.85rem; color:var(--text-secondary); line-height:1.5; }
+.guidance-section li::before { content:'\2022'; position:absolute; left:0; color:var(--gold); }
+.guidance-section .say { background:var(--bg-card); padding:12px 14px; border-radius:var(--radius-sm); font-size:.85rem; color:var(--text-primary); font-style:italic; line-height:1.5; border-left:2px solid var(--gold); }
+
+/* ═══════════════════════════════════════════
+   SCENARIO ENGINE
+   ═══════════════════════════════════════════ */
+.scenario-btns { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.scen-btn {
+  background:var(--bg-card-alt); border:1px solid var(--border);
+  border-radius:var(--radius-md); padding:18px 16px;
+  display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+  cursor:pointer; transition:all .25s; color:var(--text-primary);
+  font-family:var(--font-body); text-align:left;
+}
+.scen-btn:hover { border-color:var(--gold); transform:translateY(-2px); box-shadow:0 8px 24px rgba(207,181,116,.12); }
+.scen-btn.active { border-color:var(--gold); background:var(--gold-dim); }
+.scen-icon { font-size:1.6rem; }
+.scen-name { font-weight:600; font-size:.95rem; }
+.scen-desc { font-size:.78rem; color:var(--text-secondary); }
+.scen-result { padding:18px 4px; }
+.scen-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:.9rem; }
+.scen-row:last-child { border-bottom:none; }
+.scen-row .lab { color:var(--text-secondary); }
+.scen-row .val { font-weight:600; color:var(--text-primary); }
+.scen-row .val.pos { color:var(--green); }
+.scen-row .val.neg { color:var(--red); }
+.scen-status { padding:14px 18px; margin-top:14px; border-radius:var(--radius-sm); font-size:.9rem; font-weight:600; }
+.scen-status.green { background:var(--green-dim); color:var(--green); }
+.scen-status.amber { background:var(--amber-dim); color:var(--amber); }
+.scen-status.red { background:var(--red-dim); color:var(--red); }
+
+/* ═══════════════════════════════════════════
+   REPORT
+   ═══════════════════════════════════════════ */
+.report-section { margin-bottom:30px; padding-bottom:22px; border-bottom:1px solid var(--border); }
+.report-section:last-child { border-bottom:none; }
+.report-h { font-family:var(--font-display); font-size:1.4rem; font-weight:600; color:var(--gold); margin-bottom:14px; }
+.report-row { display:flex; justify-content:space-between; padding:6px 0; font-size:.92rem; }
+.report-row .lab { color:var(--text-secondary); }
+.report-row .val { font-weight:600; color:var(--text-primary); }
+.report-rec { background:var(--bg-card-alt); padding:14px 18px; border-radius:var(--radius-sm); margin-top:10px; border-left:3px solid var(--gold); font-size:.9rem; line-height:1.6; }
+
 /* Footer */
 .footer {
   text-align:center; padding:28px 0; margin-top:36px;
@@ -696,7 +791,18 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
     <h3>Client Information</h3>
     <div class="form-grid">
       <div class="form-group"><label>Client Name</label><input id="clientName" placeholder="e.g. John Tan"></div>
-      <div class="form-group"><label>Age</label><input id="clientAge" type="number" placeholder="e.g. 35"></div>
+      <div class="form-group"><label>Date of Birth</label><input id="clientDOB" type="date" onchange="calcAge()"></div>
+      <div class="form-group"><label>Age</label><input id="clientAge" type="number" placeholder="auto from DOB"></div>
+      <div class="form-group"><label>Marital Status</label>
+        <select id="maritalStatus"><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select>
+      </div>
+      <div class="form-group"><label>Dependants</label><input id="dependants" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Smoker</label>
+        <select id="smoker"><option value="No">No</option><option value="Yes">Yes</option></select>
+      </div>
+      <div class="form-group"><label>Occupation</label><input id="occupation" placeholder="e.g. Engineer"></div>
+      <div class="form-group"><label>Retirement Age</label><input id="retireAge" type="number" placeholder="65" value="65"></div>
+      <div class="form-group"><label>Desired Retirement Income / mo</label><input id="retireIncome" type="number" placeholder="0"></div>
       <div class="form-group"><label>Dashboard Date</label><input id="dashDate" type="date"></div>
       <div class="form-group"><label>Currency</label>
         <select id="currency"><option value="SGD">SGD ($)</option><option value="USD">USD ($)</option><option value="MYR">MYR (RM)</option></select>
@@ -777,6 +883,13 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
 
 <!-- ═══════ DASHBOARD ═══════ -->
 <div class="dash hidden" id="dash">
+<aside class="guidance" id="guidance">
+  <div class="guidance-head">
+    <span class="guidance-eyebrow">Advisor Guidance</span>
+    <button class="guidance-close" onclick="toggleView()">&times;</button>
+  </div>
+  <div id="guidanceBody"></div>
+</aside>
   <div class="topbar">
     <div class="topbar-inner">
       <div class="topbar-brand">
@@ -785,6 +898,7 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
         <span class="client" id="dClient"></span>
       </div>
       <div class="topbar-actions">
+        <button class="btn-top" id="viewToggle" onclick="toggleView()">Advisor View</button>
         <button class="btn-top" onclick="editData()">Edit</button>
         <button class="btn-top" onclick="exportPDF()">Export PDF</button>
       </div>
@@ -797,7 +911,10 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
     <button class="tab" data-t="cashflow">Cashflow</button>
     <button class="tab" data-t="property">Property</button>
     <button class="tab" data-t="insurance">Insurance</button>
+    <button class="tab" data-t="retirement">Retirement</button>
+    <button class="tab" data-t="scenarios" style="color:var(--cyan)">Scenarios</button>
     <button class="tab" data-t="gaps" style="color:var(--amber)">Gaps &amp; Advice</button>
+    <button class="tab" data-t="report">Report</button>
   </div>
 
   <div class="main">
@@ -835,9 +952,36 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
       <div class="card anim"><div class="card-title"><span class="accent"></span>Insurance Coverage</div><div class="ins-grid" id="insGrid"></div></div>
     </div>
 
+    <div class="panel" id="p-retirement">
+      <div class="print-section-title">Retirement Planning</div>
+      <div class="kpis" id="retireKpis"></div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Retirement Projection</div>
+        <div class="chart-box"><canvas id="cRetire"></canvas></div>
+      </div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Retirement Summary</div>
+        <table id="tRetire"></table>
+      </div>
+    </div>
+
+    <div class="panel" id="p-scenarios">
+      <div class="print-section-title">Scenario Engine</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>What-if Simulations</div>
+        <div class="scenario-btns" id="scenarioBtns"></div>
+      </div>
+      <div class="card anim d1" style="margin-top:14px" id="scenarioResult" hidden>
+        <div class="card-title"><span class="accent"></span>Scenario Impact</div>
+        <div id="scenarioBody"></div>
+      </div>
+    </div>
+
     <div class="panel" id="p-gaps">
       <div class="print-section-title">Gaps &amp; Advice</div>
       <div class="gap-cards" id="gapCards"></div>
+    </div>
+
+    <div class="panel" id="p-report">
+      <div class="print-section-title">Client Report</div>
+      <div class="card anim"><div id="reportBody"></div></div>
     </div>
 
     <div class="footer">
@@ -860,6 +1004,7 @@ document.addEventListener('click',e=>{
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   e.target.classList.add('on');
   $('p-'+e.target.dataset.t).classList.add('on');
+  if(typeof updateGuidance==='function') updateGuidance();
 });
 
 // ── Repeaters ──
@@ -902,10 +1047,23 @@ function addIns(){
 
 $('dashDate').value=new Date().toISOString().split('T')[0];
 
+function calcAge(){
+  const dob=$('clientDOB').value; if(!dob) return;
+  const t=new Date(), b=new Date(dob);
+  let a=t.getFullYear()-b.getFullYear();
+  if(t<new Date(t.getFullYear(),b.getMonth(),b.getDate())) a--;
+  $('clientAge').value=a;
+}
+
 function collectData(){
   const cur=$('currency').value; sym=cur==='MYR'?'RM ':'$';
   const d={
-    client:$('clientName').value||'Client', age:v('clientAge'), date:$('dashDate').value, cur,
+    client:$('clientName').value||'Client',
+    dob:$('clientDOB').value, age:v('clientAge'),
+    marital:$('maritalStatus').value, dependants:v('dependants'),
+    smoker:$('smoker').value, occupation:$('occupation').value,
+    retireAge:v('retireAge')||65, retireIncome:v('retireIncome'),
+    date:$('dashDate').value, cur,
     cash:v('cash'), cpfOA:v('cpfOA'), cpfSA:v('cpfSA'), cpfMA:v('cpfMA'), srs:v('srs'),
     homeLoan:v('homeLoan'), carLoan:v('carLoan'), studentLoan:v('studentLoan'), otherLoan:v('otherLoan'),
     salary:v('salary'), rental:v('rentalIncome'), dividends:v('dividendIncome'), side:v('sideIncome'),
@@ -1044,6 +1202,278 @@ function generate(){
   // Gap Analysis
   gapState = { active: gapState.active || {}, open: gapState.open || null, lastData: d };
   buildGaps(d);
+
+  // New modules
+  lastData = d;
+  buildHealthScore(d);
+  buildRetirement(d);
+  buildScenarios(d);
+  buildReport(d);
+  updateGuidance();
+}
+
+// ═══════════════════════════════════════════
+// HEALTH SCORE
+// ═══════════════════════════════════════════
+let lastData = null;
+
+function buildHealthScore(d){
+  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+  const surplus=inflow-totExp;
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const annualIncome=d.salary*12;
+  const lifeCover=d.ins.filter(p=>/life|death|whole|term/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+  const ciCover=d.ins.filter(p=>/critical/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+  const ef=totExp>0?(d.cash/totExp):0;
+  const savRate=inflow>0?surplus/inflow:0;
+  const lifeRatio=annualIncome>0?lifeCover/(annualIncome*10):(lifeCover>0?1:0);
+  const ciRatio=annualIncome>0?ciCover/(annualIncome*4):(ciCover>0?1:0);
+  const insRatio=inflow>0?(d.exp.Insurance||0)/inflow:0;
+
+  // Score components (0-25 each = 100)
+  const sEF=Math.min(ef/6,1)*25;
+  const sSav=Math.min(Math.max(savRate,0)/0.2,1)*25;
+  const sIns=(Math.min(lifeRatio,1)*0.5+Math.min(ciRatio,1)*0.5)*25;
+  const sCash=(insRatio>=0.05&&insRatio<=0.15?1:.5)*25;
+  const score=Math.round(sEF+sSav+sIns+sCash);
+
+  let status='Critical', cls='red';
+  if(score>=75){status='Excellent';cls='green';}
+  else if(score>=55){status='Healthy';cls='green';}
+  else if(score>=35){status='Moderate';cls='amber';}
+  else {status='At Risk';cls='red';}
+
+  const r=42, c=2*Math.PI*r, off=c*(1-score/100);
+  const html=`<div class="health-card anim">
+    <div class="health-ring">
+      <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="${r}"/><circle class="fg" cx="50" cy="50" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${off}" style="stroke:var(--${cls==='green'?'green':cls==='amber'?'amber':'red'})"/></svg>
+      <div class="health-num">${score}<small>/ 100</small></div>
+    </div>
+    <div class="health-info">
+      <div class="health-label">Financial Health Score</div>
+      <div class="health-status ${cls}">${status}</div>
+      <div class="health-detail">Emergency fund: ${ef.toFixed(1)} months &middot; Savings rate: ${(savRate*100).toFixed(1)}% &middot; ${score>=55?'On track for long-term goals':'Action needed across multiple areas'}</div>
+    </div>
+  </div>`;
+  // Insert at top of overview panel
+  const ov=$('p-overview');
+  let existing=ov.querySelector('.health-card');
+  if(existing) existing.outerHTML=html;
+  else ov.insertAdjacentHTML('afterbegin', html);
+}
+
+// ═══════════════════════════════════════════
+// RETIREMENT
+// ═══════════════════════════════════════════
+function buildRetirement(d){
+  const age=d.age||35, retAge=d.retireAge||65;
+  const yrs=Math.max(retAge-age,1);
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+  const desired=d.retireIncome||totExp;
+  const required=desired*12*20; // 20yr retirement
+  const monthlySav=d.exp.Savings||0;
+  const r=0.05;
+  const proj=(totInv+cpf)*Math.pow(1+r,yrs)+monthlySav*12*((Math.pow(1+r,yrs)-1)/r);
+  const gap=required-proj;
+
+  $('retireKpis').innerHTML=[
+    {l:'Years to Retire',v:yrs+' yrs',c:'var(--gold)'},
+    {l:'Required Capital',v:fmt(Math.round(required)),c:'var(--blue)'},
+    {l:'Projected Assets',v:fmt(Math.round(proj)),c:proj>=required?'var(--green)':'var(--amber)'},
+    {l:'Gap',v:gap>0?fmt(Math.round(gap)):'None',c:gap>0?'var(--red)':'var(--green)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  // Projection chart
+  const labels=[], dataProj=[], dataReq=[];
+  for(let i=0;i<=yrs;i++){
+    labels.push((age+i));
+    const p=(totInv+cpf)*Math.pow(1+r,i)+monthlySav*12*((Math.pow(1+r,i)-1)/r);
+    dataProj.push(Math.round(p));
+    dataReq.push(Math.round(required*(i/yrs)));
+  }
+  if(charts.retire) charts.retire.destroy();
+  charts.retire=new Chart($('cRetire'),{type:'line',data:{labels,datasets:[
+    {label:'Projected Assets',data:dataProj,borderColor:COLS[0],backgroundColor:'rgba(62,207,142,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+    {label:'Required Path',data:dataReq,borderColor:COLS[3],borderDash:[6,4],fill:false,tension:.35,pointRadius:0,borderWidth:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,usePointStyle:true,pointStyle:'circle',font:{size:11}}}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:v=>fmt(v)}},x:{grid:{display:false},title:{display:true,text:'Age',color:'#5a6170'}}}}});
+
+  $('tRetire').innerHTML=`<thead><tr><th>Item</th><th style="text-align:right">Value</th></tr></thead><tbody>
+    <tr><td>Current Age</td><td class="num">${age}</td></tr>
+    <tr><td>Retirement Age</td><td class="num">${retAge}</td></tr>
+    <tr><td>Years to Retirement</td><td class="num">${yrs}</td></tr>
+    <tr><td>Desired Monthly Income</td><td class="num">${fmt(desired)}/mo</td></tr>
+    <tr><td>Required Capital (20yr)</td><td class="num">${fmt(Math.round(required))}</td></tr>
+    <tr><td>Current Investable (Inv + CPF)</td><td class="num">${fmt(totInv+cpf)}</td></tr>
+    <tr><td>Monthly Savings</td><td class="num">${fmt(monthlySav)}</td></tr>
+    <tr><td>Assumed Growth Rate</td><td class="num">5% p.a.</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Projected at ${retAge}</td><td class="num" style="color:var(--gold-light)">${fmt(Math.round(proj))}</td></tr>
+    <tr class="tr-total-${gap>0?'red':'green'}"><td>${gap>0?'Shortfall':'Surplus'}</td><td class="num">${fmt(Math.round(Math.abs(gap)))}</td></tr>
+  </tbody>`;
+}
+
+// ═══════════════════════════════════════════
+// SCENARIO ENGINE
+// ═══════════════════════════════════════════
+const scenarios=[
+  {id:'ci',icon:'⚕️',name:'Critical Illness',desc:'Income stops, expenses continue',apply:(d)=>{
+    const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+    const liquid=d.cash+cpf*0.5+d.inv.reduce((s,i)=>s+i.value,0);
+    const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+    const ciCover=d.ins.filter(p=>/critical/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+    const months=totExp>0?Math.floor((liquid+ciCover)/totExp):0;
+    return {rows:[
+      ['Income (CI Triggered)','$0','neg'],
+      ['Monthly Expenses',fmt(totExp)+'/mo',''],
+      ['CI Payout',fmt(ciCover),'pos'],
+      ['Liquid Assets',fmt(Math.round(liquid)),''],
+      ['Survival Runway',months+' months',months>=24?'pos':months>=12?'':'neg'],
+    ],status:months>=36?{cls:'green',msg:'Strong survival runway. CI cover and liquid assets sustain household for 3+ years.'}:months>=12?{cls:'amber',msg:'Moderate runway. Consider boosting CI cover or emergency fund.'}:{cls:'red',msg:'Critical exposure. CI cover insufficient — review urgently.'}};
+  }},
+  {id:'prop',icon:'\u{1F3E0}',name:'Buy Property',desc:'$1.2M home, 25% down, 25yr loan',apply:(d)=>{
+    const price=1200000, down=price*0.25, loan=price-down;
+    const monthly=loan*(0.035/12)/(1-Math.pow(1+0.035/12,-300));
+    const inflow=d.salary+d.rental+d.dividends+d.side;
+    const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+    const newSurplus=inflow-totExp-monthly;
+    return {rows:[
+      ['Property Price',fmt(price),''],
+      ['Downpayment (25%)',fmt(down),'neg'],
+      ['Monthly Mortgage',fmt(Math.round(monthly))+'/mo','neg'],
+      ['Current Surplus',fmt(inflow-totExp)+'/mo',''],
+      ['New Surplus',fmts(Math.round(newSurplus))+'/mo',newSurplus>=0?'pos':'neg'],
+      ['Cash After Downpayment',fmts(d.cash-down),d.cash>=down?'pos':'neg'],
+    ],status:newSurplus>=2000&&d.cash>=down?{cls:'green',msg:'Affordable. Surplus remains healthy after mortgage.'}:newSurplus>=0?{cls:'amber',msg:'Tight but workable. Limited buffer for emergencies.'}:{cls:'red',msg:'Not sustainable. Mortgage exceeds disposable income.'}};
+  }},
+  {id:'car',icon:'\u{1F697}',name:'Buy Car',desc:'$120k car, 5yr loan',apply:(d)=>{
+    const price=120000, monthly=price*1.04/60+250; // loan + petrol/insurance estimate
+    const inflow=d.salary+d.rental+d.dividends+d.side;
+    const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+    const newSurplus=inflow-totExp-monthly;
+    return {rows:[
+      ['Car Price',fmt(price),''],
+      ['Monthly Cost (loan + running)',fmt(Math.round(monthly))+'/mo','neg'],
+      ['Current Surplus',fmt(inflow-totExp)+'/mo',''],
+      ['New Surplus',fmts(Math.round(newSurplus))+'/mo',newSurplus>=0?'pos':'neg'],
+    ],status:newSurplus>=1000?{cls:'green',msg:'Comfortable. Car ownership fits within budget.'}:newSurplus>=0?{cls:'amber',msg:'Possible but limits other goals.'}:{cls:'red',msg:'Not advisable at current income.'}};
+  }},
+  {id:'child',icon:'\u{1F476}',name:'Have Child',desc:'+$1.5k/mo expenses for 22 years',apply:(d)=>{
+    const extra=1500;
+    const inflow=d.salary+d.rental+d.dividends+d.side;
+    const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+    const newSurplus=inflow-totExp-extra;
+    const totalCost=extra*12*22;
+    return {rows:[
+      ['Estimated Extra Monthly Cost',fmt(extra)+'/mo','neg'],
+      ['22-year Total',fmt(totalCost),'neg'],
+      ['Current Surplus',fmt(inflow-totExp)+'/mo',''],
+      ['New Surplus',fmts(Math.round(newSurplus))+'/mo',newSurplus>=0?'pos':'neg'],
+      ['Education Fund Need (lump)',fmt(150000),''],
+    ],status:newSurplus>=2000?{cls:'green',msg:'Affordable. Plan an education endowment to prep for tertiary years.'}:newSurplus>=0?{cls:'amber',msg:'Manageable but tight. Consider increasing income or trimming lifestyle expenses.'}:{cls:'red',msg:'Strained. Income vs expenses leaves no buffer for child costs.'}};
+  }},
+];
+let activeScenario=null;
+function buildScenarios(d){
+  $('scenarioBtns').innerHTML=scenarios.map(s=>`<button class="scen-btn${activeScenario===s.id?' active':''}" onclick="runScenario('${s.id}')"><span class="scen-icon">${s.icon}</span><span class="scen-name">${s.name}</span><span class="scen-desc">${s.desc}</span></button>`).join('');
+  if(activeScenario) runScenario(activeScenario,true);
+}
+function runScenario(id, keep){
+  if(!keep) activeScenario=activeScenario===id?null:id;
+  document.querySelectorAll('.scen-btn').forEach(b=>b.classList.toggle('active', b.querySelector('.scen-name')?.textContent===scenarios.find(s=>s.id===activeScenario)?.name));
+  if(!activeScenario){ $('scenarioResult').hidden=true; return; }
+  const s=scenarios.find(x=>x.id===activeScenario);
+  const r=s.apply(lastData);
+  $('scenarioResult').hidden=false;
+  $('scenarioBody').innerHTML=`<div class="scen-result">${r.rows.map(([l,v,c])=>`<div class="scen-row"><span class="lab">${l}</span><span class="val ${c||''}">${v}</span></div>`).join('')}</div><div class="scen-status ${r.status.cls}">${r.status.msg}</div>`;
+}
+
+// ═══════════════════════════════════════════
+// REPORT GENERATOR
+// ═══════════════════════════════════════════
+function buildReport(d){
+  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+  const surplus=inflow-totExp;
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totPropV=d.prop.reduce((s,p)=>s+p.value,0);
+  const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
+  const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
+  const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
+  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const nw=totAssets-totLiab;
+  const ef=totExp>0?(d.cash/totExp):0;
+  const lifeCover=d.ins.filter(p=>/life|death|whole|term/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+  const ciCover=d.ins.filter(p=>/critical/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+  const lifeTarget=d.salary*12*10, ciTarget=d.salary*12*4;
+  const recs=[];
+  if(ef<6) recs.push('Build emergency fund to cover 6 months of expenses ('+fmt(totExp*6)+').');
+  if(lifeCover<lifeTarget) recs.push('Increase life cover by '+fmt(Math.max(0,lifeTarget-lifeCover))+' to reach 10x annual income.');
+  if(ciCover<ciTarget) recs.push('Add CI cover of '+fmt(Math.max(0,ciTarget-ciCover))+' (4x annual income benchmark).');
+  if(surplus<inflow*0.2) recs.push('Increase savings rate to at least 20% of income.');
+  if(d.dependants>0&&lifeCover<lifeTarget) recs.push('With '+d.dependants+' dependant(s), prioritise life and CI cover before discretionary investments.');
+  if(!recs.length) recs.push('Strong fundamentals. Review portfolio rebalancing and tax optimisation (SRS top-ups).');
+
+  $('reportBody').innerHTML=`
+    <div class="report-section"><div class="report-h">Profile Summary</div>
+      <div class="report-row"><span class="lab">Name</span><span class="val">${d.client}</span></div>
+      <div class="report-row"><span class="lab">Age</span><span class="val">${d.age||'—'}</span></div>
+      <div class="report-row"><span class="lab">Marital Status</span><span class="val">${d.marital||'—'}</span></div>
+      <div class="report-row"><span class="lab">Dependants</span><span class="val">${d.dependants||0}</span></div>
+      <div class="report-row"><span class="lab">Smoker</span><span class="val">${d.smoker||'No'}</span></div>
+      <div class="report-row"><span class="lab">Occupation</span><span class="val">${d.occupation||'—'}</span></div>
+    </div>
+    <div class="report-section"><div class="report-h">Cashflow Analysis</div>
+      <div class="report-row"><span class="lab">Monthly Inflow</span><span class="val">${fmt(inflow)}</span></div>
+      <div class="report-row"><span class="lab">Monthly Expenses</span><span class="val">${fmt(totExp)}</span></div>
+      <div class="report-row"><span class="lab">Surplus</span><span class="val">${fmts(surplus)}</span></div>
+      <div class="report-row"><span class="lab">Savings Rate</span><span class="val">${inflow>0?(surplus/inflow*100).toFixed(1):0}%</span></div>
+      <div class="report-row"><span class="lab">Emergency Fund</span><span class="val">${ef.toFixed(1)} months</span></div>
+    </div>
+    <div class="report-section"><div class="report-h">Net Worth</div>
+      <div class="report-row"><span class="lab">Total Assets</span><span class="val">${fmt(totAssets)}</span></div>
+      <div class="report-row"><span class="lab">Total Liabilities</span><span class="val">${fmt(totLiab)}</span></div>
+      <div class="report-row"><span class="lab">Net Worth</span><span class="val">${fmts(nw)}</span></div>
+    </div>
+    <div class="report-section"><div class="report-h">Insurance Gap</div>
+      <div class="report-row"><span class="lab">Life Cover (Target ${fmt(lifeTarget)})</span><span class="val">${fmt(lifeCover)}</span></div>
+      <div class="report-row"><span class="lab">CI Cover (Target ${fmt(ciTarget)})</span><span class="val">${fmt(ciCover)}</span></div>
+      <div class="report-row"><span class="lab">Life Gap</span><span class="val">${fmt(Math.max(0,lifeTarget-lifeCover))}</span></div>
+      <div class="report-row"><span class="lab">CI Gap</span><span class="val">${fmt(Math.max(0,ciTarget-ciCover))}</span></div>
+    </div>
+    <div class="report-section"><div class="report-h">Recommendations</div>
+      ${recs.map(r=>`<div class="report-rec">${r}</div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// ADVISOR / CLIENT VIEW + GUIDANCE
+// ═══════════════════════════════════════════
+function toggleView(){
+  document.body.classList.toggle('advisor');
+  $('viewToggle').textContent=document.body.classList.contains('advisor')?'Client View':'Advisor View';
+  updateGuidance();
+}
+const guidanceContent={
+  overview:{ask:['What are your top 3 financial goals over the next 5 years?','How would you describe your relationship with money?','Have you reviewed your finances in the last 12 months?'],why:'The overview anchors the conversation. Score sets the tone — high scores reinforce confidence, low scores create urgency for action.',say:'Your Financial Health Score gives us a quick read on where you stand today. Let’s walk through what’s driving it.'},
+  investments:{ask:['What’s your investment time horizon?','How would you react to a 30% drop in markets?','Are you maxing out CPF top-ups and SRS?'],why:'Risk profile drives product matching. Behaviour during downturns is the real risk indicator, not stated tolerance.',say:'Your portfolio matters less than your behaviour during volatility. Let’s stress-test your allocation.'},
+  cashflow:{ask:['Is your savings rate where you’d like it?','Which expenses surprised you when you wrote them down?','Are you paying yourself first?'],why:'Cashflow is the foundation. Without surplus there is no plan. Spending breakdown reveals lifestyle creep and recovery opportunities.',say:'Surplus is the engine of every plan we build. Even small leaks compound to large gaps over decades.'},
+  property:{ask:['Is property a wealth tool or a home for you?','How concentrated is your wealth in property?','Do you plan to upgrade or downsize?'],why:'Property concentration creates illiquidity and CPF accrued interest issues. Loan tenure should align with retirement age.',say:'Property is a long horizon, leveraged asset. Let’s make sure it serves your retirement plan, not the other way around.'},
+  insurance:{ask:['What happens to your family if you can’t work?','Have you reviewed your policies in the last 5 years?','Do your dependants know your coverage?'],why:'Most clients are under-insured for CI and over-insured for whole life. Identify pure protection gaps before product conversations.',say:'Insurance protects the plan. Let’s separate protection needs from wealth accumulation needs.'},
+  retirement:{ask:['What does retirement actually look like for you?','At what age do you want optionality, not necessity?','Have you accounted for healthcare in retirement?'],why:'20-year drawdown horizons mean small assumption errors compound massively. Healthcare costs and longevity risk are the silent killers.',say:'Retirement isn’t an age — it’s the moment work becomes optional. Let’s reverse-engineer the number you need.'},
+  scenarios:{ask:['Which life event are you most anxious about?','How would your plan hold up if income stopped tomorrow?','Are you planning a major purchase in the next 24 months?'],why:'Scenarios surface gaps the client hasn’t voiced. Critical Illness is the highest-impact scenario to model — most are unprepared.',say:'Plans don’t fail in good times. Let’s pressure-test against the events most likely to derail you.'},
+  gaps:{ask:['Which gap surprises you most?','Which one feels most urgent to close first?','What’s held you back from addressing this?'],why:'Gap closure has compound returns. Address protection gaps before investment gaps — risk mitigation precedes growth.',say:'These gaps are quantified, not subjective. Each one has a specific product or strategy that closes it.'},
+  report:{ask:['Does this match how you see your situation?','Which recommendation resonates most?','What’s realistic to action this month?'],why:'The report consolidates the conversation. Aim to leave the client with one clear, prioritised next step.',say:'This report is your plan in one page. Let’s pick the one action that has the biggest impact and start there.'}
+};
+function updateGuidance(){
+  const tab=document.querySelector('.tab.on')?.dataset.t||'overview';
+  const g=guidanceContent[tab]||guidanceContent.overview;
+  $('guidanceBody').innerHTML=`
+    <div class="guidance-section"><div class="guidance-section-title">What to Ask</div><ul>${g.ask.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="guidance-section"><div class="guidance-section-title">Why It Matters</div><div style="font-size:.85rem;color:var(--text-secondary);line-height:1.6">${g.why}</div></div>
+    <div class="guidance-section"><div class="guidance-section-title">What to Say Next</div><div class="say">"${g.say}"</div></div>`;
 }
 
 // ═══════════════════════════════════════════
