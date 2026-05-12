@@ -590,7 +590,6 @@ tbody tr:hover td { background:rgba(255,255,255,.015); }
 }
 body.advisor .guidance { transform:translateX(0); }
 body.advisor .dash > .topbar,
-body.advisor .dash > .tabs,
 body.advisor .dash > .main { margin-right:340px; }
 .guidance-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
 .guidance-eyebrow { font-size:.7rem; font-weight:600; letter-spacing:.15em; text-transform:uppercase; color:var(--gold); }
@@ -642,6 +641,123 @@ body.advisor .dash > .main { margin-right:340px; }
 .report-row .lab { color:var(--text-secondary); }
 .report-row .val { font-weight:600; color:var(--text-primary); }
 .report-rec { background:var(--bg-card-alt); padding:14px 18px; border-radius:var(--radius-sm); margin-top:10px; border-left:3px solid var(--gold); font-size:.9rem; line-height:1.6; }
+
+/* ═══════════════════════════════════════════
+   SIDEBAR NAV
+   ═══════════════════════════════════════════ */
+.sidebar {
+  position:fixed; top:0; left:0; bottom:0; width:240px; z-index:50;
+  background:var(--bg-raised); border-right:1px solid var(--border);
+  padding:80px 14px 24px; overflow-y:auto;
+  font-size:.85rem;
+}
+body.has-sidebar .topbar,
+body.has-sidebar .main { margin-left:240px; }
+body.has-sidebar .topbar { padding-left:24px; }
+body.has-sidebar .guidance + .topbar { margin-left:240px; }
+.sb-group { margin-bottom:18px; }
+.sb-title { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:var(--text-tertiary); padding:8px 12px 6px; }
+.sidebar .tab {
+  display:flex; align-items:center; gap:10px; width:100%;
+  background:none; border:none; padding:8px 12px; margin:1px 0;
+  color:var(--text-secondary); font-family:var(--font-body); font-size:.85rem;
+  text-align:left; cursor:pointer; border-radius:8px; transition:all .15s;
+}
+.sidebar .tab:hover { background:var(--bg-hover); color:var(--text-primary); }
+.sidebar .tab.on { background:var(--gold-dim); color:var(--gold); }
+.sb-i { font-size:.65rem; opacity:.7; width:14px; text-align:center; }
+.sb-tag { font-size:.55rem; padding:2px 7px; border-radius:8px; margin-left:auto; font-weight:600; letter-spacing:.05em; }
+.sb-tag.live { background:var(--green-dim); color:var(--green); }
+.sb-active-client {
+  margin-top:20px; padding:14px; background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+}
+.sb-ac-label { font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-tertiary); margin-bottom:6px; }
+.sb-ac-name { font-family:var(--font-display); font-size:1rem; font-weight:600; color:var(--text-primary); }
+.sb-ac-meta { font-size:.7rem; color:var(--text-secondary); margin-bottom:10px; }
+.sb-ac-actions { display:flex; gap:6px; margin-top:6px; }
+.sb-ac-actions button { flex:1; background:var(--bg-card-alt); border:1px solid var(--border); color:var(--text-secondary); padding:6px 8px; border-radius:6px; font-size:.7rem; cursor:pointer; font-family:var(--font-body); }
+.sb-ac-actions button:hover { background:var(--bg-hover); color:var(--text-primary); }
+
+/* ═══════════════════════════════════════════
+   FINANCIAL RATIOS
+   ═══════════════════════════════════════════ */
+.ratio-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.ratio-card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:18px 20px;
+}
+.ratio-card .ratio-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-tertiary); margin-bottom:6px; }
+.ratio-card .ratio-val { font-family:var(--font-display); font-size:1.6rem; font-weight:600; margin-bottom:4px; }
+.ratio-card .ratio-bench { font-size:.75rem; color:var(--text-secondary); }
+.ratio-card.good .ratio-val { color:var(--green); }
+.ratio-card.warn .ratio-val { color:var(--amber); }
+.ratio-card.bad .ratio-val { color:var(--red); }
+.ratio-bar { height:5px; background:var(--bg-card-alt); border-radius:3px; margin-top:10px; overflow:hidden; }
+.ratio-bar-fill { height:100%; border-radius:3px; transition:width .6s; }
+
+/* ═══════════════════════════════════════════
+   GOALS & MILESTONES
+   ═══════════════════════════════════════════ */
+.goal-quickadd { display:flex; flex-wrap:wrap; gap:10px; }
+.goal-chip {
+  background:var(--bg-card-alt); border:1px solid var(--border); color:var(--text-primary);
+  padding:8px 14px; border-radius:20px; font-size:.85rem; font-family:var(--font-body);
+  cursor:pointer; transition:all .2s;
+  display:inline-flex; align-items:center; gap:7px;
+}
+.goal-chip:hover { border-color:var(--gold); transform:translateY(-1px); }
+.goal-chip.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+.goal-row {
+  display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr 1fr auto; gap:12px; align-items:center;
+  padding:12px 0; border-bottom:1px solid var(--border); font-size:.88rem;
+}
+.goal-row:last-child { border-bottom:none; }
+.goal-row-head { font-size:.65rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-tertiary); font-weight:600; }
+.goal-row input { background:var(--bg-input); border:1px solid var(--border); color:var(--text-primary); padding:6px 9px; border-radius:6px; font-family:var(--font-body); font-size:.85rem; width:100%; }
+.goal-row .goal-icon-cell { display:flex; align-items:center; gap:8px; color:var(--text-primary); font-weight:500; }
+.goal-row .btn-del { background:none; border:none; color:var(--red); cursor:pointer; font-size:1.1rem; }
+.goal-progress { height:5px; background:var(--bg-card-alt); border-radius:3px; overflow:hidden; margin-top:6px; }
+.goal-progress-fill { height:100%; background:linear-gradient(90deg, var(--cyan), var(--green)); }
+
+/* ═══════════════════════════════════════════
+   PROJECTION TABLE
+   ═══════════════════════════════════════════ */
+.proj-controls { display:flex; gap:24px; flex-wrap:wrap; padding:14px 0 18px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.proj-control { flex:1; min-width:160px; }
+.proj-control-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-tertiary); margin-bottom:6px; }
+.proj-control input[type=range] { width:100%; }
+.proj-control-val { font-size:.85rem; color:var(--cyan); font-weight:600; }
+.proj-table-wrap { overflow-x:auto; max-height:520px; overflow-y:auto; }
+.proj-table { font-size:.78rem; }
+.proj-table th { position:sticky; top:0; background:var(--bg-card); z-index:2; }
+.proj-table .retire-row td { color:var(--cyan); font-weight:600; }
+.proj-table .deficit-row td { color:var(--red); }
+.proj-table .milestone-cell { color:var(--purple); font-size:.72rem; }
+
+/* ═══════════════════════════════════════════
+   MEETING NOTES
+   ═══════════════════════════════════════════ */
+.notes-controls { display:flex; gap:10px; flex-wrap:wrap; }
+.notes-controls input { background:var(--bg-input); border:1px solid var(--border); color:var(--text-primary); padding:9px 12px; border-radius:8px; font-family:var(--font-body); font-size:.88rem; flex:1; min-width:160px; }
+.note-item { padding:12px 14px; background:var(--bg-card-alt); border-radius:var(--radius-sm); margin-bottom:8px; border-left:2px solid var(--gold); }
+.note-meta { font-size:.7rem; color:var(--text-tertiary); margin-bottom:4px; }
+.note-topic { font-weight:600; color:var(--text-primary); margin-bottom:4px; }
+.note-body { font-size:.85rem; color:var(--text-secondary); line-height:1.5; }
+.note-body textarea { width:100%; background:transparent; border:none; color:var(--text-secondary); resize:vertical; min-height:60px; font-family:var(--font-body); font-size:.85rem; line-height:1.5; }
+.note-body textarea:focus { outline:1px solid var(--gold); }
+
+/* ═══════════════════════════════════════════
+   DARK / LIGHT MODE
+   ═══════════════════════════════════════════ */
+body.light {
+  --bg-base:#f6f4ef; --bg-raised:#ffffff; --bg-card:#ffffff; --bg-card-alt:#f4f1ea;
+  --bg-hover:#eee8db; --bg-input:#ffffff;
+  --border:rgba(0,0,0,.07); --border-hover:rgba(0,0,0,.14);
+  --text-primary:#1a1a1a; --text-secondary:#52606d; --text-tertiary:#8a96a3;
+  --text-inverse:#ffffff;
+}
+body.light::after { display:none; }
 
 /* Footer */
 .footer {
@@ -898,6 +1014,7 @@ body.advisor .dash > .main { margin-right:340px; }
         <span class="client" id="dClient"></span>
       </div>
       <div class="topbar-actions">
+        <button class="btn-top" onclick="toggleLight()">&#9728;/&#127769;</button>
         <button class="btn-top" id="viewToggle" onclick="toggleView()">Advisor View</button>
         <button class="btn-top" onclick="editData()">Edit</button>
         <button class="btn-top" onclick="exportPDF()">Export PDF</button>
@@ -905,17 +1022,50 @@ body.advisor .dash > .main { margin-right:340px; }
     </div>
   </div>
 
-  <div class="tabs" id="tabStrip">
-    <button class="tab on" data-t="overview">Overview</button>
-    <button class="tab" data-t="investments">Investments</button>
-    <button class="tab" data-t="cashflow">Cashflow</button>
-    <button class="tab" data-t="property">Property</button>
-    <button class="tab" data-t="insurance">Insurance</button>
-    <button class="tab" data-t="retirement">Retirement</button>
-    <button class="tab" data-t="scenarios" style="color:var(--cyan)">Scenarios</button>
-    <button class="tab" data-t="gaps" style="color:var(--amber)">Gaps &amp; Advice</button>
-    <button class="tab" data-t="report">Report</button>
-  </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-group">
+      <div class="sb-title">Overview</div>
+      <button class="tab on" data-t="overview"><span class="sb-i">&#9632;</span>Dashboard</button>
+      <button class="tab" data-t="cashflow"><span class="sb-i">&#10003;</span>Cashflow <span class="sb-tag live">Live</span></button>
+      <button class="tab" data-t="netWorth"><span class="sb-i">&#9650;</span>Net Worth</button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-title">Planning</div>
+      <button class="tab" data-t="insurance"><span class="sb-i">&#9670;</span>Insurance Coverage</button>
+      <button class="tab" data-t="hospital"><span class="sb-i">&#9670;</span>Hospital Plans</button>
+      <button class="tab" data-t="retirement"><span class="sb-i">&#9650;</span>Retirement Plan</button>
+      <button class="tab" data-t="investments"><span class="sb-i">&#9632;</span>Investment Plan</button>
+      <button class="tab" data-t="dividends"><span class="sb-i" style="color:var(--green)">&#9679;</span>Insurance &times; Dividends</button>
+      <button class="tab" data-t="cpf"><span class="sb-i">&#9618;</span>CPF</button>
+      <button class="tab" data-t="tax"><span class="sb-i">&#9650;</span>Tax Planning</button>
+      <button class="tab" data-t="policy"><span class="sb-i">&#9633;</span>Policy Summary</button>
+      <button class="tab" data-t="ratios"><span class="sb-i">&#9632;</span>Financial Ratios</button>
+      <button class="tab" data-t="goals"><span class="sb-i" style="color:var(--cyan)">&#10022;</span>Goals &amp; Milestones</button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-title">Session</div>
+      <button class="tab" data-t="notes"><span class="sb-i" style="color:var(--purple)">&#9679;</span>Meeting Notes</button>
+      <button class="tab" data-t="proposals"><span class="sb-i">&#9633;</span>Proposals</button>
+      <button class="tab" data-t="documents"><span class="sb-i">&#9776;</span>Documents</button>
+      <button class="tab" data-t="property"><span class="sb-i">&#9650;</span>Property</button>
+      <button class="tab" data-t="scenarios" style="color:var(--cyan)"><span class="sb-i">&#9650;</span>Scenarios</button>
+      <button class="tab" data-t="gaps" style="color:var(--amber)"><span class="sb-i">&#9888;</span>Gaps &amp; Advice</button>
+      <button class="tab" data-t="report"><span class="sb-i">&#9633;</span>Report</button>
+    </div>
+    <div class="sb-active-client">
+      <div class="sb-ac-label">Active Client &middot; <span id="sbClientCount">1</span> clients</div>
+      <div class="sb-ac-name" id="sbClientName">—</div>
+      <div class="sb-ac-meta" id="sbClientMeta">—</div>
+      <div class="sb-ac-actions">
+        <button onclick="switchClient()">Switch</button>
+        <button onclick="addClient()">Add client</button>
+      </div>
+      <div class="sb-ac-actions">
+        <button onclick="saveClient()">&#128190; Save</button>
+        <button onclick="loadClient()">&#128194; Load</button>
+      </div>
+    </div>
+  </aside>
 
   <div class="main">
     <div class="panel on" id="p-overview">
@@ -982,6 +1132,87 @@ body.advisor .dash > .main { margin-right:340px; }
     <div class="panel" id="p-report">
       <div class="print-section-title">Client Report</div>
       <div class="card anim"><div id="reportBody"></div></div>
+    </div>
+
+    <div class="panel" id="p-netWorth">
+      <div class="print-section-title">Net Worth</div>
+      <div class="kpis" id="nwKpis"></div>
+      <div class="cols2"><div class="card anim"><div class="card-title"><span class="accent"></span>Composition</div><div class="chart-box"><canvas id="cNW2"></canvas></div></div><div class="card anim d1"><div class="card-title"><span class="accent"></span>Detailed Breakdown</div><table id="tNWDetail"></table></div></div>
+    </div>
+
+    <div class="panel" id="p-hospital">
+      <div class="print-section-title">Hospital Plans</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Hospitalisation &amp; Integrated Shield</div><table id="tHosp"></table></div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Adviser Insight</div><div id="hospInsight" style="font-size:.9rem;color:var(--text-secondary);line-height:1.6"></div></div>
+    </div>
+
+    <div class="panel" id="p-dividends">
+      <div class="print-section-title">Insurance &times; Dividends</div>
+      <div class="kpis" id="divKpis"></div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Year-by-Year: Dividends vs Premiums</div>
+        <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:14px">See exactly when dividends overtake premium costs &middot; hover rows for detail</p>
+        <table id="tDivPrem"></table>
+      </div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Adviser Insight</div><div id="divInsight" style="font-size:.9rem;color:var(--text-secondary);line-height:1.7"></div></div>
+    </div>
+
+    <div class="panel" id="p-cpf">
+      <div class="print-section-title">CPF</div>
+      <div class="kpis" id="cpfKpis"></div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>CPF Breakdown</div><table id="tCPF"></table></div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Suggested Top-ups</div><div id="cpfSuggest" style="font-size:.9rem;color:var(--text-secondary);line-height:1.7"></div></div>
+    </div>
+
+    <div class="panel" id="p-tax">
+      <div class="print-section-title">Tax Planning</div>
+      <div class="kpis" id="taxKpis"></div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Singapore Tax Estimate</div><table id="tTax"></table></div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Optimisation Strategies</div><div id="taxStrategies" style="font-size:.9rem;color:var(--text-secondary);line-height:1.7"></div></div>
+    </div>
+
+    <div class="panel" id="p-policy">
+      <div class="print-section-title">Policy Summary</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>All Policies</div><table id="tPolicy"></table></div>
+    </div>
+
+    <div class="panel" id="p-ratios">
+      <div class="print-section-title">Financial Ratios</div>
+      <div class="ratio-grid" id="ratioGrid"></div>
+    </div>
+
+    <div class="panel" id="p-goals">
+      <div class="print-section-title">Goals &amp; Milestones</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Quick-add Life Plans</div>
+        <div class="goal-quickadd" id="goalQuickAdd"></div>
+      </div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Active Life Goals</div>
+        <div id="activeGoals"></div>
+      </div>
+      <div class="card anim d2" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Cashflow Impact from Goals</div>
+        <div id="goalImpact"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-notes">
+      <div class="print-section-title">Meeting Notes</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Session Log</div>
+        <div class="notes-controls"><input id="noteDate" type="date"><input id="noteTopic" placeholder="Topic / objective"><button class="btn-add-row" onclick="addNote()">+ Add note</button></div>
+        <div id="notesList" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-proposals">
+      <div class="print-section-title">Proposals</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Recommended Plans for this Client</div>
+        <div id="proposalsBody"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-documents">
+      <div class="print-section-title">Documents</div>
+      <div class="card anim"><div class="card-title"><span class="accent"></span>Curated Resources</div>
+        <div id="documentsBody"></div>
+      </div>
     </div>
 
     <div class="footer">
@@ -1209,7 +1440,91 @@ function generate(){
   buildRetirement(d);
   buildScenarios(d);
   buildReport(d);
+  buildNetWorth(d);
+  buildHospital(d);
+  buildDividends(d);
+  buildCPF(d);
+  buildTax(d);
+  buildPolicy(d);
+  buildRatios(d);
+  buildGoalsModule(d);
+  buildNotes();
+  buildProposals(d);
+  buildDocuments();
+  buildCashflowProjection(d);
   updateGuidance();
+  activateSidebar();
+  $('sbClientName').textContent=d.client||'—';
+  $('sbClientMeta').textContent=`Age ${d.age||'—'} · ${d.marital||'Single'} · ${d.dependants?d.dependants+' dependant(s)':'No dependants'}`;
+  updateClientList();
+}
+
+// ═══════════════════════════════════════════
+// CASHFLOW PROJECTION TABLE (year-by-year)
+// ═══════════════════════════════════════════
+function buildCashflowProjection(d){
+  const cf=$('p-cashflow');
+  let proj=cf.querySelector('.proj-block');
+  if(!proj){
+    proj=document.createElement('div');
+    proj.className='proj-block card anim';
+    proj.style.marginTop='18px';
+    proj.innerHTML=`
+      <div class="card-title"><span class="accent"></span>Cashflow Projection Table</div>
+      <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:8px">Year-by-year income, expenses, cash & net worth for every age. ▲ Age shown in <span style="color:var(--purple)">purple</span> · Retirement age <span style="color:var(--cyan)">teal</span> ★ · Deficit rows in red</p>
+      <div class="proj-controls">
+        <div class="proj-control"><div class="proj-control-label">Income Growth <span class="proj-control-val" id="pcIG">3%</span></div><input type="range" min="0" max="10" step="0.5" value="3" oninput="updateProj()" id="pcIncome"></div>
+        <div class="proj-control"><div class="proj-control-label">Inflation Rate <span class="proj-control-val" id="pcIN">3%</span></div><input type="range" min="0" max="10" step="0.5" value="3" oninput="updateProj()" id="pcInflation"></div>
+        <div class="proj-control"><div class="proj-control-label">NW Return <span class="proj-control-val" id="pcNR">5%</span></div><input type="range" min="0" max="12" step="0.5" value="5" oninput="updateProj()" id="pcNW"></div>
+      </div>
+      <div class="proj-table-wrap"><table class="proj-table" id="tProj"></table></div>`;
+    cf.appendChild(proj);
+  }
+  updateProj();
+}
+function updateProj(){
+  if(!lastData) return;
+  const d=lastData;
+  const ig=+($('pcIncome')?.value||3)/100;
+  const inf=+($('pcInflation')?.value||3)/100;
+  const nr=+($('pcNW')?.value||5)/100;
+  if($('pcIG')) $('pcIG').textContent=(ig*100).toFixed(1)+'%';
+  if($('pcIN')) $('pcIN').textContent=(inf*100).toFixed(1)+'%';
+  if($('pcNR')) $('pcNR').textContent=(nr*100).toFixed(1)+'%';
+
+  const start=d.age||30, end=Math.min(start+40,85);
+  const retAge=d.retireAge||65;
+  const totExp0=Object.values(d.exp).reduce((s,x)=>s+x,0);
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  let cash=d.cash, nw=d.cash+cpf+d.inv.reduce((s,i)=>s+i.value,0)+d.prop.reduce((s,p)=>s+p.value-p.loan,0)+d.ins.reduce((s,i)=>s+i.cv,0)-(d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan);
+  let invAcct=d.inv.reduce((s,i)=>s+i.value,0);
+  const year0=new Date().getFullYear();
+  let html='<thead><tr><th>Age</th><th>Year</th><th style="text-align:right">Income /mo</th><th style="text-align:right">Expenses /mo</th><th style="text-align:right">Dividend /mo</th><th style="text-align:right">Cash at Bank</th><th style="text-align:right">Annual Surplus</th><th style="text-align:right">Net Worth</th><th style="text-align:right">Inv. Acct Value</th><th>Milestones / Notes</th></tr></thead><tbody>';
+  const goalMonthly={};
+  activeGoals.forEach(g=>{ for(let a=g.age;a<=(g.end||g.age);a++){ goalMonthly[a]=(goalMonthly[a]||0)+(+g.monthly||0); } });
+  const goalLump={};
+  activeGoals.forEach(g=>{ goalLump[g.age]=(goalLump[g.age]||0)+(+g.target||0); });
+
+  for(let i=0;i<=(end-start);i++){
+    const age=start+i, year=year0+i;
+    const incomeFactor=Math.pow(1+ig,i);
+    const expFactor=Math.pow(1+inf,i);
+    const inc=age<retAge?(d.salary+d.side)*incomeFactor:0;
+    const exp=(totExp0+(goalMonthly[age]||0))*expFactor;
+    const div=invAcct*0.045/12;
+    const lump=goalLump[age]||0;
+    const annSurp=(inc+div-exp)*12;
+    cash=cash*(1+0.025)+annSurp-lump; // 2.5% cash interest
+    invAcct=invAcct*(1+nr)+Math.max(0,annSurp*0.3);
+    nw=nw*(1+nr)+annSurp;
+    let mile=[];
+    activeGoals.forEach(g=>{ if(g.age===age) mile.push(g.icon+' '+g.name); });
+    if(age===retAge) mile.push('★ Retire');
+    const cls=age===retAge?'retire-row':cash<0?'deficit-row':age===start?'':'';
+    html+=`<tr class="${cls}"><td style="color:var(--purple)">${age}${age===retAge?' ★ Retire':''}</td><td>${year}</td><td class="num">${fmt(Math.round(inc))}</td><td class="num">${fmt(Math.round(exp))}</td><td class="num pos">${fmt(Math.round(div))}</td><td class="num">${fmts(Math.round(cash))}</td><td class="num ${annSurp>=0?'pos':'neg'}">${fmts(Math.round(annSurp))}</td><td class="num">${fmts(Math.round(nw))}</td><td class="num">${fmt(Math.round(invAcct))}</td><td class="milestone-cell">${mile.join(' · ')}</td></tr>`;
+  }
+  html+='</tbody>';
+  $('tProj').innerHTML=html;
 }
 
 // ═══════════════════════════════════════════
@@ -1724,6 +2039,382 @@ function toggleStrat(gapKey, stratId) {
   document.querySelectorAll('.gap-card').forEach(c => {
     c.classList.toggle('open', c.dataset.gap === gapState.open);
   });
+}
+
+// ═══════════════════════════════════════════
+// SIDEBAR (after generate, activate sidebar layout)
+// ═══════════════════════════════════════════
+function activateSidebar(){ document.body.classList.add('has-sidebar'); }
+
+function toggleLight(){ document.body.classList.toggle('light'); }
+
+// ═══════════════════════════════════════════
+// NET WORTH PAGE
+// ═══════════════════════════════════════════
+function buildNetWorth(d){
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totPropV=d.prop.reduce((s,p)=>s+p.value,0);
+  const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
+  const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
+  const liquid=d.cash+d.srs+totInv;
+  const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
+  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const nw=totAssets-totLiab;
+
+  $('nwKpis').innerHTML=[
+    {l:'Net Worth',v:fmts(nw),c:'var(--gold)'},
+    {l:'Liquid Assets',v:fmt(liquid),c:'var(--cyan)'},
+    {l:'Illiquid (CPF + Property)',v:fmt(cpf+totPropV),c:'var(--purple)'},
+    {l:'Debt Ratio',v:(totAssets>0?(totLiab/totAssets*100).toFixed(1):0)+'%',c:'var(--red)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  if(charts.nw2) charts.nw2.destroy();
+  charts.nw2=new Chart($('cNW2'),{type:'pie',data:{labels:['Cash','CPF','SRS','Investments','Property','Insurance CV'],datasets:[{data:[d.cash,cpf,d.srs,totInv,totPropV,insCV],backgroundColor:COLS.slice(0,6),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,font:{size:10}}}}}});
+
+  $('tNWDetail').innerHTML=`<thead><tr><th>Component</th><th style="text-align:right">Value</th><th style="text-align:right">% of NW</th></tr></thead><tbody>
+    ${[['Cash & Savings',d.cash],['CPF OA',d.cpfOA],['CPF SA',d.cpfSA],['CPF MA',d.cpfMA],['SRS',d.srs],['Investments',totInv],['Property',totPropV],['Insurance CV',insCV],['Home Loan',-d.homeLoan],['Car Loan',-d.carLoan],['Property Loans',-totPropL],['Other Loans',-(d.studentLoan+d.otherLoan)]].filter(([,v])=>v!==0).map(([l,v])=>`<tr><td>${l}</td><td class="num ${v>=0?'pos':'neg'}">${v>=0?'':'−'}${fmt(Math.abs(v))}</td><td class="num" style="color:var(--text-tertiary)">${nw>0?(v/nw*100).toFixed(1):0}%</td></tr>`).join('')}
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Net Worth</td><td class="num" style="color:var(--gold-light)">${fmts(nw)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr>
+  </tbody>`;
+}
+
+// ═══════════════════════════════════════════
+// HOSPITAL PLANS
+// ═══════════════════════════════════════════
+function buildHospital(d){
+  const hosp=d.ins.filter(p=>/hospital|shield|careshield|integrated/i.test(p.type+p.name));
+  let html=`<thead><tr><th>Plan</th><th>Insurer</th><th>Ward Type</th><th style="text-align:right">Premium /mo</th></tr></thead><tbody>`;
+  if(hosp.length){
+    hosp.forEach(p=>{html+=`<tr><td style="color:var(--text-primary)">${p.name}</td><td>${p.insurer||'—'}</td><td>${/private/i.test(p.name)?'Private':/restructured|class a/i.test(p.name)?'Class A':'Standard'}</td><td class="num">${fmt(p.premium)}</td></tr>`;});
+  } else {
+    html+='<tr><td colspan="4" style="text-align:center;color:var(--text-tertiary);padding:24px">No hospitalisation plans recorded</td></tr>';
+  }
+  html+='</tbody>';
+  $('tHosp').innerHTML=html;
+  $('hospInsight').innerHTML=hosp.length
+    ?'Confirm Integrated Shield rider covers deductible + co-insurance. Standard MediShield Life pays only ~B2/C ward costs. Review ward-type expectations for retirement years where claim frequency rises.'
+    :'No hospitalisation plan detected. MediShield Life alone leaves out-of-pocket exposure of ~$8,000–$15,000 per claim in a private ward. Add Integrated Shield with full rider.';
+}
+
+// ═══════════════════════════════════════════
+// INSURANCE × DIVIDENDS
+// ═══════════════════════════════════════════
+function buildDividends(d){
+  const annualPrem=d.ins.reduce((s,p)=>s+p.premium*12,0);
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const divYield=0.045; // 4.5% dividend assumption
+  const monthlyDiv=totInv*divYield/12;
+  const annualDiv=totInv*divYield;
+
+  $('divKpis').innerHTML=[
+    {l:'Annual Premiums',v:fmt(annualPrem),c:'var(--red)'},
+    {l:'Annual Dividends',v:fmt(Math.round(annualDiv)),c:'var(--green)'},
+    {l:'Net Surplus',v:fmts(Math.round(annualDiv-annualPrem)),c:annualDiv>=annualPrem?'var(--green)':'var(--amber)'},
+    {l:'Self-Sufficient',v:annualDiv>=annualPrem?'Yes':'Building',c:annualDiv>=annualPrem?'var(--green)':'var(--cyan)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  // 10-year projection
+  let html='<thead><tr><th>Age</th><th style="text-align:right">Dividends /yr</th><th style="text-align:right">Premiums /yr</th><th style="text-align:right">Net Surplus /yr</th><th style="text-align:right">Coverage %</th><th>Status</th></tr></thead><tbody>';
+  const start=d.age||35, g=1.03;
+  let invFV=totInv;
+  let selfSuffYear=null;
+  for(let i=0;i<=10;i++){
+    invFV=totInv*Math.pow(1.05,i);
+    const yDiv=invFV*divYield;
+    const yPrem=annualPrem*Math.pow(g,i);
+    const surplus=yDiv-yPrem;
+    const cov=yPrem>0?(yDiv/yPrem*100):0;
+    const status=surplus>=0?(selfSuffYear===null?(selfSuffYear=start+i, '✓ Self-sufficient at '+(start+i)):`Surplus ${fmt(Math.round(surplus/12))}/mo`):`Deficit ${fmt(Math.round(-surplus/12))}/mo`;
+    html+=`<tr><td>${start+i}</td><td class="num pos">${fmt(Math.round(yDiv))}</td><td class="num neg">${fmt(Math.round(yPrem))}</td><td class="num ${surplus>=0?'pos':'neg'}">${fmts(Math.round(surplus))}</td><td class="num" style="color:var(--text-tertiary)">${cov.toFixed(0)}%</td><td style="color:${surplus>=0?'var(--green)':'var(--red)'};font-size:.78rem">${status}</td></tr>`;
+  }
+  html+='</tbody>';
+  $('tDivPrem').innerHTML=html;
+  $('divInsight').innerHTML=annualDiv>=annualPrem
+    ?`<strong style="color:var(--green)">Self-sufficient.</strong> Investment dividends of ${fmt(Math.round(annualDiv))}/yr already exceed annual insurance premiums of ${fmt(annualPrem)}. From this point, all insurance is effectively paid by the portfolio.`
+    :`Client pays ${fmt(Math.round(annualPrem/12))}/mo (${fmt(annualPrem)}/yr) in insurance premiums. Building a dividend-generating portfolio of ${fmt(Math.round(annualPrem/divYield))} at ${(divYield*100).toFixed(1)}% yield would fully cover premiums. Total premiums to self-sufficiency: ~${fmt(annualPrem*5)}.`;
+}
+
+// ═══════════════════════════════════════════
+// CPF
+// ═══════════════════════════════════════════
+function buildCPF(d){
+  const oa=d.cpfOA, sa=d.cpfSA, ma=d.cpfMA;
+  const tot=oa+sa+ma;
+  const FRS=205800; // 2026 estimate
+  const sa_FRS_gap=Math.max(FRS-sa,0);
+  $('cpfKpis').innerHTML=[
+    {l:'Total CPF',v:fmt(tot),c:'var(--gold)'},
+    {l:'OA',v:fmt(oa),c:'var(--blue)'},
+    {l:'SA',v:fmt(sa),c:'var(--green)'},
+    {l:'FRS Gap',v:fmt(sa_FRS_gap),c:sa_FRS_gap>0?'var(--amber)':'var(--green)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  $('tCPF').innerHTML=`<thead><tr><th>Account</th><th>Interest</th><th style="text-align:right">Balance</th><th style="text-align:right">% of Total</th></tr></thead><tbody>
+    <tr><td>OA (Ordinary)</td><td>2.5%</td><td class="num">${fmt(oa)}</td><td class="num" style="color:var(--text-tertiary)">${tot>0?(oa/tot*100).toFixed(1):0}%</td></tr>
+    <tr><td>SA (Special)</td><td>4.0%</td><td class="num">${fmt(sa)}</td><td class="num" style="color:var(--text-tertiary)">${tot>0?(sa/tot*100).toFixed(1):0}%</td></tr>
+    <tr><td>MA (MediSave)</td><td>4.0%</td><td class="num">${fmt(ma)}</td><td class="num" style="color:var(--text-tertiary)">${tot>0?(ma/tot*100).toFixed(1):0}%</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td></td><td class="num" style="color:var(--gold-light)">${fmt(tot)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr>
+  </tbody>`;
+
+  const sugg=[];
+  if(sa_FRS_gap>0) sugg.push(`<strong>SA Top-up:</strong> ${fmt(Math.min(sa_FRS_gap,8000))}/yr (RSTU) for $${Math.min(sa_FRS_gap,8000)<8000?'':'8,000 max'} tax relief plus 4% guaranteed compounding to FRS.`);
+  if(d.salary>0) sugg.push(`<strong>SRS Contribution:</strong> Up to $15,300/yr for Singaporeans. Defers tax on ${fmt(15300)} of income while invested for growth.`);
+  if(ma<71500) sugg.push(`<strong>MA Top-up:</strong> Top up to BHS ($71,500) for 4% returns. Excess MA earnings flow to SA.`);
+  if(oa>20000) sugg.push(`<strong>OA-to-SA Transfer:</strong> Consider transferring excess OA to SA for higher 4% returns (irreversible).`);
+  if(!sugg.length) sugg.push('CPF accounts are well-positioned. Continue routine contributions and review at age 55 for retirement sum top-ups.');
+  $('cpfSuggest').innerHTML=sugg.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--border)">${s}</div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// TAX PLANNING
+// ═══════════════════════════════════════════
+function buildTax(d){
+  const annual=d.salary*12+d.side*12;
+  // Simplified SG resident tax
+  function sgTax(ti){
+    const b=[[20000,0],[10000,.02],[10000,.035],[40000,.07],[40000,.115],[40000,.15],[40000,.18],[40000,.19],[40000,.195],[40000,.20],[180000,.22],[500000,.23],[Infinity,.24]];
+    let rem=ti, tax=0, c=0;
+    for(const [span,r] of b){ if(rem<=0) break; const t=Math.min(rem,span); tax+=t*r; rem-=t; c+=t; }
+    return tax;
+  }
+  const relief=Math.min(1000,annual*.5)+(d.dependants>0?d.dependants*4000:0)+(d.marital==='Married'?2000:0);
+  const ti=Math.max(0,annual-relief);
+  const taxBase=sgTax(ti);
+  const taxSRS=sgTax(Math.max(0,ti-15300));
+  const taxCPF=sgTax(Math.max(0,ti-8000));
+  $('taxKpis').innerHTML=[
+    {l:'Gross Income',v:fmt(annual)+'/yr',c:'var(--cyan)'},
+    {l:'Estimated Tax',v:fmt(Math.round(taxBase))+'/yr',c:'var(--red)'},
+    {l:'SRS Savings',v:fmt(Math.round(taxBase-taxSRS))+'/yr',c:'var(--green)'},
+    {l:'CPF SA Top-up Savings',v:fmt(Math.round(taxBase-taxCPF))+'/yr',c:'var(--purple)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  $('tTax').innerHTML=`<thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+    <tr><td>Annual Income</td><td class="num">${fmt(annual)}</td></tr>
+    <tr><td>Earned Income Relief + Dependants + Spouse</td><td class="num neg">−${fmt(relief)}</td></tr>
+    <tr><td>Taxable Income</td><td class="num">${fmt(ti)}</td></tr>
+    <tr class="tr-total-gold"><td style="color:var(--gold-light)">Estimated Tax Payable</td><td class="num" style="color:var(--gold-light)">${fmt(Math.round(taxBase))}</td></tr>
+    <tr><td>If SRS topped up $15,300</td><td class="num pos">${fmt(Math.round(taxSRS))} (save ${fmt(Math.round(taxBase-taxSRS))})</td></tr>
+    <tr><td>If CPF SA topped up $8,000</td><td class="num pos">${fmt(Math.round(taxCPF))} (save ${fmt(Math.round(taxBase-taxCPF))})</td></tr>
+  </tbody>`;
+
+  $('taxStrategies').innerHTML=`
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)"><strong>SRS Top-up ($15,300/yr):</strong> Defers tax on contribution, invested for growth. Withdraw post-62 over 10 years to halve effective rate.</div>
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)"><strong>CPF SA Top-up ($8,000/yr):</strong> Up to $8,000 tax relief for own SA + $8,000 for family. 4% guaranteed compounding.</div>
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)"><strong>Course Fees Relief (up to $5,500):</strong> Skills upgrading and approved courses.</div>
+    <div style="padding:8px 0"><strong>NSman Relief / Parenthood Tax Rebate:</strong> Stack qualifying reliefs to keep effective rate &lt; 12%.</div>`;
+}
+
+// ═══════════════════════════════════════════
+// POLICY SUMMARY
+// ═══════════════════════════════════════════
+function buildPolicy(d){
+  let html='<thead><tr><th>Type</th><th>Insurer</th><th>Plan Name</th><th style="text-align:right">Coverage</th><th style="text-align:right">Cash Value</th><th style="text-align:right">Premium /mo</th></tr></thead><tbody>';
+  if(d.ins.length){
+    d.ins.forEach(p=>{html+=`<tr><td style="color:var(--text-primary)">${p.type}</td><td>${p.insurer||'—'}</td><td>${p.name}</td><td class="num">${fmt(p.cover)}</td><td class="num">${fmt(p.cv)}</td><td class="num">${fmt(p.premium)}</td></tr>`;});
+    const totC=d.ins.reduce((s,p)=>s+p.cover,0);
+    const totCV=d.ins.reduce((s,p)=>s+p.cv,0);
+    const totP=d.ins.reduce((s,p)=>s+p.premium,0);
+    html+=`<tr class="tr-total-gold"><td colspan="3" style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totC)}</td><td class="num" style="color:var(--gold-light)">${fmt(totCV)}</td><td class="num" style="color:var(--gold-light)">${fmt(totP)}</td></tr>`;
+  } else {
+    html+='<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:24px">No policies entered</td></tr>';
+  }
+  html+='</tbody>';
+  $('tPolicy').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// FINANCIAL RATIOS
+// ═══════════════════════════════════════════
+function buildRatios(d){
+  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+  const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totPropV=d.prop.reduce((s,p)=>s+p.value,0);
+  const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
+  const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
+  const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
+  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const nw=totAssets-totLiab;
+  const surplus=inflow-totExp;
+  const liquid=d.cash+totInv;
+  const annualPrem=d.ins.reduce((s,p)=>s+p.premium*12,0);
+
+  const ratios=[
+    {l:'Emergency Fund Ratio',v:totExp>0?(d.cash/totExp).toFixed(1)+' mo':'—',bench:'Target ≥ 6 months',score:totExp>0?Math.min(d.cash/totExp/6,1):0},
+    {l:'Savings Ratio',v:inflow>0?(surplus/inflow*100).toFixed(1)+'%':'—',bench:'Target ≥ 20%',score:inflow>0?Math.min(surplus/inflow/.2,1):0},
+    {l:'Debt-to-Asset',v:totAssets>0?(totLiab/totAssets*100).toFixed(1)+'%':'—',bench:'Healthy < 50%',score:totAssets>0?Math.max(1-totLiab/totAssets/.5,0):1,reverse:true},
+    {l:'Solvency Ratio',v:totAssets>0?(nw/totAssets*100).toFixed(1)+'%':'—',bench:'Target ≥ 50%',score:totAssets>0?Math.min(nw/totAssets/.5,1):0},
+    {l:'Liquidity Ratio',v:totExp>0?(liquid/totExp).toFixed(1)+' mo':'—',bench:'Target 3–6 months',score:totExp>0?Math.min(liquid/totExp/6,1):0},
+    {l:'Insurance Ratio',v:inflow>0?((annualPrem/12)/inflow*100).toFixed(1)+'%':'—',bench:'Healthy 5–15%',score:inflow>0&&annualPrem>0?(()=>{const r=(annualPrem/12)/inflow;return r>=.05&&r<=.15?1:r<.05?.5:.3;})():0},
+    {l:'Investment Ratio',v:nw>0?(totInv/nw*100).toFixed(1)+'%':'—',bench:'Healthy 30–50%',score:nw>0?(()=>{const r=totInv/nw;return r>=.3&&r<=.5?1:r<.3?r/.3*.7:.5;})():0},
+    {l:'Net Worth Ratio',v:inflow>0?(nw/(inflow*12)).toFixed(1)+'x':'—',bench:'Age-based: ≥ Age × 0.5 × Income',score:inflow>0&&d.age?Math.min(nw/(inflow*12*d.age*.5),1):0},
+  ];
+
+  $('ratioGrid').innerHTML=ratios.map((r,i)=>{
+    const cls=r.score>=.75?'good':r.score>=.4?'warn':'bad';
+    const c=cls==='good'?'var(--green)':cls==='warn'?'var(--amber)':'var(--red)';
+    return `<div class="ratio-card ${cls} anim d${(i%6)+1}"><div class="ratio-label">${r.l}</div><div class="ratio-val">${r.v}</div><div class="ratio-bench">${r.bench}</div><div class="ratio-bar"><div class="ratio-bar-fill" style="width:${(r.score*100).toFixed(0)}%;background:${c}"></div></div></div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// GOALS & MILESTONES
+// ═══════════════════════════════════════════
+const goalTemplates={
+  baby:{icon:'\u{1F476}',name:'Baby Planning',target:50000,monthly:2000,age:30,end:54,desc:'Pre/post-natal + child expenses'},
+  wedding:{icon:'\u{1F492}',name:'Wedding',target:40000,monthly:0,age:32,end:null,desc:'Banquet, venue, ROM'},
+  property:{icon:'\u{1F3E0}',name:'Property Purchase',target:50000,monthly:360,age:35,end:60,desc:'HDB Downpayment'},
+  upgrade:{icon:'\u{1F3D9}️',name:'Property Upgrade',target:100000,monthly:0,age:35,end:60,desc:'HDB → Condo'},
+  car:{icon:'\u{1F697}',name:'Car Purchase',target:35000,monthly:2150,age:35,end:42,desc:'Downpayment + running cost'},
+  reno:{icon:'\u{1F528}',name:'Renovation',target:60000,monthly:0,age:35,end:null,desc:'One-off'},
+  education:{icon:'\u{1F393}',name:'Education Fund',target:150000,monthly:500,age:30,end:48,desc:'University tuition'},
+  travel:{icon:'✈️',name:'Travel Fund',target:10000,monthly:0,age:35,end:null,desc:'Annual / dream trip'},
+  retire:{icon:'\u{1F33C}',name:'Retirement Corpus',target:1500000,monthly:2000,age:35,end:65,desc:'20yr drawdown fund'},
+  emergency:{icon:'\u{1F6E1}️',name:'Emergency Fund',target:50000,monthly:500,age:35,end:null,desc:'6 months expenses'},
+  eldercare:{icon:'\u{1F9D3}',name:'Eldercare',target:80000,monthly:300,age:40,end:65,desc:'Parents care + assisted living'},
+  medical:{icon:'\u{1F3E5}',name:'Medical Buffer',target:30000,monthly:0,age:40,end:null,desc:'Out-of-pocket reserve'},
+};
+let activeGoals=[];
+
+function buildGoalsModule(d){
+  $('goalQuickAdd').innerHTML=Object.entries(goalTemplates).map(([k,g])=>{
+    const active=activeGoals.some(x=>x.key===k);
+    return `<button class="goal-chip${active?' active':''}" onclick="toggleGoal('${k}')">${g.icon} ${g.name}</button>`;
+  }).join('');
+
+  const ag=$('activeGoals');
+  if(activeGoals.length===0){ ag.innerHTML='<p style="color:var(--text-tertiary);text-align:center;padding:24px">No active goals. Click a quick-add chip above.</p>'; }
+  else {
+    let html=`<div class="goal-row goal-row-head"><div>Goal</div><div>Target</div><div>Monthly</div><div>Goal Age</div><div>End Age</div><div></div></div>`;
+    activeGoals.forEach((g,i)=>{
+      html+=`<div class="goal-row">
+        <div class="goal-icon-cell">${g.icon} ${g.name}</div>
+        <div><input type="number" value="${g.target}" onchange="updateGoal(${i},'target',this.value)"></div>
+        <div><input type="number" value="${g.monthly}" onchange="updateGoal(${i},'monthly',this.value)"></div>
+        <div><input type="number" value="${g.age}" onchange="updateGoal(${i},'age',this.value)"></div>
+        <div><input type="number" value="${g.end||''}" placeholder="—" onchange="updateGoal(${i},'end',this.value)"></div>
+        <div><button class="btn-del" onclick="removeGoal(${i})">&times;</button></div>
+      </div>`;
+    });
+    ag.innerHTML=html;
+  }
+
+  // Cashflow impact
+  const totMonthly=activeGoals.reduce((s,g)=>s+(+g.monthly||0),0);
+  const totLump=activeGoals.reduce((s,g)=>s+(+g.target||0),0);
+  $('goalImpact').innerHTML=`
+    <div class="report-row"><span class="lab">Total lump-sum targets</span><span class="val">${fmt(totLump)}</span></div>
+    <div class="report-row"><span class="lab">Total ongoing monthly</span><span class="val">${fmt(totMonthly)}/mo</span></div>
+    <div class="report-row"><span class="lab">Annual goal allocation</span><span class="val">${fmt(totMonthly*12)}/yr</span></div>
+    <div class="report-row"><span class="lab">Current monthly surplus</span><span class="val">${fmt(d.salary+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0))}</span></div>
+    <div class="report-row"><span class="lab">Surplus after goals</span><span class="val ${(d.salary+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0))-totMonthly>=0?'pos':'neg'}">${fmts(d.salary+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0)-totMonthly)}</span></div>`;
+}
+
+function toggleGoal(key){
+  const idx=activeGoals.findIndex(g=>g.key===key);
+  if(idx>=0) activeGoals.splice(idx,1);
+  else activeGoals.push({key, ...goalTemplates[key]});
+  if(lastData) buildGoalsModule(lastData);
+}
+function updateGoal(i,field,val){ activeGoals[i][field]=field==='end'?(val?+val:null):+val; if(lastData) buildGoalsModule(lastData); }
+function removeGoal(i){ activeGoals.splice(i,1); if(lastData) buildGoalsModule(lastData); }
+
+// ═══════════════════════════════════════════
+// MEETING NOTES
+// ═══════════════════════════════════════════
+let notes=[];
+function buildNotes(){
+  if(!$('noteDate').value) $('noteDate').value=new Date().toISOString().split('T')[0];
+  $('notesList').innerHTML=notes.length?notes.map((n,i)=>`<div class="note-item"><div class="note-meta">${n.date} &middot; <button onclick="removeNote(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.7rem">remove</button></div><div class="note-topic">${n.topic}</div><div class="note-body"><textarea oninput="notes[${i}].body=this.value" placeholder="Discussion, objectives, action items...">${n.body||''}</textarea></div></div>`).join(''):'<p style="color:var(--text-tertiary);text-align:center;padding:24px">No notes yet. Add a topic above to start.</p>';
+}
+function addNote(){
+  const t=$('noteTopic').value.trim();
+  if(!t) return;
+  notes.unshift({date:$('noteDate').value,topic:t,body:''});
+  $('noteTopic').value='';
+  buildNotes();
+}
+function removeNote(i){ notes.splice(i,1); buildNotes(); }
+
+// ═══════════════════════════════════════════
+// PROPOSALS
+// ═══════════════════════════════════════════
+function buildProposals(d){
+  const annualIncome=d.salary*12;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+  const lifeCover=d.ins.filter(p=>/life|death|whole|term/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+  const ciCover=d.ins.filter(p=>/critical/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
+  const lifeGap=Math.max(annualIncome*10-lifeCover,0);
+  const ciGap=Math.max(annualIncome*4-ciCover,0);
+  const props=[];
+  if(lifeGap>0) props.push({name:'Term Life Top-up',cover:lifeGap,premium:Math.round(lifeGap*0.0001*12),rationale:`Close life cover gap of ${fmt(lifeGap)} to reach 10× annual income.`,product:'GREAT Term — 25 to 30 year level term, low premium high cover.'});
+  if(ciGap>0) props.push({name:'Critical Illness Coverage',cover:ciGap,premium:Math.round(ciGap*0.0007*12),rationale:`Close CI cover gap of ${fmt(ciGap)} to 4× annual income benchmark.`,product:'GREAT CompleteCare or GREAT Cancer Guard with multi-pay rider.'});
+  if(d.cash<totExp*6) props.push({name:'Emergency Fund Build-up',cover:totExp*6-d.cash,premium:Math.round((totExp*6-d.cash)/24),rationale:`Build emergency fund to 6 months expenses (${fmt(totExp*6)}).`,product:'High-yield savings — UOB One / DBS Multiplier — until target reached.'});
+  if(d.exp.Savings<d.salary*0.2) props.push({name:'Regular Investment Plan',cover:0,premium:Math.round(d.salary*0.1),rationale:'Build wealth via dollar-cost averaging to lift savings rate above 20%.',product:'GREAT Wealth Multiplier ILP or robo-advisor (Endowus / Syfe Core).'});
+  const annualPrem=d.ins.reduce((s,p)=>s+p.premium*12,0);
+  if(annualPrem>0) props.push({name:'Dividend-Backed Premium Strategy',cover:0,premium:0,rationale:`Annual premium burden ${fmt(annualPrem)}. Build dividend portfolio of ${fmt(annualPrem/0.045)} to fully cover premiums.`,product:'US/SG Dividend ETF portfolio @ 4.5% yield via Endowus Income Portfolios.'});
+
+  $('proposalsBody').innerHTML=props.length?props.map(p=>`<div style="padding:14px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="color:var(--gold);font-size:1rem">${p.name}</strong>${p.cover?`<span style="color:var(--text-tertiary);font-size:.85rem">${fmt(p.cover)} cover &middot; ${fmt(p.premium)}/mo</span>`:''}</div>
+    <div style="font-size:.88rem;color:var(--text-secondary);margin-bottom:6px">${p.rationale}</div>
+    <div style="font-size:.82rem;color:var(--text-tertiary);font-style:italic">Suggested product: ${p.product}</div>
+  </div>`).join(''):'<p style="color:var(--text-tertiary);text-align:center;padding:24px">No urgent gaps identified. Run a periodic review.</p>';
+}
+
+// ═══════════════════════════════════════════
+// DOCUMENTS
+// ═══════════════════════════════════════════
+function buildDocuments(){
+  const docs=[
+    {title:'Changes to Integrated Shield Plans',cat:'Insurance Updates',desc:'How recent IP changes affect your coverage and out-of-pocket exposure.'},
+    {title:'Changes to Cancer Treatment Insurance',cat:'Insurance Updates',desc:'CDMF list and what is covered effective 2025.'},
+    {title:'GREAT SupremeHealth & TotalCare Update',cat:'Insurance Updates',desc:'2026 plan sustainability changes.'},
+    {title:'Global Markets Quarterly Report',cat:'Investment',desc:'Quarterly outlook + sector rotation strategy.'},
+    {title:'CPF Contribution Limits 2026',cat:'Tax & CPF',desc:'Updated FRS, BHS, MA caps and contribution ceilings.'},
+    {title:'Singapore Estate Planning Primer',cat:'Estate',desc:'CPF nomination, wills, and Lasting Power of Attorney basics.'},
+  ];
+  $('documentsBody').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">'+docs.map(d=>`<div style="background:var(--bg-card-alt);padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border)"><div style="font-size:.65rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">${d.cat}</div><div style="font-weight:600;color:var(--text-primary);margin-bottom:6px">${d.title}</div><div style="font-size:.82rem;color:var(--text-secondary);line-height:1.5">${d.desc}</div></div>`).join('')+'</div>';
+}
+
+// ═══════════════════════════════════════════
+// CLIENT SAVE / LOAD
+// ═══════════════════════════════════════════
+function saveClient(){
+  const data=collectData();
+  data._goals=activeGoals;
+  data._notes=notes;
+  const key='client_'+(data.client||'unnamed');
+  localStorage.setItem(key,JSON.stringify(data));
+  updateClientList();
+  alert('Saved: '+data.client);
+}
+function loadClient(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('client_'));
+  if(!keys.length){ alert('No saved clients'); return; }
+  const name=prompt('Load client (enter name):\n'+keys.map(k=>k.replace('client_','')).join('\n'));
+  if(!name) return;
+  const raw=localStorage.getItem('client_'+name);
+  if(!raw){ alert('Not found'); return; }
+  const d=JSON.parse(raw);
+  // Populate form
+  $('clientName').value=d.client; $('clientDOB').value=d.dob||''; $('clientAge').value=d.age||'';
+  $('maritalStatus').value=d.marital||'Single'; $('dependants').value=d.dependants||0;
+  $('smoker').value=d.smoker||'No'; $('occupation').value=d.occupation||'';
+  $('retireAge').value=d.retireAge||65; $('retireIncome').value=d.retireIncome||0;
+  $('cash').value=d.cash; $('cpfOA').value=d.cpfOA; $('cpfSA').value=d.cpfSA; $('cpfMA').value=d.cpfMA; $('srs').value=d.srs;
+  $('homeLoan').value=d.homeLoan; $('carLoan').value=d.carLoan; $('studentLoan').value=d.studentLoan; $('otherLoan').value=d.otherLoan;
+  $('salary').value=d.salary; $('rentalIncome').value=d.rental; $('dividendIncome').value=d.dividends; $('sideIncome').value=d.side;
+  Object.entries(d.exp).forEach(([k,v])=>{ const id='exp'+k.replace(/[^A-Za-z]/g,''); const el=$(id); if(el) el.value=v;});
+  activeGoals=d._goals||[]; notes=d._notes||[];
+  generate();
+}
+function switchClient(){ loadClient(); }
+function addClient(){ if(confirm('Save current and start a new client?')){ saveClient(); editData(); } }
+function updateClientList(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('client_'));
+  $('sbClientCount').textContent=keys.length||1;
 }
 
 function editData(){$('setupOverlay').classList.remove('hidden');$('dash').classList.add('hidden');}
