@@ -969,6 +969,124 @@ body.sb-open .scrim, body.advisor-mobile .scrim, body.overflow-open .scrim { opa
   .goal-chip { font-size:.78rem; padding:6px 10px; }
 }
 
+/* ═══════════════════════════════════════════
+   PHASE 3 — RESPONSIVE TABLES
+   ═══════════════════════════════════════════ */
+
+/* All tables in cards become horizontally scrollable on small screens */
+@media(max-width:900px){
+  .card table, .panel table:not(.proj-table) {
+    display:block; overflow-x:auto; white-space:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin; scrollbar-color:var(--gold) transparent;
+  }
+  .card table::-webkit-scrollbar { height:6px; }
+  .card table::-webkit-scrollbar-thumb { background:var(--gold-dim); border-radius:3px; }
+  .card table thead, .card table tbody { display:table; width:100%; }
+  /* Hint user about scroll */
+  .card table { mask-image:linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+}
+
+/* Cashflow projection table — keep within wrapper, sticky first column */
+@media(max-width:768px){
+  .proj-table-wrap { max-height:400px; }
+  .proj-table th:first-child, .proj-table td:first-child {
+    position:sticky; left:0; background:var(--bg-card); z-index:1;
+  }
+  .proj-table { font-size:.7rem; }
+  .proj-controls { flex-direction:column; gap:14px; }
+  .proj-control { width:100%; }
+}
+
+/* Tables collapse into cards on phone */
+@media(max-width:600px){
+  .panel .card table[data-stack="card"], .panel .card table:not(.proj-table) {
+    display:block; white-space:normal; mask-image:none;
+  }
+  .panel .card table:not(.proj-table) thead { display:none; }
+  .panel .card table:not(.proj-table) tr {
+    display:block; padding:12px 14px; margin-bottom:8px;
+    background:var(--bg-card-alt); border-radius:10px;
+    border:1px solid var(--border);
+  }
+  .panel .card table:not(.proj-table) tr.tr-section,
+  .panel .card table:not(.proj-table) tr.tr-total-gold,
+  .panel .card table:not(.proj-table) tr.tr-total-green,
+  .panel .card table:not(.proj-table) tr.tr-total-red {
+    background:var(--bg-card); border-left:3px solid var(--gold);
+  }
+  .panel .card table:not(.proj-table) td {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:4px 0; border-bottom:1px dashed var(--border);
+    font-size:.85rem; white-space:normal; text-align:left !important;
+  }
+  .panel .card table:not(.proj-table) td:last-child { border-bottom:none; }
+  .panel .card table:not(.proj-table) td::before {
+    content:attr(data-l); font-size:.72rem; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--text-tertiary); font-weight:600;
+    margin-right:12px; flex-shrink:0;
+  }
+  /* Hide label when first cell (acts as title) */
+  .panel .card table:not(.proj-table) td:first-child {
+    font-weight:600; color:var(--text-primary); padding-bottom:8px;
+    margin-bottom:4px; border-bottom:1px solid var(--border);
+    justify-content:flex-start;
+  }
+  .panel .card table:not(.proj-table) td:first-child::before { display:none; }
+  .panel .card table:not(.proj-table) td.num { text-align:right; font-variant-numeric:tabular-nums; }
+}
+
+/* ═══════════════════════════════════════════
+   PHASE 4 — TOUCH-OPTIMISED CONTROLS
+   ═══════════════════════════════════════════ */
+
+/* Better slider thumbs on touch */
+input[type=range] {
+  -webkit-appearance:none; appearance:none;
+  background:var(--bg-card-alt);
+  border-radius:4px;
+  height:6px;
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--gold);
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(207,181,116,.4);
+  transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover,
+input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
+input[type=range]::-moz-range-thumb {
+  width:20px; height:20px; border-radius:50%;
+  background:var(--gold); cursor:pointer;
+  border:none; box-shadow:0 2px 6px rgba(207,181,116,.4);
+}
+@media(hover:none){
+  input[type=range] { height:8px; }
+  input[type=range]::-webkit-slider-thumb { width:28px; height:28px; }
+  input[type=range]::-moz-range-thumb { width:28px; height:28px; }
+}
+
+/* Bigger toggle on touch */
+@media(hover:none){
+  .ix-toggle { width:52px; height:28px; border-radius:14px; }
+  .ix-toggle::after { width:22px; height:22px; }
+  .ix-toggle.on::after { left:28px; }
+}
+
+/* Goal row → accordion on phone */
+@media(max-width:600px){
+  .goal-row .goal-icon-cell { cursor:pointer; user-select:none; }
+  .goal-row.collapsed > div:not(.goal-icon-cell):not(.btn-del-cell) { display:none; }
+  .goal-row .goal-icon-cell::after {
+    content:'▼'; margin-left:auto; font-size:.6rem; opacity:.5;
+    transition:transform .2s;
+  }
+  .goal-row.collapsed .goal-icon-cell::after { transform:rotate(-90deg); }
+}
+
 /* Touch optimisations */
 @media(hover:none){
   .btn-top, .tab, .goal-chip, .scen-btn, .pol-filter, .ix-toggle, .strat-btn {
@@ -1723,6 +1841,17 @@ function generate(){
   $('sbClientName').textContent=d.client||'—';
   $('sbClientMeta').textContent=`Age ${d.age||'—'} · ${d.marital||'Single'} · ${d.dependants?d.dependants+' dependant(s)':'No dependants'}`;
   updateClientList();
+  labelTables();
+  if(!window._obsInit){ observeForLabels(); window._obsInit=true; }
+}
+// MutationObserver to keep data-l in sync when interactive tables re-render
+function observeForLabels(){
+  const obs=new MutationObserver(muts=>{
+    let needs=false;
+    muts.forEach(m=>{ if(m.target.tagName==='TABLE'||m.target.tagName==='TBODY') needs=true; });
+    if(needs) labelTables();
+  });
+  document.querySelectorAll('.panel .card table').forEach(t=>obs.observe(t,{childList:true,subtree:true}));
 }
 
 // ═══════════════════════════════════════════
@@ -2314,6 +2443,21 @@ function activateSidebar(){ document.body.classList.add('has-sidebar'); }
 
 function toggleLight(){ document.body.classList.toggle('light'); }
 
+function labelTables(){
+  document.querySelectorAll('.panel .card table').forEach(t=>{
+    if(t.classList.contains('proj-table')) return;
+    const headers=Array.from(t.querySelectorAll('thead th')).map(th=>th.textContent.trim());
+    if(!headers.length) return;
+    t.querySelectorAll('tbody tr').forEach(tr=>{
+      Array.from(tr.children).forEach((td,i)=>{
+        if(!td.getAttribute('data-l')) td.setAttribute('data-l', headers[i]||'');
+      });
+    });
+  });
+}
+// Run after every generate / sim update
+const _origGenerate=window.generate;
+
 function toggleSidebar(){ document.body.classList.toggle('sb-open'); document.body.classList.remove('overflow-open'); }
 function toggleOverflowMenu(){ document.body.classList.toggle('overflow-open'); document.body.classList.remove('sb-open'); }
 function closeAllSheets(){ document.body.classList.remove('sb-open','overflow-open'); if(window.matchMedia('(max-width:768px)').matches) document.body.classList.remove('advisor'); }
@@ -2322,6 +2466,14 @@ document.addEventListener('click', e => {
   if(e.target.classList.contains('tab') || e.target.closest('.tab')){
     if(window.matchMedia('(max-width:1024px)').matches) document.body.classList.remove('sb-open');
   }
+});
+// Phone-only: tap goal icon to collapse/expand goal-row
+document.addEventListener('click', e => {
+  if(!window.matchMedia('(max-width:600px)').matches) return;
+  const cell = e.target.closest('.goal-row .goal-icon-cell');
+  if(!cell) return;
+  const row = cell.closest('.goal-row');
+  if(row && !row.classList.contains('goal-row-head')) row.classList.toggle('collapsed');
 });
 
 // ═══════════════════════════════════════════
