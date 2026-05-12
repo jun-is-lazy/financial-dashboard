@@ -829,16 +829,153 @@ body.light::after { display:none; }
 /* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
+
+/* Hamburger (mobile menu trigger) */
+.hamburger { display:none; flex-direction:column; gap:4px; background:none; border:none; padding:8px; cursor:pointer; margin-right:10px; }
+.hamburger span { display:block; width:22px; height:2px; background:var(--text-primary); border-radius:2px; transition:all .25s; }
+body.sb-open .hamburger span:nth-child(1) { transform:translateY(6px) rotate(45deg); }
+body.sb-open .hamburger span:nth-child(2) { opacity:0; }
+body.sb-open .hamburger span:nth-child(3) { transform:translateY(-6px) rotate(-45deg); }
+
+/* Topbar overflow button */
+.topbar-overflow { display:none; background:none; border:none; color:var(--text-primary); font-size:1.4rem; padding:6px 10px; cursor:pointer; }
+
+/* Scrim (under drawers / sheets) */
+.scrim { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:90; opacity:0; pointer-events:none; transition:opacity .25s; }
+body.sb-open .scrim, body.advisor-mobile .scrim, body.overflow-open .scrim { opacity:1; pointer-events:auto; }
+
 @media(max-width:960px) { .kpis{grid-template-columns:repeat(2,1fr);} }
-@media(max-width:700px) {
-  .cols2{grid-template-columns:1fr;}
-  .kpis{grid-template-columns:1fr;}
-  .form-grid{grid-template-columns:1fr;}
-  .topbar,.tabs,.main{padding-left:20px;padding-right:20px;}
-  .setup-overlay{padding:24px 16px 60px;}
-  .form-card{padding:22px;}
-  .tab{padding:12px 14px;font-size:.76rem;}
-  .kpi-val{font-size:1.35rem;}
+
+/* TABLET — 1024px and below: sidebar becomes drawer */
+@media(max-width:1024px) {
+  .hamburger { display:flex; }
+  .sidebar {
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.23,1,.32,1);
+    z-index:100; padding-top:24px;
+    box-shadow:8px 0 32px rgba(0,0,0,.3);
+  }
+  body.sb-open .sidebar { transform:translateX(0); }
+  body.has-sidebar .topbar,
+  body.has-sidebar .main { margin-left:0; }
+  body.has-sidebar .topbar { padding-left:8px; }
+  body.advisor .dash > .topbar,
+  body.advisor .dash > .main { margin-right:0; }
+}
+
+/* MEDIUM — 900px and below */
+@media(max-width:900px) {
+  .cols2 { grid-template-columns:1fr; }
+  .ratio-grid { grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); }
+}
+
+/* TABLET — 768px and below */
+@media(max-width:768px) {
+  .kpis { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .kpi-val { font-size:1.3rem; }
+  .topbar-inner { padding:10px 14px !important; min-height:56px; }
+  .topbar-brand h1 { font-size:.95rem; }
+  .topbar-brand .divider, .topbar-brand .client { display:none; }
+  .main { padding:18px 14px !important; }
+  .scenario-btns { grid-template-columns:1fr 1fr; }
+  .gap-cards { grid-template-columns:1fr; }
+  .ratio-grid { grid-template-columns:1fr 1fr; }
+  .ix-row { grid-template-columns:1fr 60px; grid-template-areas:"label val" "input input"; gap:6px 10px; }
+  .ix-row .ix-label { grid-area:label; }
+  .ix-row .ix-val { grid-area:val; }
+  .ix-row input, .ix-row select { grid-area:input; }
+  .ix-row .ix-toggle { grid-area:input; justify-self:start; }
+  .health-card { flex-direction:column; align-items:flex-start; }
+  .health-ring { width:80px; height:80px; }
+  .guidance { width:100%; max-width:380px; }
+  body.advisor .dash > .topbar,
+  body.advisor .dash > .main { margin-right:0; }
+  /* Guidance becomes bottom-sheet on phone */
+  .guidance {
+    top:auto; left:0; right:0; bottom:0; width:100%; max-width:none;
+    max-height:75vh; height:auto;
+    border-left:none; border-top:1px solid var(--border);
+    border-radius:18px 18px 0 0;
+    transform:translateY(100%);
+    box-shadow:0 -12px 40px rgba(0,0,0,.4);
+  }
+  body.advisor .guidance { transform:translateY(0); }
+  .guidance-head::before {
+    content:''; position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    width:40px; height:4px; background:var(--text-tertiary); border-radius:2px; opacity:.5;
+  }
+}
+
+/* PHONE — 640px and below */
+@media(max-width:640px) {
+  .ratio-grid { grid-template-columns:1fr; }
+  .scenario-btns { grid-template-columns:1fr; }
+  .form-grid { grid-template-columns:1fr; }
+  .setup-overlay { padding:20px 14px 100px; }
+  .form-card { padding:18px 16px; border-radius:12px; }
+  .form-card h3 { font-size:1.1rem; }
+  .setup-masthead h1 { font-size:1.8rem; }
+  .topbar-actions {
+    position:fixed; top:56px; right:14px; z-index:95;
+    background:var(--bg-raised); border:1px solid var(--border); border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.4); padding:8px;
+    flex-direction:column; gap:4px; align-items:stretch;
+    transform:translateY(-10px) scale(.96); opacity:0; pointer-events:none;
+    transition:all .2s; min-width:170px;
+  }
+  body.overflow-open .topbar-actions { transform:none; opacity:1; pointer-events:auto; }
+  .topbar-actions .btn-top { width:100%; text-align:left; }
+  .topbar-overflow { display:block; }
+  .btn-go {
+    position:sticky; bottom:14px; margin:24px 0 0;
+    box-shadow:0 12px 40px rgba(207,181,116,.3);
+    z-index:10;
+  }
+  .repeater {
+    background:var(--bg-card-alt); padding:14px 16px; border-radius:10px;
+    margin-bottom:10px; border:1px solid var(--border);
+    position:relative;
+  }
+  .repeater .form-grid { grid-template-columns:1fr; gap:10px; }
+  .repeater .btn-del { position:absolute; top:8px; right:8px; }
+  .ratio-card { padding:14px 16px; }
+  .ratio-card .ratio-val { font-size:1.3rem; }
+  .gap-header { flex-direction:column; gap:10px; }
+  .goal-row {
+    grid-template-columns:1fr 1fr; gap:8px;
+    padding:14px; background:var(--bg-card-alt); border-radius:10px; margin-bottom:8px;
+    border:1px solid var(--border);
+  }
+  .goal-row-head { display:none; }
+  .goal-row .goal-icon-cell { grid-column:span 2; font-weight:600; }
+  .goal-row .btn-del { grid-column:span 2; justify-self:end; }
+  .ix-row { grid-template-columns:1fr; gap:6px; }
+  .ix-row .ix-val { text-align:left; color:var(--gold); }
+  .chart-box { height:240px !important; }
+  .chart-box.sm { height:180px !important; }
+  .notes-controls { flex-direction:column; }
+  .notes-controls input { width:100%; }
+  body::after { display:none; } /* kill grain on mobile for perf */
+}
+
+/* TINY — 420px and below */
+@media(max-width:420px) {
+  .kpis { grid-template-columns:1fr; }
+  .kpi-val { font-size:1.4rem; }
+  .ratio-grid { grid-template-columns:1fr; }
+  .topbar-brand h1 { font-size:.85rem; }
+  .sidebar { width:88%; max-width:300px; }
+  .pol-filters .pol-filter { font-size:.7rem; padding:5px 9px; }
+  .goal-chip { font-size:.78rem; padding:6px 10px; }
+}
+
+/* Touch optimisations */
+@media(hover:none){
+  .btn-top, .tab, .goal-chip, .scen-btn, .pol-filter, .ix-toggle, .strat-btn {
+    min-height:44px;
+  }
+  input[type=range] { height:44px; }
+  input, select { font-size:16px !important; } /* prevent iOS zoom */
 }
 
 /* ═══════════════════════════════════════════
@@ -1073,19 +1210,24 @@ body.light::after { display:none; }
 </aside>
   <div class="topbar">
     <div class="topbar-inner">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
       <div class="topbar-brand">
         <h1>Financial Dashboard</h1>
         <div class="divider"></div>
         <span class="client" id="dClient"></span>
       </div>
-      <div class="topbar-actions">
-        <button class="btn-top" onclick="toggleLight()">&#9728;/&#127769;</button>
+      <div class="topbar-actions" id="topActions">
+        <button class="btn-top" onclick="toggleLight()" aria-label="Theme">&#9728;/&#127769;</button>
         <button class="btn-top" id="viewToggle" onclick="toggleView()">Advisor View</button>
         <button class="btn-top" onclick="editData()">Edit</button>
         <button class="btn-top" onclick="exportPDF()">Export PDF</button>
       </div>
+      <button class="topbar-overflow" onclick="toggleOverflowMenu()" aria-label="More">&#8942;</button>
     </div>
   </div>
+  <div class="scrim" id="scrim" onclick="closeAllSheets()"></div>
 
   <aside class="sidebar" id="sidebar">
     <div class="sb-group">
@@ -2171,6 +2313,16 @@ function toggleStrat(gapKey, stratId) {
 function activateSidebar(){ document.body.classList.add('has-sidebar'); }
 
 function toggleLight(){ document.body.classList.toggle('light'); }
+
+function toggleSidebar(){ document.body.classList.toggle('sb-open'); document.body.classList.remove('overflow-open'); }
+function toggleOverflowMenu(){ document.body.classList.toggle('overflow-open'); document.body.classList.remove('sb-open'); }
+function closeAllSheets(){ document.body.classList.remove('sb-open','overflow-open'); if(window.matchMedia('(max-width:768px)').matches) document.body.classList.remove('advisor'); }
+// Auto-close sidebar on tab click (mobile)
+document.addEventListener('click', e => {
+  if(e.target.classList.contains('tab') || e.target.closest('.tab')){
+    if(window.matchMedia('(max-width:1024px)').matches) document.body.classList.remove('sb-open');
+  }
+});
 
 // ═══════════════════════════════════════════
 // NET WORTH (interactive)
