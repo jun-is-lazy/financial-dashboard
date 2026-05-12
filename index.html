@@ -965,14 +965,20 @@ body.light::after { display:none; }
       <div class="form-group"><label>Client Name</label><input id="clientName" placeholder="e.g. John Tan"></div>
       <div class="form-group"><label>Date of Birth</label><input id="clientDOB" type="date" onchange="calcAge()"></div>
       <div class="form-group"><label>Age</label><input id="clientAge" type="number" placeholder="auto from DOB"></div>
+      <div class="form-group"><label>Nationality</label>
+        <select id="nationality"><option>Singapore Citizen</option><option>Singapore PR</option><option>Foreigner / EP</option></select>
+      </div>
       <div class="form-group"><label>Marital Status</label>
-        <select id="maritalStatus"><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select>
+        <select id="maritalStatus"><option>Single</option><option>Married</option><option>Engaged</option><option>Divorced</option><option>Widowed</option></select>
       </div>
       <div class="form-group"><label>Dependants</label><input id="dependants" type="number" placeholder="0"></div>
       <div class="form-group"><label>Smoker</label>
         <select id="smoker"><option value="No">No</option><option value="Yes">Yes</option></select>
       </div>
       <div class="form-group"><label>Occupation</label><input id="occupation" placeholder="e.g. Engineer"></div>
+      <div class="form-group"><label>Risk Profile</label>
+        <select id="riskProfile"><option>Conservative</option><option>Moderate</option><option selected>Balanced</option><option>Growth</option><option>Aggressive</option></select>
+      </div>
       <div class="form-group"><label>Retirement Age</label><input id="retireAge" type="number" placeholder="65" value="65"></div>
       <div class="form-group"><label>Desired Retirement Income / mo</label><input id="retireIncome" type="number" placeholder="0"></div>
       <div class="form-group"><label>Dashboard Date</label><input id="dashDate" type="date"></div>
@@ -1006,22 +1012,25 @@ body.light::after { display:none; }
   </div>
 
   <div class="form-card">
-    <h3>Liabilities</h3>
+    <h3>Other Liabilities</h3>
+    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Property loans are captured per-property above &mdash; only enter non-property debts here.</p>
     <div class="form-grid">
-      <div class="form-group"><label>Home Loan</label><input id="homeLoan" type="number" placeholder="0"></div>
       <div class="form-group"><label>Car Loan</label><input id="carLoan" type="number" placeholder="0"></div>
       <div class="form-group"><label>Student Loan</label><input id="studentLoan" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Other Loans / Credit</label><input id="otherLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Renovation Loan</label><input id="renoLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Credit Card / Personal</label><input id="otherLoan" type="number" placeholder="0"></div>
     </div>
   </div>
 
   <div class="form-card">
     <h3>Monthly Income</h3>
+    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Enter gross monthly figures. Annual bonus auto-amortised over 12 months.</p>
     <div class="form-grid">
-      <div class="form-group"><label>Salary</label><input id="salary" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Rental Income</label><input id="rentalIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Dividends / Interest</label><input id="dividendIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Side Income / Freelance</label><input id="sideIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="number" placeholder="0"></div>
     </div>
   </div>
 
@@ -1361,9 +1370,12 @@ function addProp(){
   d.innerHTML=`<button class="btn-del" onclick="this.parentElement.remove()">&times;</button>
   <div class="form-grid">
     <div class="form-group"><label>Property Name</label><input id="pN${i}" placeholder="e.g. HDB 4-Room"></div>
-    <div class="form-group"><label>Type</label><select id="pT${i}"><option>HDB</option><option>Condo</option><option>Landed</option><option>Commercial</option><option>Other</option></select></div>
+    <div class="form-group"><label>Type</label><select id="pT${i}"><option>HDB</option><option>Condo</option><option>EC</option><option>Landed</option><option>Commercial</option><option>Other</option></select></div>
+    <div class="form-group"><label>Usage</label><select id="pU${i}"><option>Owner-occupied</option><option>Rental</option><option>Investment</option></select></div>
     <div class="form-group"><label>Market Value</label><input id="pV${i}" type="number" placeholder="0"></div>
     <div class="form-group"><label>Loan Outstanding</label><input id="pL${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Monthly Mortgage</label><input id="pM${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Loan Tenure Left (yrs)</label><input id="pY${i}" type="number" placeholder="0"></div>
   </div>`;
   $('propList').appendChild(d);
 }
@@ -1393,26 +1405,31 @@ function calcAge(){
 
 function collectData(){
   const cur=$('currency').value; sym=cur==='MYR'?'RM ':'$';
+  const bonus=v('bonus'); // annual bonus → monthly portion
   const d={
     client:$('clientName').value||'Client',
     dob:$('clientDOB').value, age:v('clientAge'),
+    nationality:$('nationality')?.value||'Singapore Citizen',
     marital:$('maritalStatus').value, dependants:v('dependants'),
     smoker:$('smoker').value, occupation:$('occupation').value,
+    riskProfile:$('riskProfile')?.value||'Balanced',
     retireAge:v('retireAge')||65, retireIncome:v('retireIncome'),
     date:$('dashDate').value, cur,
     cash:v('cash'), cpfOA:v('cpfOA'), cpfSA:v('cpfSA'), cpfMA:v('cpfMA'), srs:v('srs'),
-    homeLoan:v('homeLoan'), carLoan:v('carLoan'), studentLoan:v('studentLoan'), otherLoan:v('otherLoan'),
-    salary:v('salary'), rental:v('rentalIncome'), dividends:v('dividendIncome'), side:v('sideIncome'),
+    carLoan:v('carLoan'), studentLoan:v('studentLoan'), renoLoan:v('renoLoan')||0, otherLoan:v('otherLoan'),
+    salary:v('salary'), bonus, bonusMonthly:bonus/12, rental:v('rentalIncome'), dividends:v('dividendIncome'), side:v('sideIncome'),
     exp:{Housing:v('expHousing'),'Food & Dining':v('expFood'),Transport:v('expTransport'),Utilities:v('expUtilities'),Insurance:v('expInsurance'),Shopping:v('expShopping'),Entertainment:v('expEntertainment'),Education:v('expEducation'),Healthcare:v('expHealthcare'),'Family':v('expFamily'),'Savings':v('expSavings'),Others:v('expOthers')},
     inv:[], prop:[], ins:[]
   };
+  // Back-compat
+  d.homeLoan=0;
   document.querySelectorAll('#invList .repeater').forEach((el,idx)=>{
     const n=el.querySelector('[id^="iN"]'),t=el.querySelector('[id^="iT"]'),val=el.querySelector('[id^="iV"]'),c=el.querySelector('[id^="iC"]');
     if(n)d.inv.push({name:n.value||'Investment '+(idx+1),type:t?.value||'',value:+(val?.value)||0,cost:+(c?.value)||0});
   });
   document.querySelectorAll('#propList .repeater').forEach((el,idx)=>{
-    const n=el.querySelector('[id^="pN"]'),t=el.querySelector('[id^="pT"]'),val=el.querySelector('[id^="pV"]'),l=el.querySelector('[id^="pL"]');
-    if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',value:+(val?.value)||0,loan:+(l?.value)||0});
+    const n=el.querySelector('[id^="pN"]'),t=el.querySelector('[id^="pT"]'),u=el.querySelector('[id^="pU"]'),val=el.querySelector('[id^="pV"]'),l=el.querySelector('[id^="pL"]'),m=el.querySelector('[id^="pM"]'),y=el.querySelector('[id^="pY"]');
+    if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',usage:u?.value||'Owner-occupied',value:+(val?.value)||0,loan:+(l?.value)||0,monthlyMortgage:+(m?.value)||0,tenureYrs:+(y?.value)||0});
   });
   document.querySelectorAll('#insList .repeater').forEach((el,idx)=>{
     const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]');
@@ -1438,9 +1455,9 @@ function generate(){
   const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
   const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
   const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
-  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const totLiab=d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan+totPropL;
   const nw=totAssets-totLiab;
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   const totExp=Object.values(d.exp).reduce((s,v)=>s+v,0);
   const surplus=inflow-totExp;
   const passive=d.rental+d.dividends;
@@ -1483,11 +1500,11 @@ function generate(){
     <tr><td>Insurance Cash Value</td><td class="num pos">${fmt(insCV)}</td></tr>
     <tr class="tr-total-green"><td>Total Assets</td><td class="num">${fmt(totAssets)}</td></tr>
     <tr class="tr-section"><td>Liabilities</td><td></td></tr>`;
-  if(d.homeLoan) b+=`<tr><td>Home Loan</td><td class="num neg">\u2212${fmt(d.homeLoan)}</td></tr>`;
+  if(totPropL) b+=`<tr><td>Property Loans</td><td class="num neg">\u2212${fmt(totPropL)}</td></tr>`;
   if(d.carLoan) b+=`<tr><td>Car Loan</td><td class="num neg">\u2212${fmt(d.carLoan)}</td></tr>`;
   if(d.studentLoan) b+=`<tr><td>Student Loan</td><td class="num neg">\u2212${fmt(d.studentLoan)}</td></tr>`;
-  if(d.otherLoan) b+=`<tr><td>Other Loans</td><td class="num neg">\u2212${fmt(d.otherLoan)}</td></tr>`;
-  if(totPropL) b+=`<tr><td>Property Loans</td><td class="num neg">\u2212${fmt(totPropL)}</td></tr>`;
+  if(d.renoLoan) b+=`<tr><td>Renovation Loan</td><td class="num neg">\u2212${fmt(d.renoLoan)}</td></tr>`;
+  if(d.otherLoan) b+=`<tr><td>Credit Card / Personal</td><td class="num neg">\u2212${fmt(d.otherLoan)}</td></tr>`;
   b+=`<tr class="tr-total-red"><td>Total Liabilities</td><td class="num">\u2212${fmt(totLiab)}</td></tr>
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Net Worth</td><td class="num">${fmts(nw)}</td></tr></tbody>`;
   $('tBal').innerHTML=b;
@@ -1601,7 +1618,7 @@ function updateProj(){
   const retAge=d.retireAge||65;
   const totExp0=Object.values(d.exp).reduce((s,x)=>s+x,0);
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
-  let cash=d.cash, nw=d.cash+cpf+d.inv.reduce((s,i)=>s+i.value,0)+d.prop.reduce((s,p)=>s+p.value-p.loan,0)+d.ins.reduce((s,i)=>s+i.cv,0)-(d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan);
+  let cash=d.cash, nw=d.cash+cpf+d.inv.reduce((s,i)=>s+i.value,0)+d.prop.reduce((s,p)=>s+p.value-p.loan,0)+d.ins.reduce((s,i)=>s+i.cv,0)-(d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan);
   let invAcct=d.inv.reduce((s,i)=>s+i.value,0);
   const year0=new Date().getFullYear();
   let html='<thead><tr><th>Age</th><th>Year</th><th style="text-align:right">Income /mo</th><th style="text-align:right">Expenses /mo</th><th style="text-align:right">Dividend /mo</th><th style="text-align:right">Cash at Bank</th><th style="text-align:right">Annual Surplus</th><th style="text-align:right">Net Worth</th><th style="text-align:right">Inv. Acct Value</th><th>Milestones / Notes</th></tr></thead><tbody>';
@@ -1614,7 +1631,7 @@ function updateProj(){
     const age=start+i, year=year0+i;
     const incomeFactor=Math.pow(1+ig,i);
     const expFactor=Math.pow(1+inf,i);
-    const inc=age<retAge?(d.salary+d.side)*incomeFactor:0;
+    const inc=age<retAge?(d.salary+(d.bonusMonthly||0)+d.side)*incomeFactor:0;
     const exp=(totExp0+(goalMonthly[age]||0))*expFactor;
     const div=invAcct*0.045/12;
     const lump=goalLump[age]||0;
@@ -1638,7 +1655,7 @@ function updateProj(){
 let lastData = null;
 
 function buildHealthScore(d){
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
   const surplus=inflow-totExp;
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
@@ -1755,7 +1772,7 @@ const scenarios=[
   {id:'prop',icon:'\u{1F3E0}',name:'Buy Property',desc:'$1.2M home, 25% down, 25yr loan',apply:(d)=>{
     const price=1200000, down=price*0.25, loan=price-down;
     const monthly=loan*(0.035/12)/(1-Math.pow(1+0.035/12,-300));
-    const inflow=d.salary+d.rental+d.dividends+d.side;
+    const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
     const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
     const newSurplus=inflow-totExp-monthly;
     return {rows:[
@@ -1769,7 +1786,7 @@ const scenarios=[
   }},
   {id:'car',icon:'\u{1F697}',name:'Buy Car',desc:'$120k car, 5yr loan',apply:(d)=>{
     const price=120000, monthly=price*1.04/60+250; // loan + petrol/insurance estimate
-    const inflow=d.salary+d.rental+d.dividends+d.side;
+    const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
     const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
     const newSurplus=inflow-totExp-monthly;
     return {rows:[
@@ -1781,7 +1798,7 @@ const scenarios=[
   }},
   {id:'child',icon:'\u{1F476}',name:'Have Child',desc:'+$1.5k/mo expenses for 22 years',apply:(d)=>{
     const extra=1500;
-    const inflow=d.salary+d.rental+d.dividends+d.side;
+    const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
     const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
     const newSurplus=inflow-totExp-extra;
     const totalCost=extra*12*22;
@@ -1813,7 +1830,7 @@ function runScenario(id, keep){
 // REPORT GENERATOR
 // ═══════════════════════════════════════════
 function buildReport(d){
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
   const surplus=inflow-totExp;
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
@@ -1822,7 +1839,7 @@ function buildReport(d){
   const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
   const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
   const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
-  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const totLiab=d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan+totPropL;
   const nw=totAssets-totLiab;
   const ef=totExp>0?(d.cash/totExp):0;
   const lifeCover=d.ins.filter(p=>/life|death|whole|term/i.test(p.type)).reduce((s,p)=>s+p.cover,0);
@@ -2165,7 +2182,7 @@ function buildNetWorth(d){
   const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
   const liquid=d.cash+d.srs+totInv;
   const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
-  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const totLiab=d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan+totPropL;
   const nw=totAssets-totLiab;
 
   $('nwKpis').innerHTML=[
@@ -2179,7 +2196,7 @@ function buildNetWorth(d){
   charts.nw2=new Chart($('cNW2'),{type:'pie',data:{labels:['Cash','CPF','SRS','Investments','Property','Insurance CV'],datasets:[{data:[d.cash,cpf,d.srs,totInv,totPropV,insCV],backgroundColor:COLS.slice(0,6),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,font:{size:10}}}}}});
 
   $('tNWDetail').innerHTML=`<thead><tr><th>Component</th><th style="text-align:right">Value</th><th style="text-align:right">% of NW</th></tr></thead><tbody>
-    ${[['Cash & Savings',d.cash],['CPF OA',d.cpfOA],['CPF SA',d.cpfSA],['CPF MA',d.cpfMA],['SRS',d.srs],['Investments',totInv],['Property',totPropV],['Insurance CV',insCV],['Home Loan',-d.homeLoan],['Car Loan',-d.carLoan],['Property Loans',-totPropL],['Other Loans',-(d.studentLoan+d.otherLoan)]].filter(([,v])=>v!==0).map(([l,v])=>`<tr><td>${l}</td><td class="num ${v>=0?'pos':'neg'}">${v>=0?'':'−'}${fmt(Math.abs(v))}</td><td class="num" style="color:var(--text-tertiary)">${nw>0?(v/nw*100).toFixed(1):0}%</td></tr>`).join('')}
+    ${[['Cash & Savings',d.cash],['CPF OA',d.cpfOA],['CPF SA',d.cpfSA],['CPF MA',d.cpfMA],['SRS',d.srs],['Investments',totInv],['Property',totPropV],['Insurance CV',insCV],['Property Loans',-totPropL],['Car Loan',-d.carLoan],['Student Loan',-d.studentLoan],['Renovation Loan',-(d.renoLoan||0)],['Credit Card / Personal',-d.otherLoan]].filter(([,v])=>v!==0).map(([l,v])=>`<tr><td>${l}</td><td class="num ${v>=0?'pos':'neg'}">${v>=0?'':'−'}${fmt(Math.abs(v))}</td><td class="num" style="color:var(--text-tertiary)">${nw>0?(v/nw*100).toFixed(1):0}%</td></tr>`).join('')}
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Net Worth</td><td class="num" style="color:var(--gold-light)">${fmts(nw)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr>
   </tbody>`;
 
@@ -2199,12 +2216,12 @@ function updateNWSim(){
   const totPropV=d.prop.reduce((s,p)=>s+p.value,0);
   const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
   const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   const annualSavings=inflow*12*(nwSim.savingsRate/100);
   const years=10;
   const labels=[], nwArr=[], cashArr=[], invArr=[], propArr=[];
   let cash=d.cash, inv=totInv, prop=totPropV, _cpf=cpf, ins=insCV;
-  let propLoan=totPropL, otherDebt=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan-totPropL;
+  let propLoan=totPropL, otherDebt=d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan-totPropL;
   for(let i=0;i<=years;i++){
     const nw=cash+inv+prop+_cpf+ins-propLoan-otherDebt;
     labels.push(`Y+${i}`); nwArr.push(Math.round(nw)); cashArr.push(Math.round(cash)); invArr.push(Math.round(inv)); propArr.push(Math.round(prop-propLoan));
@@ -2440,7 +2457,7 @@ function sgTax(ti){
 }
 let taxSim={income:0, srs:0, sa:0, course:0, ns:0, parent:0};
 function buildTax(d){
-  if(taxSim.income===0) taxSim.income=d.salary*12+d.side*12;
+  if(taxSim.income===0) taxSim.income=d.salary*12+(d.bonus||0)+d.side*12;
   $('taxControls').innerHTML=`
     <div class="ix-row"><span class="ix-label">Annual income</span><input type="number" value="${taxSim.income}" oninput="taxSim.income=+this.value||0; updateTaxSim()"><span class="ix-val" id="txv1">${fmt(taxSim.income)}</span></div>
     <div class="ix-row"><span class="ix-label">SRS top-up</span><input type="range" min="0" max="15300" step="500" value="${taxSim.srs}" oninput="taxSim.srs=+this.value; updateTaxSim()"><span class="ix-val" id="txv2">${fmt(taxSim.srs)}</span></div>
@@ -2502,7 +2519,7 @@ function buildPolicy(d){
   const totC=d.ins.reduce((s,p)=>s+p.cover,0);
   const totCV=d.ins.reduce((s,p)=>s+p.cv,0);
   const totP=d.ins.reduce((s,p)=>s+p.premium,0);
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   $('polKpis').innerHTML=[
     {l:'Total Coverage',v:fmt(totC),c:'var(--green)'},
     {l:'Cash Value',v:fmt(totCV),c:'var(--cyan)'},
@@ -2538,7 +2555,7 @@ function renderPolicyTable(d){
 // FINANCIAL RATIOS
 // ═══════════════════════════════════════════
 function buildRatios(d){
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
   const totInv=d.inv.reduce((s,i)=>s+i.value,0);
@@ -2546,7 +2563,7 @@ function buildRatios(d){
   const totPropL=d.prop.reduce((s,p)=>s+p.loan,0);
   const insCV=d.ins.reduce((s,i)=>s+i.cv,0);
   const totAssets=d.cash+d.srs+cpf+totInv+totPropV+insCV;
-  const totLiab=d.homeLoan+d.carLoan+d.studentLoan+d.otherLoan+totPropL;
+  const totLiab=d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan+totPropL;
   const nw=totAssets-totLiab;
   const surplus=inflow-totExp;
   const liquid=d.cash+totInv;
@@ -2619,8 +2636,8 @@ function buildGoalsModule(d){
     <div class="report-row"><span class="lab">Total lump-sum targets</span><span class="val">${fmt(totLump)}</span></div>
     <div class="report-row"><span class="lab">Total ongoing monthly</span><span class="val">${fmt(totMonthly)}/mo</span></div>
     <div class="report-row"><span class="lab">Annual goal allocation</span><span class="val">${fmt(totMonthly*12)}/yr</span></div>
-    <div class="report-row"><span class="lab">Current monthly surplus</span><span class="val">${fmt(d.salary+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0))}</span></div>
-    <div class="report-row"><span class="lab">Surplus after goals</span><span class="val ${(d.salary+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0))-totMonthly>=0?'pos':'neg'}">${fmts(d.salary+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0)-totMonthly)}</span></div>`;
+    <div class="report-row"><span class="lab">Current monthly surplus</span><span class="val">${fmt(d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0))}</span></div>
+    <div class="report-row"><span class="lab">Surplus after goals</span><span class="val ${(d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0))-totMonthly>=0?'pos':'neg'}">${fmts(d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side-Object.values(d.exp).reduce((s,v)=>s+v,0)-totMonthly)}</span></div>`;
 }
 
 function toggleGoal(key){
@@ -2692,7 +2709,7 @@ function updateProposalSummary(d){
   const sel=(window._allProposals||[]).filter(p=>proposalState[p.id]);
   const totPrem=sel.reduce((s,p)=>s+(p.premium||0),0);
   const totCover=sel.reduce((s,p)=>s+(p.cover||0),0);
-  const inflow=d.salary+d.rental+d.dividends+d.side;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
   const currentExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
   const newSurplus=inflow-currentExp-totPrem;
   if(!sel.length){ $('proposalSummary').innerHTML='<p style="color:var(--text-tertiary);padding:14px 0">Toggle proposals above to see budget impact.</p>'; return; }
@@ -2745,12 +2762,14 @@ function loadClient(){
   const d=JSON.parse(raw);
   // Populate form
   $('clientName').value=d.client; $('clientDOB').value=d.dob||''; $('clientAge').value=d.age||'';
+  if($('nationality')) $('nationality').value=d.nationality||'Singapore Citizen';
   $('maritalStatus').value=d.marital||'Single'; $('dependants').value=d.dependants||0;
   $('smoker').value=d.smoker||'No'; $('occupation').value=d.occupation||'';
+  if($('riskProfile')) $('riskProfile').value=d.riskProfile||'Balanced';
   $('retireAge').value=d.retireAge||65; $('retireIncome').value=d.retireIncome||0;
   $('cash').value=d.cash; $('cpfOA').value=d.cpfOA; $('cpfSA').value=d.cpfSA; $('cpfMA').value=d.cpfMA; $('srs').value=d.srs;
-  $('homeLoan').value=d.homeLoan; $('carLoan').value=d.carLoan; $('studentLoan').value=d.studentLoan; $('otherLoan').value=d.otherLoan;
-  $('salary').value=d.salary; $('rentalIncome').value=d.rental; $('dividendIncome').value=d.dividends; $('sideIncome').value=d.side;
+  $('carLoan').value=d.carLoan; $('studentLoan').value=d.studentLoan; if($('renoLoan')) $('renoLoan').value=d.renoLoan||0; $('otherLoan').value=d.otherLoan;
+  $('salary').value=d.salary; if($('bonus')) $('bonus').value=d.bonus||0; $('rentalIncome').value=d.rental; $('dividendIncome').value=d.dividends; $('sideIncome').value=d.side;
   Object.entries(d.exp).forEach(([k,v])=>{ const id='exp'+k.replace(/[^A-Za-z]/g,''); const el=$(id); if(el) el.value=v;});
   activeGoals=d._goals||[]; notes=d._notes||[];
   generate();
