@@ -1036,12 +1036,12 @@ body.light::after { display:none; }
 
   <div class="form-card">
     <h3>Monthly Expenses</h3>
+    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Insurance premiums are auto-calculated from the Insurance Policies section &mdash; add every policy below for an accurate picture.</p>
     <div class="form-grid">
       <div class="form-group"><label>Housing</label><input id="expHousing" type="number" placeholder="0"></div>
       <div class="form-group"><label>Food &amp; Dining</label><input id="expFood" type="number" placeholder="0"></div>
       <div class="form-group"><label>Transport</label><input id="expTransport" type="number" placeholder="0"></div>
       <div class="form-group"><label>Utilities</label><input id="expUtilities" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Insurance Premiums</label><input id="expInsurance" type="number" placeholder="0"></div>
       <div class="form-group"><label>Shopping</label><input id="expShopping" type="number" placeholder="0"></div>
       <div class="form-group"><label>Entertainment</label><input id="expEntertainment" type="number" placeholder="0"></div>
       <div class="form-group"><label>Education</label><input id="expEducation" type="number" placeholder="0"></div>
@@ -1418,7 +1418,7 @@ function collectData(){
     cash:v('cash'), cpfOA:v('cpfOA'), cpfSA:v('cpfSA'), cpfMA:v('cpfMA'), srs:v('srs'),
     carLoan:v('carLoan'), studentLoan:v('studentLoan'), renoLoan:v('renoLoan')||0, otherLoan:v('otherLoan'),
     salary:v('salary'), bonus, bonusMonthly:bonus/12, rental:v('rentalIncome'), dividends:v('dividendIncome'), side:v('sideIncome'),
-    exp:{Housing:v('expHousing'),'Food & Dining':v('expFood'),Transport:v('expTransport'),Utilities:v('expUtilities'),Insurance:v('expInsurance'),Shopping:v('expShopping'),Entertainment:v('expEntertainment'),Education:v('expEducation'),Healthcare:v('expHealthcare'),'Family':v('expFamily'),'Savings':v('expSavings'),Others:v('expOthers')},
+    exp:{Housing:v('expHousing'),'Food & Dining':v('expFood'),Transport:v('expTransport'),Utilities:v('expUtilities'),Insurance:0,Shopping:v('expShopping'),Entertainment:v('expEntertainment'),Education:v('expEducation'),Healthcare:v('expHealthcare'),'Family':v('expFamily'),'Savings':v('expSavings'),Others:v('expOthers')},
     inv:[], prop:[], ins:[]
   };
   // Back-compat
@@ -1435,6 +1435,8 @@ function collectData(){
     const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]');
     if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:+(c?.value)||0,premium:+(p?.value)||0,insurer:ins?.value||'',cv:+(cv?.value)||0});
   });
+  // Auto-compute Insurance expense from sum of policy premiums
+  d.exp.Insurance=d.ins.reduce((s,p)=>s+(p.premium||0),0);
   return d;
 }
 
