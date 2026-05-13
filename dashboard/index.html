@@ -303,6 +303,8 @@ body::after {
   display:grid; grid-template-columns:repeat(3,1fr);
   gap:14px; margin-bottom:28px;
 }
+.kpis.kpis-4 { grid-template-columns:repeat(4,1fr); }
+@media(max-width:1100px) { .kpis.kpis-4 { grid-template-columns:repeat(2,1fr); } }
 .kpi {
   background:var(--bg-card);
   border:1px solid var(--border);
@@ -1540,6 +1542,7 @@ input[type=range]::-moz-range-thumb {
     </div>
     <div class="panel" id="p-cashflow">
       <div class="print-section-title">Cashflow</div>
+      <div class="kpis kpis-4" id="cfKpis"></div>
       <div class="cols2">
         <div class="card anim"><div class="card-title"><span class="accent"></span>Monthly Cashflow</div><div class="chart-box"><canvas id="cCF"></canvas></div></div>
         <div class="card anim d1"><div class="card-title"><span class="accent"></span>Passive Income</div><table id="tPassive"></table><div id="passiveBar" style="margin-top:18px"></div></div>
@@ -1555,6 +1558,7 @@ input[type=range]::-moz-range-thumb {
     </div>
     <div class="panel" id="p-insurance">
       <div class="print-section-title">Insurance Coverage</div>
+      <div class="kpis kpis-4" id="insKpis"></div>
       <div class="card anim"><div class="card-title"><span class="accent"></span>Insurance Coverage</div><div class="ins-grid" id="insGrid"></div></div>
     </div>
 
@@ -1897,6 +1901,55 @@ function generate(){
     {l:'Liabilities',v:fmt(totLiab),s:'Debt-to-asset '+(totAssets>0?(totLiab/totAssets*100).toFixed(1):0)+'%',c:'var(--red)'},
   ];
   $('kpiGrid').innerHTML=kpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // ─── Cashflow panel KPI strip ───────────────────────────────────────────
+  // 4 cards: monthly income, monthly expenses, surplus, savings rate
+  const annInc=inflow*12;
+  const expRatio=inflow>0?(totExp/inflow*100):0;
+  const ef=totExp>0?(d.cash/totExp):0;
+  // Largest expense category (for the sub on Expenses card)
+  const expEntries=Object.entries(d.exp).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const topExp=expEntries[0]?`${expEntries[0][0]} ${fmt(expEntries[0][1])}`:'—';
+  const savRateColor=savRate>=20?'var(--green)':savRate>=10?'var(--amber)':'var(--red)';
+  const savRateLabel=savRate>=20?'Excellent (≥ 20%)':savRate>=10?'Adequate (10–20%)':savRate>=0?'Below target (<10%)':'Deficit';
+  const cfKpis=[
+    {l:'Monthly Income',v:fmt(inflow),s:'Annual ~'+fmts(annInc),c:'var(--green)'},
+    {l:'Monthly Expenses',v:fmt(totExp),s:'Top: '+topExp,c:'var(--red)'},
+    {l:'Monthly Surplus',v:fmts(surplus),s:expRatio>0?`Expense ratio ${expRatio.toFixed(0)}%`:'—',c:surplus>=0?'var(--cyan)':'var(--red)'},
+    {l:'Savings Rate',v:savRate.toFixed(1)+'%',s:savRateLabel,c:savRateColor},
+  ];
+  $('cfKpis').innerHTML=cfKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // ─── Insurance panel KPI strip ──────────────────────────────────────────
+  // 4 cards: total life cover, CI cover, premiums/mo, gap vs recommended
+  const isLifePolicy=p=>/life|death|whole|term/i.test(p.type);
+  const isCIPolicy=p=>/critical|\bci\b/i.test(p.type);
+  const lifeCover=d.ins.filter(isLifePolicy).reduce((s,p)=>s+(p.cover||0),0);
+  const ciCover=d.ins.filter(isCIPolicy).reduce((s,p)=>s+(p.cover||0),0);
+  const premiumsM=d.ins.reduce((s,p)=>s+(p.premium||0),0);
+  const annualIncome=d.salary*12;
+  const lifeTarget=Math.round(annualIncome*10);   // 10x annual income (industry standard)
+  const ciTarget=Math.round(annualIncome*4);      // 4x annual income (industry standard)
+  const lifeGap=Math.max(0,lifeTarget-lifeCover);
+  const ciGap=Math.max(0,ciTarget-ciCover);
+  const totalGap=lifeGap+ciGap;
+  // Premium-to-income ratio: 5–15% is the healthy band
+  const premRatio=inflow>0?(premiumsM/inflow*100):0;
+  const premHealth=premRatio>=5&&premRatio<=15?'Healthy band (5–15%)':premRatio>15?'High burden (>15%)':premRatio>0?'Low (<5%)':'No premiums';
+  const premColor=premRatio>=5&&premRatio<=15?'var(--cyan)':premRatio>15?'var(--red)':'var(--amber)';
+  const lifePct=lifeTarget>0?Math.min(100,lifeCover/lifeTarget*100):0;
+  const ciPct=ciTarget>0?Math.min(100,ciCover/ciTarget*100):0;
+  const lifeSub=annualIncome>0?`${lifePct.toFixed(0)}% of 10× income target`:`${d.ins.filter(isLifePolicy).length} policies`;
+  const ciSub=annualIncome>0?`${ciPct.toFixed(0)}% of 4× income target`:`${d.ins.filter(isCIPolicy).length} policies`;
+  const gapVal=totalGap>0?fmts(totalGap):'—';
+  const gapSub=totalGap>0?`Life ${fmt(lifeGap)} · CI ${fmt(ciGap)}`:'Cover meets industry targets';
+  const insKpis=[
+    {l:'Total Life Cover',v:fmts(lifeCover),s:lifeSub,c:lifeCover>=lifeTarget&&lifeTarget>0?'var(--green)':'var(--amber)'},
+    {l:'Critical Illness Cover',v:fmts(ciCover),s:ciSub,c:ciCover>=ciTarget&&ciTarget>0?'var(--green)':'var(--amber)'},
+    {l:'Premiums /mo',v:fmt(premiumsM),s:premRatio>0?`${premRatio.toFixed(1)}% of income · ${premHealth}`:premHealth,c:premColor},
+    {l:'Coverage Gap',v:gapVal,s:gapSub,c:totalGap>0?'var(--red)':'var(--green)'},
+  ];
+  $('insKpis').innerHTML=insKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
   // Net Worth Donut
   const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
