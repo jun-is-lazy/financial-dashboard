@@ -722,6 +722,65 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
 .goal-progress { height:5px; background:var(--bg-card-alt); border-radius:3px; overflow:hidden; margin-top:6px; }
 .goal-progress-fill { height:100%; background:linear-gradient(90deg, var(--cyan), var(--green)); }
 
+/* Goal card (clean read-only row, click to edit in modal) */
+.goal-card {
+  padding:14px 16px; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .15s, border-color .15s;
+  position:relative;
+}
+.goal-card:hover { background:var(--bg-hover); }
+.goal-card:last-child { border-bottom:none; }
+.goal-card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:8px;
+}
+.goal-card-name {
+  display:flex; align-items:center; gap:8px;
+  font-size:.95rem; font-weight:500; color:var(--text-primary);
+}
+.goal-card-name .gc-icon { font-size:1.1rem; }
+.goal-card-stats {
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+  font-size:.85rem; color:var(--text-secondary);
+}
+.goal-card-stats .gc-progress-text { font-weight:500; color:var(--text-primary); }
+.goal-card-stats .gc-badge {
+  font-size:.65rem; text-transform:uppercase; letter-spacing:.1em;
+  padding:2px 8px; border-radius:10px; font-weight:600;
+}
+.gc-badge.gc-badge-reached { color:var(--green); background:var(--green-dim); }
+.gc-badge.gc-badge-progress { color:var(--cyan); background:var(--cyan-dim); }
+.gc-badge.gc-badge-pending { color:var(--text-tertiary); background:var(--bg-card-alt); }
+.goal-card-meta {
+  font-size:.78rem; color:var(--text-tertiary);
+  margin-bottom:8px; line-height:1.5;
+}
+.goal-card-detail {
+  font-size:.78rem; color:var(--text-secondary);
+  margin-top:6px; padding:8px 10px; background:var(--bg-card-alt);
+  border-left:2px solid var(--cyan); border-radius:4px; line-height:1.5;
+}
+.goal-card-detail .gcd-icon { color:var(--cyan); margin-right:6px; }
+.goal-card-detail strong { color:var(--cyan); font-weight:600; }
+.goal-progress-track {
+  height:4px; background:var(--bg-card-alt); border-radius:2px; overflow:hidden;
+}
+.goal-progress-track-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg, var(--cyan), var(--green));
+  transition:width .4s ease;
+}
+
+/* Custom goal button */
+.btn-custom-goal {
+  font-family:var(--font-body); font-size:.82rem; font-weight:500;
+  color:var(--cyan); background:transparent;
+  border:1px solid var(--cyan); border-radius:20px;
+  padding:6px 14px; cursor:pointer; transition:all .2s;
+}
+.btn-custom-goal:hover { background:var(--cyan-dim); }
+
 /* ═══════════════════════════════════════════
    GOAL MODAL (life-plan editor)
    ═══════════════════════════════════════════ */
@@ -912,6 +971,116 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
   font-family:var(--font-body);
 }
 .pol-filter.on { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+
+/* Policy table (replaces card grid in Insurance Coverage) */
+.policy-table-wrap { overflow-x:auto; }
+.policy-table { width:100%; border-collapse:collapse; font-size:.86rem; }
+.policy-table thead th {
+  font-family:var(--font-body); font-weight:600; font-size:.66rem;
+  text-transform:uppercase; letter-spacing:.12em; color:var(--text-tertiary);
+  text-align:left; padding:10px 12px; border-bottom:1px solid var(--border);
+  background:var(--bg-card);
+}
+.policy-table thead th.num { text-align:right; }
+.policy-table tbody td {
+  padding:14px 12px; border-bottom:1px solid var(--border);
+  color:var(--text-primary); vertical-align:middle;
+}
+.policy-table tbody tr:hover { background:var(--bg-hover); }
+.policy-table tbody tr:last-child td { border-bottom:none; }
+.policy-table .ptype {
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:500;
+}
+.policy-table .pdot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+.policy-table .pname { color:var(--text-primary); font-weight:500; }
+.policy-table .pinsurer { color:var(--text-secondary); font-size:.82rem; }
+.policy-table .pnum { text-align:right; font-variant-numeric:tabular-nums; font-family:var(--font-body); }
+.policy-table .precommended { color:var(--text-tertiary); }
+.policy-table .precommended.ok { color:var(--green); }
+.policy-table .precommended.gap { color:var(--amber); }
+
+/* Insurance × Dividends — Policies + Plans summary cards */
+.ix-card-head {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.ix-card-total {
+  font-family:var(--font-display);
+  font-size:1.4rem; font-weight:500; color:var(--gold-light);
+  letter-spacing:-.01em;
+}
+.ix-pol-row {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:10px; padding:10px 0; border-bottom:1px solid var(--border);
+}
+.ix-pol-row:last-child { border-bottom:none; }
+.ix-pol-row-l { flex:1; min-width:0; }
+.ix-pol-row-name { font-size:.88rem; color:var(--text-primary); font-weight:500; margin-bottom:2px; }
+.ix-pol-row-meta { font-size:.74rem; color:var(--text-tertiary); }
+.ix-pol-row-r {
+  text-align:right; flex-shrink:0;
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+}
+.ix-pol-row-r .mo { font-size:.95rem; font-weight:500; color:var(--text-primary); }
+.ix-pol-row-r .yr { font-size:.72rem; color:var(--text-tertiary); margin-top:2px; }
+.ix-tag-age {
+  display:inline-block; padding:1px 7px; border-radius:8px;
+  font-size:.65rem; letter-spacing:.06em; text-transform:uppercase;
+  background:var(--bg-card-alt); color:var(--cyan);
+  margin-left:6px;
+}
+
+/* Client Report — allocation legend rows */
+.alloc-row {
+  display:grid; grid-template-columns:18px 1fr auto auto;
+  align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px solid var(--border);
+  font-size:.88rem;
+}
+.alloc-row:last-child { border-bottom:none; }
+.alloc-dot { width:10px; height:10px; border-radius:3px; }
+.alloc-name { color:var(--text-primary); }
+.alloc-cur {
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+  color:var(--text-secondary);
+}
+.alloc-vs-target {
+  font-size:.7rem; color:var(--text-tertiary);
+  padding:2px 8px; border-radius:10px; background:var(--bg-card-alt);
+  white-space:nowrap;
+}
+.alloc-vs-target.alloc-ok { color:var(--green); background:var(--green-dim); }
+.alloc-vs-target.alloc-warn { color:var(--amber); background:var(--amber-dim); }
+
+/* Client Report — wealth-protection card grid */
+.rpt-cover-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+  gap:12px;
+}
+.rpt-cover-card {
+  padding:14px 16px; border:1px solid var(--border); border-radius:8px;
+  background:var(--bg-card-alt);
+  display:flex; flex-direction:column; gap:8px;
+}
+.rpt-cover-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.rpt-cover-card-title { display:flex; align-items:center; gap:8px; }
+.rpt-cover-card-title .rcc-emoji { font-size:1.2rem; }
+.rpt-cover-card-title .rcc-name { font-size:.82rem; color:var(--text-secondary); }
+.rpt-cover-amount { font-family:var(--font-display); font-size:1.2rem; font-weight:500; color:var(--gold-light); }
+.rpt-cover-badge {
+  font-size:.62rem; text-transform:uppercase; letter-spacing:.1em;
+  padding:2px 9px; border-radius:10px; font-weight:600;
+}
+.rpt-cover-badge.suff { color:var(--green); background:var(--green-dim); }
+.rpt-cover-badge.gap { color:var(--amber); background:var(--amber-dim); }
+.rpt-cover-badge.miss { color:var(--red); background:var(--red-dim); }
+.rpt-cover-bar {
+  height:4px; background:var(--bg-card); border-radius:2px; overflow:hidden;
+}
+.rpt-cover-bar-fill { height:100%; border-radius:2px; }
+.rpt-cover-meta { font-size:.72rem; color:var(--text-tertiary); }
 
 .prop-toggle-row {
   display:flex; align-items:flex-start; justify-content:space-between; gap:18px;
@@ -1559,7 +1728,19 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-insurance">
       <div class="print-section-title">Insurance Coverage</div>
       <div class="kpis kpis-4" id="insKpis"></div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Insurance Coverage</div><div class="ins-grid" id="insGrid"></div></div>
+      <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Coverage Adequacy</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.82rem;color:var(--text-secondary)">
+          <span>Filter:</span>
+          <button class="pol-filter on" data-pf="all" onclick="setPolFilter2('all')">All policies</button>
+          <button class="pol-filter" data-pf="life" onclick="setPolFilter2('life')">Life / TPD</button>
+          <button class="pol-filter" data-pf="ci" onclick="setPolFilter2('ci')">Critical Illness</button>
+          <button class="pol-filter" data-pf="health" onclick="setPolFilter2('health')">Hospitalisation</button>
+          <button class="pol-filter" data-pf="dis" onclick="setPolFilter2('dis')">Disability / LTC</button>
+        </div>
+      </div>
+      <div class="card anim d2"><div class="card-title"><span class="accent"></span>Policy Table</div>
+        <div class="policy-table-wrap"><table class="policy-table" id="insPolicyTable"></table></div>
+      </div>
     </div>
 
     <div class="panel" id="p-retirement">
@@ -1592,6 +1773,24 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-report">
       <div class="print-section-title">Client Report</div>
       <div class="card anim"><div id="reportBody"></div></div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>&#x1F4CA; Financial Analysis &mdash; Cashflow Allocation</div>
+        <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:18px">Current allocation vs recommended targets. Healthy benchmark in <span style="color:var(--green)">green</span>.</div>
+        <div class="cols2">
+          <div style="display:flex;align-items:center;justify-content:center"><div class="chart-box" style="width:280px;height:280px"><canvas id="rptCashAlloc"></canvas></div></div>
+          <div id="rptCashAllocLegend"></div>
+        </div>
+      </div>
+      <div class="card anim d2" style="margin-top:14px"><div class="card-title"><span class="accent"></span>&#x1F6E1;&#xFE0F; Wealth Protection &mdash; Existing Coverage</div>
+        <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:18px">Adequacy assessment against Singapore industry standards.</div>
+        <div id="rptCoverGrid"></div>
+      </div>
+      <div class="card anim d3" style="margin-top:14px"><div class="card-title"><span class="accent"></span>&#x1F4C8; Investment Portfolio &mdash; Composition</div>
+        <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:18px">Current holdings breakdown with type-level concentration.</div>
+        <div class="cols2">
+          <div style="display:flex;align-items:center;justify-content:center"><div class="chart-box" style="width:280px;height:280px"><canvas id="rptPortfolio"></canvas></div></div>
+          <div id="rptPortfolioSummary"></div>
+        </div>
+      </div>
     </div>
 
     <div class="panel" id="p-netWorth">
@@ -1624,7 +1823,17 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-dividends">
       <div class="print-section-title">Insurance &times; Dividends</div>
       <div class="kpis" id="divKpis"></div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Strategy Controls</div>
+      <div class="cols2" style="margin-bottom:14px">
+        <div class="card anim"><div class="ix-card-head"><div class="card-title" style="margin-bottom:4px"><span class="accent"></span>&#x1F6E1;&#xFE0F; Insurance Policies</div><div class="ix-card-total" id="divPoliciesTotal">$0/mo</div></div>
+          <div style="font-size:.8rem;color:var(--text-tertiary);margin-bottom:12px">Premium obligations tracked</div>
+          <div id="divPoliciesList"></div>
+        </div>
+        <div class="card anim d1"><div class="ix-card-head"><div class="card-title" style="margin-bottom:4px"><span class="accent"></span>&#x1F4B0; Dividend Plans</div><div class="ix-card-total" id="divPlansTotal">$0/mo</div></div>
+          <div style="font-size:.8rem;color:var(--text-tertiary);margin-bottom:12px">Dividend income by age</div>
+          <div id="divPlansList"></div>
+        </div>
+      </div>
+      <div class="card anim d2"><div class="card-title"><span class="accent"></span>Strategy Controls</div>
         <div class="ix-controls" id="divControls"></div>
       </div>
       <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Dividends vs Premiums Over Time</div>
@@ -1688,7 +1897,14 @@ input[type=range]::-moz-range-thumb {
 
     <div class="panel" id="p-goals">
       <div class="print-section-title">Goals &amp; Milestones</div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Quick-add Life Plans</div>
+      <div class="card anim">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px">
+          <div style="flex:1">
+            <div class="card-title" style="margin-bottom:4px"><span class="accent"></span>Quick-add Life Plans</div>
+            <div style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Life planning · every goal impacts cashflow automatically</div>
+          </div>
+          <button class="btn-custom-goal" onclick="openGoalModal('custom')">+ Custom Goal</button>
+        </div>
         <div class="goal-quickadd" id="goalQuickAdd"></div>
       </div>
       <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Active Life Goals</div>
@@ -1766,6 +1982,11 @@ document.addEventListener('click',e=>{
   e.target.classList.add('on');
   $('p-'+e.target.dataset.t).classList.add('on');
   if(typeof updateGuidance==='function') updateGuidance();
+  // Re-size any charts inside the newly visible panel (Chart.js needs this
+  // when the canvas was 0x0 at create time because the panel was hidden).
+  requestAnimationFrame(()=>{
+    Object.values(charts).forEach(c=>{ try{ c.resize(); }catch(e){} });
+  });
 });
 
 // ── Repeaters ──
@@ -2012,12 +2233,8 @@ function generate(){
   if(!d.prop.length) pr+='<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:28px">No properties entered</td></tr>';
   pr+='</tbody>';$('tProp').innerHTML=pr;
 
-  // Insurance
-  let ih='';
-  d.ins.forEach((p,i)=>{ih+=`<div class="ins-card anim d${Math.min(i+1,6)}"><div class="ins-type">${p.type}</div><div class="ins-name">${p.name}</div><div class="ins-row">Insurer: <span>${p.insurer||'\u2014'}</span></div><div class="ins-row">Coverage: <span>${fmt(p.cover)}</span></div><div class="ins-row">Premium: <span>${fmt(p.premium)}/mo</span></div>${p.cv?`<div class="ins-row">Cash Value: <span>${fmt(p.cv)}</span></div>`:''}
-  </div>`;});
-  if(!d.ins.length) ih='<p style="color:var(--text-tertiary);text-align:center;padding:28px">No insurance policies entered</p>';
-  $('insGrid').innerHTML=ih;
+  // Insurance Coverage policy table (tabular replacement for card grid)
+  buildInsurancePolicyTable(d);
 
   // Gap Analysis
   gapState = { active: gapState.active || {}, open: gapState.open || null, lastData: d };
@@ -2360,6 +2577,144 @@ function buildReport(d){
     </div>
     <div class="report-section"><div class="report-h">Recommendations</div>
       ${recs.map(r=>`<div class="report-rec">${r}</div>`).join('')}
+    </div>`;
+
+  buildReportCashAlloc(d, inflow, totExp);
+  buildReportCoverage(d, lifeCover, ciCover, lifeTarget, ciTarget);
+  buildReportPortfolio(d, totInv);
+}
+
+// ═════ Client Report — Financial Analysis donut ═════
+function buildReportCashAlloc(d, inflow, totExp){
+  if(!$('rptCashAlloc')) return;
+  // Categorise inflow allocation: Insurance, Savings, Investments, Living, Debt repayment, Other
+  // Take-home = inflow - taxes? Here we assume inflow == take-home (no income tax modelling).
+  const insMo=d.exp.Insurance||0;
+  const debtRepay=Math.round((d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan)/240); // proxy 20yr amort
+  const savings=Math.max(0, inflow - totExp); // surplus = remaining savings
+  // Investment contribution proxied by 'Savings' expense bucket if used (else 0)
+  const invMo=d.exp.Savings||0;
+  // Living expenses = totExp minus Insurance + Savings buckets to avoid double-count
+  const living=Math.max(0, totExp - insMo - invMo);
+  const total=Math.max(1, inflow);
+  const segs=[
+    {l:'Living Expenses', v:living, cur:living/total, tgt:0.36, c:'#579dff', tgtRule:'<=40%'},
+    {l:'Savings (surplus)', v:savings, cur:savings/total, tgt:0.20, c:'#3ecf8e', tgtRule:'>=20%'},
+    {l:'Investments', v:invMo, cur:invMo/total, tgt:0.30, c:'#b28dff', tgtRule:'>=30%'},
+    {l:'Insurance', v:insMo, cur:insMo/total, tgt:0.08, c:'#f0b429', tgtRule:'5-15%'},
+    {l:'Debt Repayment', v:debtRepay, cur:debtRepay/total, tgt:0, c:'#f06060', tgtRule:'<=35%'},
+  ];
+  if(charts.rptCashAlloc) charts.rptCashAlloc.destroy();
+  charts.rptCashAlloc=new Chart($('rptCashAlloc'),{
+    type:'doughnut',
+    data:{labels:segs.map(s=>s.l),datasets:[{data:segs.map(s=>s.v),backgroundColor:segs.map(s=>s.c),borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'66%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+(c.parsed/total*100).toFixed(1)+'%)'}}}}
+  });
+  $('rptCashAllocLegend').innerHTML=`<div style="font-size:.78rem;color:var(--text-tertiary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.12em">Take-home <strong style="color:var(--text-primary);font-size:1.15rem;display:block;margin-top:4px;text-transform:none;letter-spacing:0">${fmt(inflow)}/mo</strong></div>`+
+    segs.map(s=>{
+      const cur=(s.cur*100).toFixed(1)+'%';
+      let cls='', txt=`Target ${s.tgtRule}`;
+      if(s.l==='Savings (surplus)') { cls=s.cur>=0.20?'alloc-ok':'alloc-warn'; }
+      else if(s.l==='Investments') { cls=s.cur>=0.30?'alloc-ok':(s.cur>=0.15?'alloc-warn':''); }
+      else if(s.l==='Insurance') { cls=(s.cur>=0.05&&s.cur<=0.15)?'alloc-ok':'alloc-warn'; }
+      else if(s.l==='Living Expenses') { cls=s.cur<=0.40?'alloc-ok':'alloc-warn'; }
+      else if(s.l==='Debt Repayment') { cls=s.cur<=0.35?'alloc-ok':'alloc-warn'; }
+      return `<div class="alloc-row">
+        <div class="alloc-dot" style="background:${s.c}"></div>
+        <div class="alloc-name">${s.l}</div>
+        <div class="alloc-cur">${cur}</div>
+        <div class="alloc-vs-target ${cls}">${txt}</div>
+      </div>`;
+    }).join('');
+}
+
+// ═════ Client Report — Wealth Protection cards ═════
+function buildReportCoverage(d, lifeCover, ciCover, lifeTarget, ciTarget){
+  if(!$('rptCoverGrid')) return;
+  const annualIncome=d.salary*12;
+  const isCat=(p,re)=>re.test((p.type||'').toLowerCase());
+  const lifeNum=lifeCover;
+  const earlyCI=d.ins.filter(p=>isCat(p,/early.?(ci|critical)/)).reduce((s,p)=>s+(p.cover||0),0);
+  const dis=d.ins.filter(p=>isCat(p,/disability|payassure/)).reduce((s,p)=>s+(p.cover||0),0); // monthly benefit
+  const accident=d.ins.filter(p=>isCat(p,/accident/)).reduce((s,p)=>s+(p.cover||0),0);
+  const hosp=d.ins.filter(p=>isCat(p,/hospital|integrated|shield/)).length>0;
+  const ltc=d.ins.filter(p=>isCat(p,/careshield|long.?term|ltc/)).reduce((s,p)=>s+(p.cover||0),0); // monthly benefit
+  const cards=[
+    {emoji:'👨‍👩‍👧', name:'Death / TPD / TI', amount:lifeNum, target:lifeTarget, kind:'amount', dur:'Now → 100', color:'#3ecf8e'},
+    {emoji:'🫀', name:'Critical Illness', amount:ciCover, target:ciTarget, kind:'amount', dur:'Now → 85', color:'#f06060'},
+    {emoji:'⚡', name:'Early CI', amount:earlyCI, target:Math.round(annualIncome*2), kind:'amount', dur:'Now → 85', color:'#f472b6'},
+    {emoji:'♿', name:'Disability Income', amount:dis, target:Math.round(d.salary*0.75), kind:'monthly', dur:'Now → 65', color:'#f0b429'},
+    {emoji:'🚨', name:'Personal Accident', amount:accident, target:Math.round(annualIncome*2), kind:'amount', dur:'Now → 100', color:'#579dff'},
+    {emoji:'🏥', name:'Hospitalisation', amount:hosp?1:0, target:1, kind:'binary', dur:'Lifetime', color:'#b28dff'},
+    {emoji:'👴', name:'Long-Term Care', amount:ltc, target:3000, kind:'monthly', dur:'Now → Life', color:'#56d4dd'},
+  ];
+  $('rptCoverGrid').className='rpt-cover-grid';
+  $('rptCoverGrid').innerHTML=cards.map(c=>{
+    let badge='miss', badgeText='No cover', pct=0;
+    if(c.kind==='binary'){
+      if(c.amount>0){ badge='suff'; badgeText='✓ In place'; pct=100; }
+    } else {
+      pct=c.target>0?Math.min(100,c.amount/c.target*100):0;
+      if(c.amount>=c.target && c.target>0){ badge='suff'; badgeText='✓ Sufficient'; }
+      else if(c.amount>0){ badge='gap'; badgeText='Below target'; }
+    }
+    const amtDisp=c.kind==='binary'
+      ? (c.amount>0?'IP plan covered':'Not covered')
+      : (c.kind==='monthly'?(c.amount>0?fmt(c.amount)+'/mo':'—'):fmt(c.amount));
+    const targetDisp=c.kind==='binary'?'':(c.kind==='monthly'?'Target '+fmt(c.target)+'/mo':'Target '+fmt(c.target));
+    return `<div class="rpt-cover-card">
+      <div class="rpt-cover-card-head">
+        <div class="rpt-cover-card-title"><span class="rcc-emoji">${c.emoji}</span><span class="rcc-name">${c.name}</span></div>
+        <span class="rpt-cover-badge ${badge}">${badgeText}</span>
+      </div>
+      <div class="rpt-cover-amount">${amtDisp}</div>
+      <div class="rpt-cover-bar"><div class="rpt-cover-bar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      <div class="rpt-cover-meta">${targetDisp}${targetDisp?' · ':''}${c.dur}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═════ Client Report — Investment Portfolio composition ═════
+function buildReportPortfolio(d, totInv){
+  if(!$('rptPortfolio')) return;
+  const sum=$('rptPortfolioSummary');
+  if(!d.inv.length){
+    if(charts.rptPort) charts.rptPort.destroy();
+    sum.innerHTML='<p style="color:var(--text-tertiary);text-align:center;padding:32px">No investment holdings entered.</p>';
+    return;
+  }
+  const labels=d.inv.map(i=>i.name);
+  const values=d.inv.map(i=>i.value);
+  const cols=COLS.slice(0,d.inv.length);
+  if(charts.rptPort) charts.rptPort.destroy();
+  charts.rptPort=new Chart($('rptPortfolio'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:values,backgroundColor:cols,borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'66%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+(c.parsed/totInv*100).toFixed(1)+'%)'}}}}
+  });
+  // Concentration heuristic: top-1 share
+  const sorted=[...d.inv].sort((a,b)=>b.value-a.value);
+  const topShare=sorted[0]?(sorted[0].value/totInv*100):0;
+  let concentrationFlag='Diversified', concentrationColor='var(--green)';
+  if(topShare>=40){ concentrationFlag='Concentrated'; concentrationColor='var(--amber)'; }
+  if(topShare>=60){ concentrationFlag='Highly concentrated'; concentrationColor='var(--red)'; }
+  // Total gain (vs cost basis if available)
+  const totCost=d.inv.reduce((s,i)=>s+(i.cost||0),0);
+  const gainPct=totCost>0?((totInv-totCost)/totCost*100):0;
+  const gainCls=gainPct>=0?'pos':'neg';
+  sum.innerHTML=`<div style="font-size:.78rem;color:var(--text-tertiary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.12em">Portfolio value <strong style="color:var(--text-primary);font-size:1.15rem;display:block;margin-top:4px;text-transform:none;letter-spacing:0">${fmt(totInv)}</strong></div>`+
+    d.inv.map((i,idx)=>{
+      const pct=(i.value/totInv*100).toFixed(1)+'%';
+      return `<div class="alloc-row">
+        <div class="alloc-dot" style="background:${cols[idx]}"></div>
+        <div class="alloc-name">${i.name}<div style="font-size:.7rem;color:var(--text-tertiary);margin-top:1px">${i.type||'—'}</div></div>
+        <div class="alloc-cur">${fmt(i.value)}</div>
+        <div class="alloc-vs-target">${pct}</div>
+      </div>`;
+    }).join('')+
+    `<div style="margin-top:14px;padding:10px 12px;background:var(--bg-card-alt);border-radius:8px;font-size:.78rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--text-tertiary)">Concentration</span><span style="color:${concentrationColor};font-weight:600">${concentrationFlag} (top ${topShare.toFixed(0)}%)</span></div>
+      ${totCost>0?`<div style="display:flex;justify-content:space-between"><span style="color:var(--text-tertiary)">Total gain / loss</span><span class="${gainCls}" style="font-weight:600">${gainPct>=0?'+':''}${gainPct.toFixed(1)}% (${fmts(totInv-totCost)})</span></div>`:''}
     </div>`;
 }
 
@@ -2825,6 +3180,92 @@ function updateHospSim(){
 // INSURANCE × DIVIDENDS (interactive)
 // ═══════════════════════════════════════════
 let divSim={yield:4.5, growth:5, premInflation:3, addMonthly:0, lumpsum:0, horizon:20};
+// ═══════════════════════════════════════════
+// INSURANCE COVERAGE — tabular policy table with filter
+// ═══════════════════════════════════════════
+let insTableFilter='all';
+function classifyPolicy(p){
+  const t=(p.type||'').toLowerCase();
+  // CareShield/LTC first — "shield" must NOT fall through to hospitalisation
+  if(/disability|payassure|careshield|long.?term|\bltc\b/.test(t)) return 'dis';
+  if(/critical|\bci\b/.test(t)) return 'ci';
+  if(/hospital|integrated|integratedshield|health.?plan|medishield/.test(t)) return 'health';
+  if(/life|death|whole|term|tpd/.test(t)) return 'life';
+  if(/accident|personal/.test(t)) return 'accident';
+  return 'other';
+}
+function policyTypeColor(cat){
+  return ({
+    life:'var(--cyan)',
+    ci:'var(--red)',
+    health:'var(--purple)',
+    dis:'var(--amber)',
+    accident:'var(--blue)',
+    other:'var(--text-secondary)',
+  })[cat]||'var(--text-secondary)';
+}
+function setPolFilter2(t){
+  insTableFilter=t;
+  document.querySelectorAll('.card .pol-filter').forEach(b=>{
+    b.classList.toggle('on',b.dataset.pf===t);
+  });
+  if(lastData) buildInsurancePolicyTable(lastData);
+}
+function buildInsurancePolicyTable(d){
+  const el=$('insPolicyTable'); if(!el) return;
+  if(!d.ins.length){
+    el.innerHTML='<tbody><tr><td style="text-align:center;color:var(--text-tertiary);padding:32px">No insurance policies entered</td></tr></tbody>';
+    return;
+  }
+  const annualIncome=d.salary*12;
+  const recommended={
+    life:annualIncome*10,
+    ci:annualIncome*4,
+    dis:Math.round(d.salary*0.75), // 75% of income, monthly benefit
+    health:1000000,                // Hospital As-Charged target
+    accident:annualIncome*2,
+    other:null,
+  };
+  // Group cover by category to evaluate Recommended column per-row
+  const totalByCat={};
+  d.ins.forEach(p=>{
+    const c=classifyPolicy(p);
+    totalByCat[c]=(totalByCat[c]||0)+(p.cover||0);
+  });
+  const filtered=insTableFilter==='all'?d.ins:d.ins.filter(p=>classifyPolicy(p)===insTableFilter);
+  let html=`<thead><tr>
+    <th>Type</th><th>Insurer</th><th>Plan Name</th>
+    <th class="num">Coverage</th><th>Recommended</th><th class="num">Premium /mo</th>
+  </tr></thead><tbody>`;
+  filtered.forEach(p=>{
+    const cat=classifyPolicy(p);
+    const color=policyTypeColor(cat);
+    let recCell='—', recCls='';
+    if(cat==='health'){
+      // Hospital plans are as-charged, not lump-sum. Show plan tier instead.
+      const isPrivate=/private|p plus|p signature/i.test(p.name||'');
+      const isRider=/rider|cash|signature/i.test(p.name||'');
+      recCell=isPrivate?'Private ward':(isRider?'Rider (cash)':'Public ward');
+      recCls='ok';
+    } else if(recommended[cat]!=null && recommended[cat]>0){
+      const target=recommended[cat];
+      const groupTotal=totalByCat[cat]||0;
+      if(groupTotal>=target){ recCell='✓ Target met'; recCls='ok'; }
+      else { recCell='Gap '+fmt(target-groupTotal); recCls='gap'; }
+    }
+    html+=`<tr>
+      <td><span class="ptype"><span class="pdot" style="background:${color}"></span>${p.type||'Other'}</span></td>
+      <td class="pinsurer">${p.insurer||'—'}</td>
+      <td class="pname">${p.name||'—'}</td>
+      <td class="pnum">${typeof p.cover==='number' && p.cover>0?fmt(p.cover):(cat==='health'?'As charged':'—')}</td>
+      <td class="precommended ${recCls}">${recCell}</td>
+      <td class="pnum">${fmt(p.premium||0)}</td>
+    </tr>`;
+  });
+  html+='</tbody>';
+  el.innerHTML=html;
+}
+
 function buildDividends(d){
   $('divControls').innerHTML=`
     <div class="ix-row"><span class="ix-label">Dividend yield</span><input type="range" min="2" max="8" step="0.25" value="${divSim.yield}" oninput="divSim.yield=+this.value; updateDivSim()"><span class="ix-val" id="dv1">${divSim.yield}%</span></div>
@@ -2841,6 +3282,46 @@ function updateDivSim(){
   ['dv1','dv2','dv3','dv4','dv5','dv6'].forEach((id,i)=>{const el=$(id);if(!el)return;const v=Object.values(divSim)[i];el.textContent=i<3?v+'%':i===5?v+' yrs':fmt(v);});
   const annualPrem=d.ins.reduce((s,p)=>s+p.premium*12,0);
   const start=d.age||35;
+
+  // ─── Side-by-side summary cards (Policies + Dividend Plans) ───
+  const polsEl=$('divPoliciesList'), plansEl=$('divPlansList');
+  if(polsEl){
+    const totalMo=d.ins.reduce((s,p)=>s+(p.premium||0),0);
+    $('divPoliciesTotal').textContent=fmt(totalMo)+'/mo';
+    if(!d.ins.length){
+      polsEl.innerHTML='<p style="color:var(--text-tertiary);font-size:.85rem;padding:8px 0">No policies entered yet.</p>';
+    } else {
+      polsEl.innerHTML=d.ins.map(p=>{
+        const cat=classifyPolicy(p);
+        const color=policyTypeColor(cat);
+        const ageBanded=/hospital|integratedshield|integrated.?shield|medishield/i.test(p.type||'')||/integratedshield|p plus|p signature|supremehealth|totalcare/i.test(p.name||'');
+        return `<div class="ix-pol-row"><div class="ix-pol-row-l">
+          <div class="ix-pol-row-name"><span style="color:${color}">●</span> ${p.name||p.type||'Policy'}${ageBanded?'<span class="ix-tag-age">↑ age-banded</span>':''}</div>
+          <div class="ix-pol-row-meta">${p.type||'—'} · ${p.insurer||'—'}</div>
+        </div><div class="ix-pol-row-r"><div class="mo">${fmt(p.premium||0)}/mo</div><div class="yr">${fmt((p.premium||0)*12)}/yr</div></div></div>`;
+      }).join('');
+    }
+  }
+  if(plansEl){
+    // Dividend plans = simulator settings as a single line plus current investments
+    const annualDivStart=d.inv.reduce((s,i)=>s+i.value,0)*(divSim.yield/100);
+    // Project to retire age (or +30) to get the headline "dividend at retirement"
+    const yrsToRet=Math.max(0,(d.retireAge||65)-(d.age||30));
+    let projFV=d.inv.reduce((s,i)=>s+i.value,0)+divSim.lumpsum;
+    for(let i=0;i<yrsToRet;i++){ projFV=projFV*(1+divSim.growth/100)+divSim.addMonthly*12; }
+    const projDiv=projFV*(divSim.yield/100);
+    $('divPlansTotal').textContent=fmt(Math.round(projDiv/12))+'/mo';
+    const startAge=d.age||30, planEndAge=startAge+divSim.horizon;
+    plansEl.innerHTML=`<div class="ix-pol-row"><div class="ix-pol-row-l">
+      <div class="ix-pol-row-name"><span style="color:var(--green)">●</span> Dividend Plan · ${fmt(divSim.addMonthly)}/mo premium</div>
+      <div class="ix-pol-row-meta">Age ${startAge} → ${planEndAge} · Now: ${fmt(Math.round(annualDivStart/12))}/mo · ${divSim.yield}% yield</div>
+    </div><div class="ix-pol-row-r"><div class="mo">${fmt(Math.round(projDiv/12))}/mo</div><div class="yr">at age ${d.retireAge||65}</div></div></div>
+    <div class="ix-pol-row"><div class="ix-pol-row-l">
+      <div class="ix-pol-row-name"><span style="color:var(--blue)">●</span> Existing Portfolio</div>
+      <div class="ix-pol-row-meta">${fmt(d.inv.reduce((s,i)=>s+i.value,0))} invested · ${d.inv.length} holdings</div>
+    </div><div class="ix-pol-row-r"><div class="mo">${fmt(Math.round(annualDivStart/12))}/mo</div><div class="yr">at ${divSim.yield}% yield</div></div></div>`;
+  }
+
   const yieldR=divSim.yield/100, growthR=divSim.growth/100, premR=divSim.premInflation/100;
   let invFV=d.inv.reduce((s,i)=>s+i.value,0)+divSim.lumpsum;
   const labels=[], divArr=[], premArr=[];
@@ -3114,6 +3595,7 @@ const goalTemplates={
   emergency:{icon:'\u{1F6E1}\u{FE0F}',name:'Emergency Fund',target:50000,monthly:500,age:35,end:null,desc:'6 months expenses'},
   eldercare:{icon:'\u{1F9D3}',name:'Eldercare',target:80000,monthly:300,age:40,end:65,desc:'Parents care + assisted living'},
   medical:{icon:'\u{1F3E5}',name:'Medical Buffer',target:30000,monthly:0,age:40,end:null,desc:'Out-of-pocket reserve'},
+  custom:{icon:'✨',name:'Custom Goal',target:0,monthly:0,age:35,end:null,desc:'Any other life or financial goal'},
 };
 let activeGoals=[];
 
@@ -3471,7 +3953,7 @@ function closeGoalModalOnBackdrop(e){
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('gmBackdrop')?.classList.contains('open')) closeGoalModal(); });
 
 function buildGoalsModule(d){
-  $('goalQuickAdd').innerHTML=Object.entries(goalTemplates).map(([k,g])=>{
+  $('goalQuickAdd').innerHTML=Object.entries(goalTemplates).filter(([k])=>k!=='custom').map(([k,g])=>{
     const active=activeGoals.some(x=>x.key===k);
     return `<button class="goal-chip${active?' active':''}" onclick="openGoalModal('${k}')">${g.icon} ${g.name}</button>`;
   }).join('');
@@ -3479,18 +3961,7 @@ function buildGoalsModule(d){
   const ag=$('activeGoals');
   if(activeGoals.length===0){ ag.innerHTML='<p style="color:var(--text-tertiary);text-align:center;padding:24px">No active goals. Click a quick-add chip above.</p>'; }
   else {
-    let html=`<div class="goal-row goal-row-head"><div>Goal</div><div>Target</div><div>Monthly</div><div>Goal Age</div><div>End Age</div><div></div></div>`;
-    activeGoals.forEach((g,i)=>{
-      html+=`<div class="goal-row">
-        <div class="goal-icon-cell">${g.icon} ${g.name}</div>
-        <div><input type="number" value="${g.target}" onchange="updateGoal(${i},'target',this.value)"></div>
-        <div><input type="number" value="${g.monthly}" onchange="updateGoal(${i},'monthly',this.value)"></div>
-        <div><input type="number" value="${g.age}" onchange="updateGoal(${i},'age',this.value)"></div>
-        <div><input type="number" value="${g.end||''}" placeholder="—" onchange="updateGoal(${i},'end',this.value)"></div>
-        <div><button class="btn-del" onclick="removeGoal(${i})">&times;</button></div>
-      </div>`;
-    });
-    ag.innerHTML=html;
+    ag.innerHTML=activeGoals.map(g=>renderGoalCard(g)).join('');
   }
 
   // Cashflow impact
@@ -3512,6 +3983,59 @@ function toggleGoal(key){
 }
 function updateGoal(i,field,val){ activeGoals[i][field]=field==='end'?(val?+val:null):+val; if(lastData) buildGoalsModule(lastData); }
 function removeGoal(i){ activeGoals.splice(i,1); if(lastData) buildGoalsModule(lastData); }
+
+// ═════ Goal card renderer (clean read-only row; click to open modal) ═════
+function renderGoalCard(g){
+  const target=+g.target||0, saved=+g.alreadySaved||0, monthly=+g.monthly||0;
+  const pct=target>0?Math.min(100,(saved/target)*100):(saved>0?100:0);
+  let badge='gc-badge-pending', badgeText='Pending';
+  if(pct>=100){ badge='gc-badge-reached'; badgeText='✓ Reached'; }
+  else if(pct>0){ badge='gc-badge-progress'; badgeText='In Progress'; }
+
+  const meta=[];
+  meta.push(`Age ${g.age}${g.end?` → ${g.end}`:''}`);
+  // Show saving rate if user has set it (could be derived later)
+  meta.push(`Saving ${fmt(0)}/mo`);
+  if(monthly>0) meta.push(`<span style="color:var(--amber)">${fmt(monthly)}/mo ongoing</span>`);
+  meta.push(`<span style="color:var(--text-secondary)">${pct.toFixed(0)}% to target</span>`);
+
+  // Goal-specific detail line (property/upgrade get a richer breakdown line)
+  let detail='';
+  if((g.key==='property'||g.key==='upgrade') && g._meta){
+    const m=g._meta;
+    const t=PROPERTY_TYPES[m.propertyType]||PROPERTY_TYPES.condo_bank;
+    const price=+m.price||t.price, tenure=+m.tenure||30;
+    const loan=Math.round(price*t.ltv);
+    const dp=price-loan;
+    const cashMin=Math.round(price*t.cashMin);
+    const cpfUsed=Math.min(+m.cpfOA||0, dp-cashMin);
+    const cashDp=dp-cpfUsed;
+    const bsd=calcBSD(price);
+    const proceeds=+m.hdbProceeds||0;
+    const mortMonthly=calcMortgage(loan,t.rate,tenure);
+    if(g.key==='upgrade' && proceeds>0){
+      detail=`<span class="gcd-icon">💼</span>CPF-OA: <strong>${fmt(cpfUsed)}</strong> downpayment + <strong>${fmt(mortMonthly)}/mo</strong> mortgage · Cash: <strong>${fmt(cashDp)}</strong> downpayment + <strong>${fmt(bsd)} BSD</strong> + $3,000 legal · HDB proceeds <strong>${fmt(proceeds)}</strong> offset upfront outlay`;
+    } else {
+      detail=`<span class="gcd-icon">💼</span>CPF-OA: <strong>${fmt(cpfUsed)}</strong> downpayment + <strong>${fmt(mortMonthly)}/mo</strong> mortgage · Cash: <strong>${fmt(cashDp)}</strong> downpayment + <strong>${fmt(bsd)} BSD</strong> + $3,000 legal`;
+    }
+  } else if(g.key==='car' && g._meta){
+    const ml=+g._meta.monthlyLoan||0, mr=+g._meta.monthlyRunning||0;
+    detail=`<span class="gcd-icon">🚗</span>Lump-sum downpayment <strong>${fmt(target)}</strong> · Loan <strong>${fmt(ml)}/mo</strong> + Running costs <strong>${fmt(mr)}/mo</strong>`;
+  }
+
+  return `<div class="goal-card" onclick="openGoalModal('${g.key}')" role="button">
+    <div class="goal-card-head">
+      <div class="goal-card-name"><span class="gc-icon">${g.icon}</span>${g.name}</div>
+      <div class="goal-card-stats">
+        <span class="gc-progress-text">${fmt(saved)} / ${fmt(target)}</span>
+        <span class="gc-badge ${badge}">${badgeText}</span>
+      </div>
+    </div>
+    <div class="goal-card-meta">${meta.join(' · ')}</div>
+    <div class="goal-progress-track"><div class="goal-progress-track-fill" style="width:${pct}%"></div></div>
+    ${detail?`<div class="goal-card-detail">${detail}</div>`:''}
+  </div>`;
+}
 
 // ═══════════════════════════════════════════
 // MEETING NOTES
