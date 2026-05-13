@@ -102,7 +102,30 @@ body::after {
 }
 .setup-overlay.hidden { display:none; }
 
-.setup-wrap { max-width:720px; width:100%; }
+.setup-wrap { max-width:1400px; width:100%; }
+
+/* Wide 3-column layout for the setup form. Repeater sections and big cards
+   span the full row; small detail cards (Cash, Income, Liabilities) sit
+   side-by-side. Collapses to 1 column on mobile. */
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.setup-grid .form-card { margin-bottom: 0; padding: 22px 26px; }
+.setup-grid .form-card h3 { margin-bottom: 16px; font-size: 1.05rem; }
+.form-card--full { grid-column: 1 / -1; }
+.form-card--double { grid-column: span 2; }
+
+@media (max-width: 1080px) {
+  .setup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-card--double { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .setup-grid { grid-template-columns: 1fr; }
+  .form-card--full, .form-card--double { grid-column: 1; }
+}
 
 .setup-masthead {
   text-align:center; margin-bottom:48px;
@@ -141,7 +164,7 @@ body::after {
   border-left: 2px solid var(--gold);
 }
 
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px 18px; }
 .form-group { display:flex; flex-direction:column; gap:5px; }
 .form-group label {
   font-size:.68rem; font-weight:600; text-transform:uppercase;
@@ -780,6 +803,33 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
   padding:6px 14px; cursor:pointer; transition:all .2s;
 }
 .btn-custom-goal:hover { background:var(--cyan-dim); }
+
+/* ═══════════════════════════════════════════
+   FIELD VALIDATION (empty-field guard)
+   ═══════════════════════════════════════════ */
+.input-error, .input-error:focus {
+  border-color:var(--red) !important;
+  box-shadow:0 0 0 3px rgba(240,96,96,.12) !important;
+}
+.field-error-msg {
+  font-size:.72rem; color:var(--red); margin-top:4px;
+  display:flex; align-items:center; gap:5px;
+  animation: shake .2s ease;
+}
+.field-error-msg::before { content:"!"; display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%; background:var(--red); color:#fff; font-size:.65rem; font-weight:700; flex-shrink:0; }
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  25% { transform:translateX(-3px); }
+  75% { transform:translateX(3px); }
+}
+.form-banner-error {
+  margin-bottom:18px; padding:12px 16px;
+  background:var(--red-dim); border:1px solid var(--red);
+  border-left:3px solid var(--red); border-radius:8px;
+  color:var(--red); font-size:.88rem;
+  display:flex; align-items:center; gap:10px;
+}
+.form-banner-error::before { content:"!"; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--red); color:#fff; font-weight:700; flex-shrink:0; }
 
 /* ═══════════════════════════════════════════
    GOAL MODAL (life-plan editor)
@@ -1516,7 +1566,8 @@ input[type=range]::-moz-range-thumb {
     <p>Enter client data to generate a personalised financial overview</p>
   </div>
 
-  <div class="form-card">
+  <div class="setup-grid">
+  <div class="form-card form-card--full">
     <h3>Client Information</h3>
     <div class="form-grid">
       <div class="form-group"><label>Client Name</label><input id="clientName" placeholder="e.g. John Tan"></div>
@@ -1557,15 +1608,15 @@ input[type=range]::-moz-range-thumb {
   </div>
 
   <div class="form-card">
-    <h3>Investments</h3>
-    <div id="invList"></div>
-    <button class="btn-add-row" onclick="addInv()">+ Add Investment</button>
-  </div>
-
-  <div class="form-card">
-    <h3>Property</h3>
-    <div id="propList"></div>
-    <button class="btn-add-row" onclick="addProp()">+ Add Property</button>
+    <h3>Monthly Income</h3>
+    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Enter gross monthly figures. Annual bonus auto-amortised over 12 months.</p>
+    <div class="form-grid">
+      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="number" placeholder="0"></div>
+    </div>
   </div>
 
   <div class="form-card">
@@ -1579,19 +1630,19 @@ input[type=range]::-moz-range-thumb {
     </div>
   </div>
 
-  <div class="form-card">
-    <h3>Monthly Income</h3>
-    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Enter gross monthly figures. Annual bonus auto-amortised over 12 months.</p>
-    <div class="form-grid">
-      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="number" placeholder="0"></div>
-    </div>
+  <div class="form-card form-card--full">
+    <h3>Investments</h3>
+    <div id="invList"></div>
+    <button class="btn-add-row" onclick="addInv()">+ Add Investment</button>
   </div>
 
-  <div class="form-card">
+  <div class="form-card form-card--full">
+    <h3>Property</h3>
+    <div id="propList"></div>
+    <button class="btn-add-row" onclick="addProp()">+ Add Property</button>
+  </div>
+
+  <div class="form-card form-card--full">
     <h3>Monthly Expenses</h3>
     <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Insurance premiums are auto-calculated from the Insurance Policies section &mdash; add every policy below for an accurate picture.</p>
     <div class="form-grid">
@@ -1609,13 +1660,15 @@ input[type=range]::-moz-range-thumb {
     </div>
   </div>
 
-  <div class="form-card">
+  <div class="form-card form-card--full">
     <h3>Insurance Policies</h3>
     <div id="insList"></div>
     <button class="btn-add-row" onclick="addIns()">+ Add Policy</button>
   </div>
+  </div><!-- /.setup-grid -->
 
-  <button class="btn-go" onclick="generate()">Generate Dashboard</button>
+  <div id="setupBannerHost"></div>
+  <button class="btn-go" onclick="tryGenerate()">Generate Dashboard</button>
 </div>
 </div>
 
@@ -1974,6 +2027,59 @@ let sym='$', charts={};
 const fmt=n=>sym+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
 const fmts=n=>(n<0?'-':'')+fmt(n);
 
+// ═══════════════════════════════════════════
+// FIELD VALIDATION HELPERS
+// ═══════════════════════════════════════════
+// Lenient non-empty regex: matches any non-whitespace character.
+// Whitespace-only counts as empty; numeric 0 is allowed because it's not blank.
+const NON_EMPTY_RE = /\S/;
+
+function clearFieldError(el){
+  if(!el) return;
+  el.classList.remove('input-error');
+  const grp=el.closest('.form-group, .gm-field');
+  if(grp){
+    const existing=grp.querySelector('.field-error-msg');
+    if(existing) existing.remove();
+  }
+}
+function markFieldError(el, msg){
+  if(!el) return;
+  el.classList.add('input-error');
+  const grp=el.closest('.form-group, .gm-field');
+  if(grp){
+    let m=grp.querySelector('.field-error-msg');
+    if(!m){ m=document.createElement('div'); m.className='field-error-msg'; grp.appendChild(m); }
+    m.textContent=msg;
+  }
+  // Auto-clear on next input
+  if(!el.dataset.vbound){
+    el.addEventListener('input',()=>clearFieldError(el),{once:true});
+    el.dataset.vbound='1';
+  }
+}
+function validateNonEmpty(el, label){
+  if(!el) return true;
+  const v=(el.value||'').toString();
+  if(!NON_EMPTY_RE.test(v)){
+    markFieldError(el, (label||'This field')+' is required');
+    return false;
+  }
+  clearFieldError(el);
+  return true;
+}
+function showFormBanner(containerEl, msg){
+  if(!containerEl) return;
+  let b=containerEl.querySelector(':scope > .form-banner-error');
+  if(!b){ b=document.createElement('div'); b.className='form-banner-error'; containerEl.insertBefore(b, containerEl.firstChild); }
+  b.textContent=msg;
+}
+function clearFormBanner(containerEl){
+  if(!containerEl) return;
+  const b=containerEl.querySelector(':scope > .form-banner-error');
+  if(b) b.remove();
+}
+
 // ── Tabs ──
 document.addEventListener('click',e=>{
   if(!e.target.classList.contains('tab'))return;
@@ -2085,6 +2191,53 @@ Chart.defaults.borderColor='rgba(255,255,255,.04)';
 Chart.defaults.font.family="'Outfit',sans-serif";
 
 const COLS=['#3ecf8e','#579dff','#b28dff','#f0b429','#f06060','#56d4dd','#f472b6','#818cf8','#fb923c','#84cc16','#e879f9','#6b7280'];
+
+function tryGenerate(){
+  const host=$('setupBannerHost'); clearFormBanner(host);
+  let ok=true;
+  // Required setup essentials
+  ok = validateNonEmpty($('clientName'), 'Client name') && ok;
+  // Either DOB or Age must be supplied
+  const dobOk=NON_EMPTY_RE.test($('clientDOB').value||'');
+  const ageOk=NON_EMPTY_RE.test($('clientAge').value||'');
+  if(!dobOk && !ageOk){
+    markFieldError($('clientDOB'),'Provide DOB or Age');
+    markFieldError($('clientAge'),'Provide DOB or Age');
+    ok=false;
+  } else {
+    clearFieldError($('clientDOB')); clearFieldError($('clientAge'));
+  }
+  ok = validateNonEmpty($('salary'), 'Base salary') && ok;
+
+  // Repeater rows: if any field in a row is populated, that row must have a Name + key amount
+  const rowRules=[
+    {list:'invList', name:'iN', amount:'iV', kind:'Investment', amountLabel:'Current Value'},
+    {list:'propList', name:'pN', amount:'pV', kind:'Property', amountLabel:'Market Value'},
+    {list:'insList', name:'sN', amount:'sP', kind:'Insurance policy', amountLabel:'Monthly Premium'},
+  ];
+  rowRules.forEach(r=>{
+    document.querySelectorAll('#'+r.list+' .repeater').forEach(row=>{
+      const inputs=row.querySelectorAll('input,select');
+      const anyFilled=Array.from(inputs).some(el=>{
+        if(el.tagName==='SELECT') return false; // selects always have a default value
+        return NON_EMPTY_RE.test(el.value||'');
+      });
+      if(!anyFilled) return; // empty row — fine, just skipped at collect time
+      const nameEl=row.querySelector(`[id^="${r.name}"]`);
+      const amtEl=row.querySelector(`[id^="${r.amount}"]`);
+      if(!validateNonEmpty(nameEl, r.kind+' name')) ok=false;
+      if(!validateNonEmpty(amtEl, r.amountLabel)) ok=false;
+    });
+  });
+
+  if(!ok){
+    showFormBanner(host,'Some required fields are missing — fill them in and try again.');
+    const firstBad=document.querySelector('.input-error');
+    if(firstBad) firstBad.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  generate();
+}
 
 function generate(){
   const d=collectData(); destroyCharts();
@@ -2261,7 +2414,7 @@ function generate(){
   updateGuidance();
   activateSidebar();
   $('sbClientName').textContent=d.client||'—';
-  $('sbClientMeta').textContent=`Age ${d.age||'—'} · ${d.marital||'Single'} · ${d.dependants?d.dependants+' dependant(s)':'No dependants'}`;
+  $('sbClientMeta').textContent=`Age ${d.age||'—'} · ${d.marital||'Single'} · ${d.dependants?d.dependants+' dependant(s)':'No dependants'} · ${d.nationality||'Singapore Citizen'} · ${d.riskProfile||'Balanced'} risk`;
   updateClientList();
   labelTables();
   if(!window._obsInit){ observeForLabels(); window._obsInit=true; }
@@ -2326,11 +2479,17 @@ function updateProj(){
     const age=start+i, year=year0+i;
     const incomeFactor=Math.pow(1+ig,i);
     const expFactor=Math.pow(1+inf,i);
-    const inc=age<retAge?(d.salary+(d.bonusMonthly||0)+d.side)*incomeFactor:0;
+    // Dividend column = max(portfolio×4.5% yield, declared monthly dividends).
+    // Honours the user's form value when their portfolio doesn't justify it.
+    const div=Math.max(invAcct*0.045/12, d.dividends*incomeFactor);
+    // Salary stops at retirement, but rental keeps flowing. Dividends are
+    // counted via `div` above (don't double-count by adding d.dividends here).
+    const workIncome=age<retAge?(d.salary+(d.bonusMonthly||0)+d.side)*incomeFactor:0;
+    const rentalIncome=d.rental*incomeFactor;
+    const inc=workIncome+rentalIncome+div;
     const exp=(totExp0+(goalMonthly[age]||0))*expFactor;
-    const div=invAcct*0.045/12;
     const lump=goalLump[age]||0;
-    const annSurp=(inc+div-exp)*12;
+    const annSurp=(inc-exp)*12;
     cash=cash*(1+0.025)+annSurp-lump; // 2.5% cash interest
     invAcct=invAcct*(1+nr)+Math.max(0,annSurp*0.3);
     nw=nw*(1+nr)+annSurp;
@@ -3324,12 +3483,18 @@ function updateDivSim(){
 
   const yieldR=divSim.yield/100, growthR=divSim.growth/100, premR=divSim.premInflation/100;
   let invFV=d.inv.reduce((s,i)=>s+i.value,0)+divSim.lumpsum;
+  // Declared cash dividends from the setup form (e.g. existing dividend-paying
+  // funds / SRS / endowments). Forms a floor on the projection so the page
+  // honors what the user told us instead of relying on portfolio×yield alone.
+  const declaredAnnualDiv=(d.dividends||0)*12;
   const labels=[], divArr=[], premArr=[];
   let selfSuffAge=null;
   let html='<thead><tr><th>Age</th><th style="text-align:right">Portfolio</th><th style="text-align:right">Dividends /yr</th><th style="text-align:right">Premiums /yr</th><th style="text-align:right">Net Surplus</th><th>Status</th></tr></thead><tbody>';
   for(let i=0;i<=divSim.horizon;i++){
     const age=start+i;
-    const yDiv=invFV*yieldR;
+    const portfolioDiv=invFV*yieldR;
+    const declaredGrown=declaredAnnualDiv*Math.pow(1+growthR,i);
+    const yDiv=Math.max(portfolioDiv,declaredGrown);
     const yPrem=annualPrem*Math.pow(1+premR,i);
     const surplus=yDiv-yPrem;
     labels.push(age); divArr.push(Math.round(yDiv)); premArr.push(Math.round(yPrem));
@@ -3341,7 +3506,7 @@ function updateDivSim(){
   html+='</tbody>';
   $('tDivPrem').innerHTML=html;
 
-  const annualDiv0=d.inv.reduce((s,i)=>s+i.value,0)*yieldR;
+  const annualDiv0=Math.max(d.inv.reduce((s,i)=>s+i.value,0)*yieldR,declaredAnnualDiv);
   $('divKpis').innerHTML=[
     {l:'Annual Premiums Now',v:fmt(annualPrem),c:'var(--red)'},
     {l:'Annual Dividends Now',v:fmt(Math.round(annualDiv0)),c:'var(--green)'},
@@ -3910,12 +4075,55 @@ function updateGoalModal(field,val){
   if(field==='end') gmState.values[field]=val===''?null:+val;
   else if(['propertyType'].includes(field)) gmState.values[field]=val;
   else gmState.values[field]=val===''?0:+val;
+  // Clear validation error for this field on input — user is fixing it.
+  if(gmState.errors){ delete gmState.errors[field]; }
   renderGoalModalBody();
+  // Re-apply persistent errors (other fields still in error state)
+  if(gmState.errors){
+    Object.entries(gmState.errors).forEach(([k,msg])=>{
+      const el=$('gmBody').querySelector(`[oninput*="updateGoalModal('${k}'"]`);
+      if(el) markFieldError(el,msg);
+    });
+  }
 }
 
 function saveGoalFromModal(){
   if(!gmState) return;
   const {key,cfg,tpl,values}=gmState;
+
+  // ── Validate required fields before saving ──
+  const fieldInput=(field)=>$('gmBody').querySelector(`[oninput*="updateGoalModal('${field}'"]`);
+  const check=(fieldKey, label)=>{
+    const el=fieldInput(fieldKey);
+    if(el && !NON_EMPTY_RE.test(el.value||'')){
+      gmState.errors[fieldKey]=label+' is required';
+      markFieldError(el, label+' is required');
+      return false;
+    } else if(el){ clearFieldError(el); delete gmState.errors[fieldKey]; }
+    return true;
+  };
+  gmState.errors = gmState.errors||{};
+  let ok=true;
+  ok = check('age','Goal age') && ok;
+  // For configs that auto-compute target (property/upgrade), require the upstream
+  // number fields (price, tenure). Optional fields like cpfOA / hdbProceeds can
+  // stay blank — they default to 0.
+  if(cfg.extraFields && cfg.compute){
+    const REQUIRED_KEYS = ['price','tenure','monthlyLoan'];
+    cfg.extraFields.forEach(f=>{
+      if(f.type==='number' && REQUIRED_KEYS.includes(f.key)){
+        ok = check(f.key, f.label||'Value') && ok;
+      }
+    });
+  } else {
+    ok = check('target','Lump-sum target') && ok;
+  }
+  if(!ok){
+    const firstBad=$('gmBody').querySelector('.input-error');
+    if(firstBad) firstBad.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
   // If config auto-computes target/monthly (property/upgrade), use the computed values
   const target=values._computedTarget!=null?values._computedTarget:+values.target;
   const monthly=values._computedMonthly!=null?values._computedMonthly:+values.monthly;
