@@ -832,6 +832,110 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
 .form-banner-error::before { content:"!"; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--red); color:#fff; font-weight:700; flex-shrink:0; }
 
 /* ═══════════════════════════════════════════
+   WHAT-IF SLIDERS (reusable, used on planning panels)
+   ═══════════════════════════════════════════ */
+.whatif {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(86,212,221,.04), transparent);
+}
+.whatif-ctrl { display:flex; flex-direction:column; gap:6px; }
+.whatif-head {
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+}
+.whatif-label {
+  font-size: .68rem; text-transform:uppercase; letter-spacing:.12em;
+  color: var(--text-tertiary); font-weight:600;
+}
+.whatif-val {
+  font-size: .92rem; color: var(--cyan); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.whatif-val.dimmed { color: var(--text-secondary); }
+.whatif input[type=range] {
+  -webkit-appearance: none; appearance: none; width:100%; height:4px;
+  background: var(--bg-input); border-radius: 2px; outline: none;
+  border:1px solid var(--border);
+}
+.whatif input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none; width:14px; height:14px;
+  border-radius:50%; background: var(--cyan); cursor:pointer;
+  border: 2px solid var(--bg-card); box-shadow:0 0 0 1px var(--cyan);
+}
+.whatif input[type=range]::-moz-range-thumb {
+  width:14px; height:14px; border-radius:50%; background: var(--cyan);
+  cursor:pointer; border:2px solid var(--bg-card);
+}
+.whatif-reset {
+  margin-top:10px; font-size:.72rem; color:var(--text-tertiary);
+  background:none; border:1px solid var(--border); border-radius:6px;
+  padding:5px 12px; cursor:pointer; transition:all .15s;
+  font-family: var(--font-body);
+}
+.whatif-reset:hover { color:var(--cyan); border-color:var(--cyan); }
+
+/* ═══════════════════════════════════════════
+   CLICK-TO-EDIT (KPI / value inline editing)
+   ═══════════════════════════════════════════ */
+.editable {
+  cursor:pointer; position:relative; transition: background .15s;
+  border-radius:4px; padding:0 4px; margin:0 -4px;
+  border-bottom: 1px dashed transparent;
+}
+.editable:hover { background: var(--bg-hover); border-bottom-color: var(--cyan); }
+.editable::after {
+  content:"✎"; position:absolute; top:-2px; right:-14px;
+  font-size:.65rem; color:var(--cyan); opacity:0; transition:opacity .15s;
+}
+.editable:hover::after { opacity:.7; }
+.editable-input {
+  background: var(--bg-input); border:1px solid var(--cyan);
+  color: var(--text-primary); font-family: inherit; font-size: inherit;
+  font-weight: inherit; padding: 2px 6px; border-radius: 4px;
+  width: 100%; max-width: 180px; text-align: inherit;
+  outline:none; box-shadow:0 0 0 3px rgba(86,212,221,.15);
+}
+
+/* ═══════════════════════════════════════════
+   COMPARISON BARS (current vs target on same row)
+   ═══════════════════════════════════════════ */
+.cmp-bar {
+  position: relative; height: 8px; background: var(--bg-card-alt);
+  border-radius: 4px; overflow: visible; margin: 6px 0 2px;
+}
+.cmp-bar-fill {
+  position: absolute; top:0; left:0; height: 100%;
+  border-radius: 4px; transition: width .35s ease;
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+}
+.cmp-bar-fill.short { background: linear-gradient(90deg, var(--amber), var(--red)); }
+.cmp-bar-target {
+  position: absolute; top: -3px; bottom: -3px;
+  width: 2px; background: var(--gold);
+  border-radius: 1px;
+}
+.cmp-bar-target::after {
+  content: attr(data-label); position: absolute; bottom: 100%;
+  left: 50%; transform: translateX(-50%);
+  font-size: .65rem; color: var(--gold); white-space: nowrap;
+  padding: 1px 5px; margin-bottom: 3px;
+  background: var(--bg-card); border: 1px solid var(--gold);
+  border-radius: 3px; font-family: var(--font-body); font-weight: 500;
+}
+.cmp-bar-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: .82rem; margin-top: 14px;
+}
+.cmp-bar-row .cmp-name { color: var(--text-secondary); }
+.cmp-bar-row .cmp-vals { font-variant-numeric: tabular-nums; }
+.cmp-bar-row .cmp-vals .cmp-cur { color: var(--text-primary); font-weight: 500; }
+.cmp-bar-row .cmp-vals .cmp-tgt { color: var(--text-tertiary); }
+
+/* ═══════════════════════════════════════════
    GOAL MODAL (life-plan editor)
    ═══════════════════════════════════════════ */
 .gm-backdrop {
@@ -1758,7 +1862,12 @@ input[type=range]::-moz-range-thumb {
     </div>
     <div class="panel" id="p-investments">
       <div class="print-section-title">Investments</div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
+      <div class="kpis kpis-4" id="invKpis"></div>
+      <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Portfolio Projection</div>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Adjust contribution, return, and horizon — the projected portfolio value updates live.</p>
+        <div class="whatif" id="invWhatif"></div>
+      </div>
+      <div class="card anim d1"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
         <div class="cols2"><div><table id="tInv"></table></div><div class="chart-box sm"><canvas id="cInv"></canvas></div></div>
       </div>
     </div>
@@ -1781,6 +1890,13 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-insurance">
       <div class="print-section-title">Insurance Coverage</div>
       <div class="kpis kpis-4" id="insKpis"></div>
+      <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Controls</div>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Adjust coverage multipliers and watch the target lines slide on the bars below.</p>
+        <div class="whatif" id="insWhatif"></div>
+      </div>
+      <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Coverage vs Target</div>
+        <div id="insCmpBars"></div>
+      </div>
       <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Coverage Adequacy</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.82rem;color:var(--text-secondary)">
           <span>Filter:</span>
@@ -1799,10 +1915,17 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-retirement">
       <div class="print-section-title">Retirement Planning</div>
       <div class="kpis" id="retireKpis"></div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Retirement Projection</div>
+      <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Controls</div>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Drag any slider to see KPIs, chart, and summary re-flow in real time.</p>
+        <div class="whatif" id="retireWhatif"></div>
+      </div>
+      <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Projected vs Required at Retirement</div>
+        <div id="retireCmpBar"></div>
+      </div>
+      <div class="card anim d1"><div class="card-title"><span class="accent"></span>Retirement Projection</div>
         <div class="chart-box"><canvas id="cRetire"></canvas></div>
       </div>
-      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Retirement Summary</div>
+      <div class="card anim d2" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Retirement Summary</div>
         <table id="tRetire"></table>
       </div>
     </div>
@@ -2295,35 +2418,10 @@ function generate(){
   $('cfKpis').innerHTML=cfKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
   // ─── Insurance panel KPI strip ──────────────────────────────────────────
-  // 4 cards: total life cover, CI cover, premiums/mo, gap vs recommended
-  const isLifePolicy=p=>/life|death|whole|term/i.test(p.type);
-  const isCIPolicy=p=>/critical|\bci\b/i.test(p.type);
-  const lifeCover=d.ins.filter(isLifePolicy).reduce((s,p)=>s+(p.cover||0),0);
-  const ciCover=d.ins.filter(isCIPolicy).reduce((s,p)=>s+(p.cover||0),0);
-  const premiumsM=d.ins.reduce((s,p)=>s+(p.premium||0),0);
-  const annualIncome=d.salary*12;
-  const lifeTarget=Math.round(annualIncome*10);   // 10x annual income (industry standard)
-  const ciTarget=Math.round(annualIncome*4);      // 4x annual income (industry standard)
-  const lifeGap=Math.max(0,lifeTarget-lifeCover);
-  const ciGap=Math.max(0,ciTarget-ciCover);
-  const totalGap=lifeGap+ciGap;
-  // Premium-to-income ratio: 5–15% is the healthy band
-  const premRatio=inflow>0?(premiumsM/inflow*100):0;
-  const premHealth=premRatio>=5&&premRatio<=15?'Healthy band (5–15%)':premRatio>15?'High burden (>15%)':premRatio>0?'Low (<5%)':'No premiums';
-  const premColor=premRatio>=5&&premRatio<=15?'var(--cyan)':premRatio>15?'var(--red)':'var(--amber)';
-  const lifePct=lifeTarget>0?Math.min(100,lifeCover/lifeTarget*100):0;
-  const ciPct=ciTarget>0?Math.min(100,ciCover/ciTarget*100):0;
-  const lifeSub=annualIncome>0?`${lifePct.toFixed(0)}% of 10× income target`:`${d.ins.filter(isLifePolicy).length} policies`;
-  const ciSub=annualIncome>0?`${ciPct.toFixed(0)}% of 4× income target`:`${d.ins.filter(isCIPolicy).length} policies`;
-  const gapVal=totalGap>0?fmts(totalGap):'—';
-  const gapSub=totalGap>0?`Life ${fmt(lifeGap)} · CI ${fmt(ciGap)}`:'Cover meets industry targets';
-  const insKpis=[
-    {l:'Total Life Cover',v:fmts(lifeCover),s:lifeSub,c:lifeCover>=lifeTarget&&lifeTarget>0?'var(--green)':'var(--amber)'},
-    {l:'Critical Illness Cover',v:fmts(ciCover),s:ciSub,c:ciCover>=ciTarget&&ciTarget>0?'var(--green)':'var(--amber)'},
-    {l:'Premiums /mo',v:fmt(premiumsM),s:premRatio>0?`${premRatio.toFixed(1)}% of income · ${premHealth}`:premHealth,c:premColor},
-    {l:'Coverage Gap',v:gapVal,s:gapSub,c:totalGap>0?'var(--red)':'var(--green)'},
-  ];
-  $('insKpis').innerHTML=insKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+  buildInsuranceKpis(d);
+
+  // ─── Investment panel KPI strip + projection ────────────────────────────
+  if($('invKpis')) buildInvestmentKpis(d);
 
   // Net Worth Donut
   const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
@@ -2364,17 +2462,22 @@ function generate(){
 
   // Passive
   $('tPassive').innerHTML=`<thead><tr><th>Source</th><th style="text-align:right">Monthly</th><th style="text-align:right">Annual</th></tr></thead><tbody>
-    <tr><td>Rental</td><td class="num">${fmt(d.rental)}</td><td class="num">${fmt(d.rental*12)}</td></tr>
-    <tr><td>Dividends</td><td class="num">${fmt(d.dividends)}</td><td class="num">${fmt(d.dividends*12)}</td></tr>
+    <tr><td>Rental</td><td class="num"><span class="editable" data-edit-form="rentalIncome" data-edit-val="${d.rental}">${fmt(d.rental)}</span></td><td class="num">${fmt(d.rental*12)}</td></tr>
+    <tr><td>Dividends</td><td class="num"><span class="editable" data-edit-form="dividendIncome" data-edit-val="${d.dividends}">${fmt(d.dividends)}</span></td><td class="num">${fmt(d.dividends*12)}</td></tr>
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(passive)}</td><td class="num" style="color:var(--gold-light)">${fmt(passive*12)}</td></tr></tbody>`;
   $('passiveBar').innerHTML=`<div class="prog"><span class="prog-label">Passive ratio</span><div class="prog-track"><div class="prog-fill" style="width:${Math.min(passiveR,100)}%"></div></div><span class="prog-val">${passiveR.toFixed(1)}%</span></div>`;
 
-  // Spending
+  // Spending — each category is click-to-edit
+  const EXP_FORM_ID={Housing:'expHousing','Food & Dining':'expFood',Transport:'expTransport',Utilities:'expUtilities',Shopping:'expShopping',Entertainment:'expEntertainment',Education:'expEducation',Healthcare:'expHealthcare','Family':'expFamily','Savings':'expSavings',Others:'expOthers'};
   const sL=Object.keys(d.exp).filter(k=>d.exp[k]>0), sD=sL.map(k=>d.exp[k]);
   if(sL.length){
     charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{display:false}}}});
     let st='<thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr></thead><tbody>';
-    sL.forEach((l,i)=>{st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${fmt(sD[i])}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;});
+    sL.forEach((l,i)=>{
+      const fid=EXP_FORM_ID[l];
+      const cell=fid?`<span class="editable" data-edit-form="${fid}" data-edit-val="${sD[i]}">${fmt(sD[i])}</span>`:fmt(sD[i]);
+      st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${cell}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;
+    });
     st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExp)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
     $('tSpend').innerHTML=st;
   }
@@ -2557,18 +2660,199 @@ function buildHealthScore(d){
 // ═══════════════════════════════════════════
 // RETIREMENT
 // ═══════════════════════════════════════════
-function buildRetirement(d){
+// ═══════════════════════════════════════════
+// CLICK-TO-EDIT (Cashflow tables, Passive income)
+// ═══════════════════════════════════════════
+// Any element with class="editable" + data-edit-form="<formInputId>" becomes
+// click-to-edit. On commit (Enter or blur), we sync the value back to the
+// form input and re-run generate() so every downstream panel reflows.
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('.editable[data-edit-form]');
+  if (!target || target.querySelector('input')) return;
+  const formId = target.dataset.editForm;
+  const formEl = document.getElementById(formId);
+  if (!formEl) return;
+  const currentVal = +target.dataset.editVal || +formEl.value || 0;
+  const originalText = target.textContent;
+  const input = document.createElement('input');
+  input.type = 'number'; input.className = 'editable-input';
+  input.value = currentVal; input.min = '0';
+  target.textContent = ''; target.appendChild(input);
+  input.focus(); input.select();
+  let cancelled = false;
+  const commit = () => {
+    if (cancelled) return;
+    cancelled = true;
+    const newVal = +input.value;
+    if (isNaN(newVal) || newVal === currentVal) {
+      target.textContent = originalText;
+      return;
+    }
+    formEl.value = newVal;
+    formEl.dispatchEvent(new Event('input', {bubbles: true}));
+    generate();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') input.blur();
+    else if (ev.key === 'Escape') { cancelled = true; target.textContent = originalText; }
+  });
+});
+
+// ═══════════════════════════════════════════
+// INVESTMENT PLAN (what-if sliders)
+// ═══════════════════════════════════════════
+let invSim = { contribution:null, returnPct:7, horizonYrs:null };
+function resetInvSim(){ invSim={contribution:null, returnPct:7, horizonYrs:null}; if(lastData) buildInvestmentKpis(lastData); }
+function setInvSim(k,v){ invSim[k]=v===''?null:+v; if(lastData) buildInvestmentKpis(lastData); }
+
+function buildInvestmentKpis(d){
   const age=d.age||35, retAge=d.retireAge||65;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totCost=d.inv.reduce((s,i)=>s+(i.cost||0),0);
+  const unrealized=totInv-totCost;
+  const defaultContrib=Math.max(0, d.exp.Savings||Math.round((d.salary||0)*0.1));
+  const defaultHorizon=Math.max(1, retAge-age);
+
+  const contrib=invSim.contribution ?? defaultContrib;
+  const r=(invSim.returnPct||7)/100;
+  const yrs=invSim.horizonYrs ?? defaultHorizon;
+  // FV = P(1+r)^n + PMT × ((1+r)^n - 1)/r
+  const growthFactor=Math.pow(1+r,yrs);
+  const projFV=totInv*growthFactor + contrib*12*((growthFactor-1)/r);
+  const totalContrib=totInv+contrib*12*yrs;
+  const totalGains=projFV-totalContrib;
+  const gainPct=totalContrib>0?(totalGains/totalContrib*100):0;
+
+  $('invKpis').innerHTML=[
+    {l:'Current Portfolio',v:fmt(totInv),s:`${d.inv.length} holdings · cost basis ${fmt(totCost)}`,c:'var(--cyan)'},
+    {l:'Unrealised P/L',v:fmts(unrealized),s:totCost>0?`${(unrealized/totCost*100).toFixed(1)}% from cost`:'No cost basis',c:unrealized>=0?'var(--green)':'var(--red)'},
+    {l:`Projected at age ${age+yrs}`,v:fmt(Math.round(projFV)),s:`${yrs}yr at ${(r*100).toFixed(2)}% · ${fmt(contrib)}/mo`,c:'var(--gold)'},
+    {l:'Total Gains',v:fmts(Math.round(totalGains)),s:`${gainPct.toFixed(1)}% return on ${fmt(Math.round(totalContrib))} contributed`,c:totalGains>=0?'var(--green)':'var(--red)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  if($('invWhatif')){
+    const dirty = invSim.contribution!=null || invSim.returnPct!==7 || invSim.horizonYrs!=null;
+    $('invWhatif').innerHTML=[
+      {key:'contribution', label:'Monthly Contribution', min:0, max:10000, step:100, val:contrib, prefix:'$'},
+      {key:'returnPct', label:'Expected Annual Return', min:2, max:15, step:0.25, val:invSim.returnPct, suffix:'%'},
+      {key:'horizonYrs', label:'Time Horizon', min:1, max:40, step:1, val:yrs, suffix:' yrs'},
+    ].map(s=>`<div class="whatif-ctrl">
+      <div class="whatif-head"><span class="whatif-label">${s.label}</span>
+      <span class="whatif-val ${(s.key!=='returnPct'&&invSim[s.key]==null)?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span></div>
+      <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setInvSim('${s.key}',this.value)">
+    </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetInvSim()">↺ Reset to defaults</button></div>`:'');
+  }
+}
+
+// ═══════════════════════════════════════════
+// INSURANCE COVERAGE (what-if sliders + comparison bars)
+// ═══════════════════════════════════════════
+let insSim = { lifeMult:10, ciMult:4, incomeOverride:null };
+function resetInsSim(){ insSim={lifeMult:10, ciMult:4, incomeOverride:null}; if(lastData) buildInsuranceKpis(lastData); }
+function setInsSim(k,v){ insSim[k]=v===''?null:+v; if(lastData) buildInsuranceKpis(lastData); }
+
+function buildInsuranceKpis(d){
+  const isLifePolicy=p=>/life|death|whole|term/i.test(p.type);
+  const isCIPolicy=p=>/critical|\bci\b/i.test(p.type);
+  const lifeCover=d.ins.filter(isLifePolicy).reduce((s,p)=>s+(p.cover||0),0);
+  const ciCover=d.ins.filter(isCIPolicy).reduce((s,p)=>s+(p.cover||0),0);
+  const premiumsM=d.ins.reduce((s,p)=>s+(p.premium||0),0);
+  const annualIncome=(insSim.incomeOverride ?? d.salary*12);
+  const lifeMult=insSim.lifeMult, ciMult=insSim.ciMult;
+  const lifeTarget=Math.round(annualIncome*lifeMult);
+  const ciTarget=Math.round(annualIncome*ciMult);
+  const lifeGap=Math.max(0,lifeTarget-lifeCover);
+  const ciGap=Math.max(0,ciTarget-ciCover);
+  const totalGap=lifeGap+ciGap;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
+  const premRatio=inflow>0?(premiumsM/inflow*100):0;
+  const premHealth=premRatio>=5&&premRatio<=15?'Healthy band (5–15%)':premRatio>15?'High burden (>15%)':premRatio>0?'Low (<5%)':'No premiums';
+  const premColor=premRatio>=5&&premRatio<=15?'var(--cyan)':premRatio>15?'var(--red)':'var(--amber)';
+  const lifePct=lifeTarget>0?Math.min(100,lifeCover/lifeTarget*100):0;
+  const ciPct=ciTarget>0?Math.min(100,ciCover/ciTarget*100):0;
+  const lifeSub=annualIncome>0?`${lifePct.toFixed(0)}% of ${lifeMult}× income target`:`${d.ins.filter(isLifePolicy).length} policies`;
+  const ciSub=annualIncome>0?`${ciPct.toFixed(0)}% of ${ciMult}× income target`:`${d.ins.filter(isCIPolicy).length} policies`;
+  const gapVal=totalGap>0?fmts(totalGap):'—';
+  const gapSub=totalGap>0?`Life ${fmt(lifeGap)} · CI ${fmt(ciGap)}`:'Cover meets industry targets';
+  const insKpis=[
+    {l:'Total Life Cover',v:fmts(lifeCover),s:lifeSub,c:lifeCover>=lifeTarget&&lifeTarget>0?'var(--green)':'var(--amber)'},
+    {l:'Critical Illness Cover',v:fmts(ciCover),s:ciSub,c:ciCover>=ciTarget&&ciTarget>0?'var(--green)':'var(--amber)'},
+    {l:'Premiums /mo',v:fmt(premiumsM),s:premRatio>0?`${premRatio.toFixed(1)}% of income · ${premHealth}`:premHealth,c:premColor},
+    {l:'Coverage Gap',v:gapVal,s:gapSub,c:totalGap>0?'var(--red)':'var(--green)'},
+  ];
+  $('insKpis').innerHTML=insKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // ── Comparison bars: current cover vs target, with goal line ──
+  if($('insCmpBars')){
+    const bars=[
+      {name:'Life / TPD cover',cur:lifeCover,tgt:lifeTarget,pct:lifePct},
+      {name:'Critical Illness cover',cur:ciCover,tgt:ciTarget,pct:ciPct},
+    ].map(b=>{
+      const fillPct=b.tgt>0?Math.min(100,b.cur/b.tgt*100):0;
+      const cls=fillPct>=100?'':'short';
+      return `<div class="cmp-bar-row"><span class="cmp-name">${b.name}</span>
+        <span class="cmp-vals"><span class="cmp-cur">${fmts(b.cur)}</span> <span class="cmp-tgt">/ target ${fmts(b.tgt)}</span></span></div>
+        <div class="cmp-bar">
+          <div class="cmp-bar-fill ${cls}" style="width:${Math.max(2,fillPct)}%"></div>
+          <div class="cmp-bar-target" data-label="target" style="left:calc(${Math.min(100,fillPct>=100?100:100)}% - 1px)"></div>
+        </div>`;
+    }).join('');
+    $('insCmpBars').innerHTML=bars;
+  }
+
+  // ── What-if controls ──
+  if($('insWhatif')){
+    const dirty = insSim.lifeMult!==10 || insSim.ciMult!==4 || insSim.incomeOverride!=null;
+    $('insWhatif').innerHTML=[
+      {key:'lifeMult', label:'Life Cover Multiplier', min:5, max:20, step:1, val:insSim.lifeMult, suffix:'× income'},
+      {key:'ciMult', label:'CI Cover Multiplier', min:2, max:10, step:1, val:insSim.ciMult, suffix:'× income'},
+      {key:'incomeOverride', label:'Annual Income Basis', min:30000, max:300000, step:5000, val:annualIncome, prefix:'$'},
+    ].map(s=>`<div class="whatif-ctrl">
+      <div class="whatif-head"><span class="whatif-label">${s.label}</span>
+      <span class="whatif-val ${(s.key==='incomeOverride'&&insSim.incomeOverride==null)?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span></div>
+      <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setInsSim('${s.key}',this.value)">
+    </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetInsSim()">↺ Reset to defaults (10× life, 4× CI)</button></div>`:'');
+  }
+}
+
+let retireSim = { retAge:null, desired:null, growthPct:5, retireYrs:20, savings:null };
+function resetRetireSim(){ retireSim={ retAge:null, desired:null, growthPct:5, retireYrs:20, savings:null }; if(lastData) buildRetirement(lastData); }
+function setRetireSim(k,v){ retireSim[k]=v===''?null:+v; if(lastData) buildRetirement(lastData); }
+
+function buildRetirement(d){
+  const age=d.age||35;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+
+  // Effective values (slider overrides win over form data)
+  const retAge=retireSim.retAge ?? (d.retireAge||65);
+  const desired=retireSim.desired ?? (d.retireIncome||totExp);
+  const monthlySav=retireSim.savings ?? (d.exp.Savings||0);
+  const r=(retireSim.growthPct||5)/100;
+  const retireYrs=retireSim.retireYrs||20;
+
   const yrs=Math.max(retAge-age,1);
   const totInv=d.inv.reduce((s,i)=>s+i.value,0);
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
-  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
-  const desired=d.retireIncome||totExp;
-  const required=desired*12*20; // 20yr retirement
-  const monthlySav=d.exp.Savings||0;
-  const r=0.05;
+  const required=desired*12*retireYrs;
   const proj=(totInv+cpf)*Math.pow(1+r,yrs)+monthlySav*12*((Math.pow(1+r,yrs)-1)/r);
   const gap=required-proj;
+
+  // Render slider controls (idempotent — re-renders each call so values stay in sync)
+  const dirty = Object.entries(retireSim).some(([k,v])=>v!=null && !(k==='growthPct'&&v===5) && !(k==='retireYrs'&&v===20));
+  $('retireWhatif').innerHTML = [
+    {key:'retAge', label:'Retirement Age', min:50, max:75, step:1, val:retAge, suffix:''},
+    {key:'desired', label:'Desired Monthly Income', min:1000, max:20000, step:250, val:desired, prefix:'$'},
+    {key:'growthPct', label:'Pre-Retirement Growth', min:2, max:10, step:0.25, val:retireSim.growthPct, suffix:'%'},
+    {key:'retireYrs', label:'Years of Retirement', min:10, max:35, step:1, val:retireSim.retireYrs, suffix:' yrs'},
+    {key:'savings', label:'Monthly Savings', min:0, max:8000, step:100, val:monthlySav, prefix:'$'},
+  ].map(s=>`<div class="whatif-ctrl">
+    <div class="whatif-head">
+      <span class="whatif-label">${s.label}</span>
+      <span class="whatif-val ${retireSim[s.key]==null?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span>
+    </div>
+    <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setRetireSim('${s.key}',this.value)">
+  </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetRetireSim()">↺ Reset to form values</button></div>`:'');
 
   $('retireKpis').innerHTML=[
     {l:'Years to Retire',v:yrs+' yrs',c:'var(--gold)'},
@@ -2576,6 +2860,24 @@ function buildRetirement(d){
     {l:'Projected Assets',v:fmt(Math.round(proj)),c:proj>=required?'var(--green)':'var(--amber)'},
     {l:'Gap',v:gap>0?fmt(Math.round(gap)):'None',c:gap>0?'var(--red)':'var(--green)'},
   ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  // ── Comparison bar: projected vs required at retirement ──
+  if($('retireCmpBar')){
+    const fillPct = required>0 ? Math.min(100, proj/required*100) : 100;
+    const cls = fillPct>=100?'':'short';
+    $('retireCmpBar').innerHTML = `
+      <div class="cmp-bar-row"><span class="cmp-name">Projected portfolio at age ${retAge}</span>
+        <span class="cmp-vals"><span class="cmp-cur">${fmt(Math.round(proj))}</span> <span class="cmp-tgt">/ required ${fmt(Math.round(required))}</span></span></div>
+      <div class="cmp-bar">
+        <div class="cmp-bar-fill ${cls}" style="width:${Math.max(2,fillPct)}%"></div>
+        <div class="cmp-bar-target" data-label="goal" style="left:calc(100% - 1px)"></div>
+      </div>
+      <p style="font-size:.78rem;color:var(--text-tertiary);margin-top:14px">
+        ${gap>0
+          ? `Shortfall of <strong style="color:var(--red)">${fmt(Math.round(gap))}</strong> at current pace. Try raising monthly savings, extending retirement age, or increasing pre-retirement growth.`
+          : `On track — projected to exceed required corpus by <strong style="color:var(--green)">${fmt(Math.round(-gap))}</strong>.`}
+      </p>`;
+  }
 
   // Projection chart
   const labels=[], dataProj=[], dataReq=[];
@@ -2596,10 +2898,10 @@ function buildRetirement(d){
     <tr><td>Retirement Age</td><td class="num">${retAge}</td></tr>
     <tr><td>Years to Retirement</td><td class="num">${yrs}</td></tr>
     <tr><td>Desired Monthly Income</td><td class="num">${fmt(desired)}/mo</td></tr>
-    <tr><td>Required Capital (20yr)</td><td class="num">${fmt(Math.round(required))}</td></tr>
+    <tr><td>Required Capital (${retireYrs}yr)</td><td class="num">${fmt(Math.round(required))}</td></tr>
     <tr><td>Current Investable (Inv + CPF)</td><td class="num">${fmt(totInv+cpf)}</td></tr>
     <tr><td>Monthly Savings</td><td class="num">${fmt(monthlySav)}</td></tr>
-    <tr><td>Assumed Growth Rate</td><td class="num">5% p.a.</td></tr>
+    <tr><td>Assumed Growth Rate</td><td class="num">${(r*100).toFixed(2)}% p.a.</td></tr>
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Projected at ${retAge}</td><td class="num" style="color:var(--gold-light)">${fmt(Math.round(proj))}</td></tr>
     <tr class="tr-total-${gap>0?'red':'green'}"><td>${gap>0?'Shortfall':'Surplus'}</td><td class="num">${fmt(Math.round(Math.abs(gap)))}</td></tr>
   </tbody>`;
