@@ -102,7 +102,30 @@ body::after {
 }
 .setup-overlay.hidden { display:none; }
 
-.setup-wrap { max-width:720px; width:100%; }
+.setup-wrap { max-width:1400px; width:100%; }
+
+/* Wide 3-column layout for the setup form. Repeater sections and big cards
+   span the full row; small detail cards (Cash, Income, Liabilities) sit
+   side-by-side. Collapses to 1 column on mobile. */
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.setup-grid .form-card { margin-bottom: 0; padding: 22px 26px; }
+.setup-grid .form-card h3 { margin-bottom: 16px; font-size: 1.05rem; }
+.form-card--full { grid-column: 1 / -1; }
+.form-card--double { grid-column: span 2; }
+
+@media (max-width: 1080px) {
+  .setup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-card--double { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .setup-grid { grid-template-columns: 1fr; }
+  .form-card--full, .form-card--double { grid-column: 1; }
+}
 
 .setup-masthead {
   text-align:center; margin-bottom:48px;
@@ -141,7 +164,7 @@ body::after {
   border-left: 2px solid var(--gold);
 }
 
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px 18px; }
 .form-group { display:flex; flex-direction:column; gap:5px; }
 .form-group label {
   font-size:.68rem; font-weight:600; text-transform:uppercase;
@@ -303,6 +326,8 @@ body::after {
   display:grid; grid-template-columns:repeat(3,1fr);
   gap:14px; margin-bottom:28px;
 }
+.kpis.kpis-4 { grid-template-columns:repeat(4,1fr); }
+@media(max-width:1100px) { .kpis.kpis-4 { grid-template-columns:repeat(2,1fr); } }
 .kpi {
   background:var(--bg-card);
   border:1px solid var(--border);
@@ -720,6 +745,327 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
 .goal-progress { height:5px; background:var(--bg-card-alt); border-radius:3px; overflow:hidden; margin-top:6px; }
 .goal-progress-fill { height:100%; background:linear-gradient(90deg, var(--cyan), var(--green)); }
 
+/* Goal card (clean read-only row, click to edit in modal) */
+.goal-card {
+  padding:14px 16px; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .15s, border-color .15s;
+  position:relative;
+}
+.goal-card:hover { background:var(--bg-hover); }
+.goal-card:last-child { border-bottom:none; }
+.goal-card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:8px;
+}
+.goal-card-name {
+  display:flex; align-items:center; gap:8px;
+  font-size:.95rem; font-weight:500; color:var(--text-primary);
+}
+.goal-card-name .gc-icon { font-size:1.1rem; }
+.goal-card-stats {
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+  font-size:.85rem; color:var(--text-secondary);
+}
+.goal-card-stats .gc-progress-text { font-weight:500; color:var(--text-primary); }
+.goal-card-stats .gc-badge {
+  font-size:.65rem; text-transform:uppercase; letter-spacing:.1em;
+  padding:2px 8px; border-radius:10px; font-weight:600;
+}
+.gc-badge.gc-badge-reached { color:var(--green); background:var(--green-dim); }
+.gc-badge.gc-badge-progress { color:var(--cyan); background:var(--cyan-dim); }
+.gc-badge.gc-badge-pending { color:var(--text-tertiary); background:var(--bg-card-alt); }
+.goal-card-meta {
+  font-size:.78rem; color:var(--text-tertiary);
+  margin-bottom:8px; line-height:1.5;
+}
+.goal-card-detail {
+  font-size:.78rem; color:var(--text-secondary);
+  margin-top:6px; padding:8px 10px; background:var(--bg-card-alt);
+  border-left:2px solid var(--cyan); border-radius:4px; line-height:1.5;
+}
+.goal-card-detail .gcd-icon { color:var(--cyan); margin-right:6px; }
+.goal-card-detail strong { color:var(--cyan); font-weight:600; }
+.goal-progress-track {
+  height:4px; background:var(--bg-card-alt); border-radius:2px; overflow:hidden;
+}
+.goal-progress-track-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg, var(--cyan), var(--green));
+  transition:width .4s ease;
+}
+
+/* Custom goal button */
+.btn-custom-goal {
+  font-family:var(--font-body); font-size:.82rem; font-weight:500;
+  color:var(--cyan); background:transparent;
+  border:1px solid var(--cyan); border-radius:20px;
+  padding:6px 14px; cursor:pointer; transition:all .2s;
+}
+.btn-custom-goal:hover { background:var(--cyan-dim); }
+
+/* ═══════════════════════════════════════════
+   FIELD VALIDATION (empty-field guard)
+   ═══════════════════════════════════════════ */
+.input-error, .input-error:focus {
+  border-color:var(--red) !important;
+  box-shadow:0 0 0 3px rgba(240,96,96,.12) !important;
+}
+.field-error-msg {
+  font-size:.72rem; color:var(--red); margin-top:4px;
+  display:flex; align-items:center; gap:5px;
+  animation: shake .2s ease;
+}
+.field-error-msg::before { content:"!"; display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%; background:var(--red); color:#fff; font-size:.65rem; font-weight:700; flex-shrink:0; }
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  25% { transform:translateX(-3px); }
+  75% { transform:translateX(3px); }
+}
+.form-banner-error {
+  margin-bottom:18px; padding:12px 16px;
+  background:var(--red-dim); border:1px solid var(--red);
+  border-left:3px solid var(--red); border-radius:8px;
+  color:var(--red); font-size:.88rem;
+  display:flex; align-items:center; gap:10px;
+}
+.form-banner-error::before { content:"!"; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--red); color:#fff; font-weight:700; flex-shrink:0; }
+
+/* ═══════════════════════════════════════════
+   WHAT-IF SLIDERS (reusable, used on planning panels)
+   ═══════════════════════════════════════════ */
+.whatif {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(86,212,221,.04), transparent);
+}
+.whatif-ctrl { display:flex; flex-direction:column; gap:6px; }
+.whatif-head {
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+}
+.whatif-label {
+  font-size: .68rem; text-transform:uppercase; letter-spacing:.12em;
+  color: var(--text-tertiary); font-weight:600;
+}
+.whatif-val {
+  font-size: .92rem; color: var(--cyan); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.whatif-val.dimmed { color: var(--text-secondary); }
+.whatif input[type=range] {
+  -webkit-appearance: none; appearance: none; width:100%; height:4px;
+  background: var(--bg-input); border-radius: 2px; outline: none;
+  border:1px solid var(--border);
+}
+.whatif input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none; width:14px; height:14px;
+  border-radius:50%; background: var(--cyan); cursor:pointer;
+  border: 2px solid var(--bg-card); box-shadow:0 0 0 1px var(--cyan);
+}
+.whatif input[type=range]::-moz-range-thumb {
+  width:14px; height:14px; border-radius:50%; background: var(--cyan);
+  cursor:pointer; border:2px solid var(--bg-card);
+}
+.whatif-reset {
+  margin-top:10px; font-size:.72rem; color:var(--text-tertiary);
+  background:none; border:1px solid var(--border); border-radius:6px;
+  padding:5px 12px; cursor:pointer; transition:all .15s;
+  font-family: var(--font-body);
+}
+.whatif-reset:hover { color:var(--cyan); border-color:var(--cyan); }
+
+/* ═══════════════════════════════════════════
+   CLICK-TO-EDIT (KPI / value inline editing)
+   ═══════════════════════════════════════════ */
+.editable {
+  cursor:pointer; position:relative; transition: background .15s;
+  border-radius:4px; padding:0 4px; margin:0 -4px;
+  border-bottom: 1px dashed transparent;
+}
+.editable:hover { background: var(--bg-hover); border-bottom-color: var(--cyan); }
+.editable::after {
+  content:"✎"; position:absolute; top:-2px; right:-14px;
+  font-size:.65rem; color:var(--cyan); opacity:0; transition:opacity .15s;
+}
+.editable:hover::after { opacity:.7; }
+.editable-input {
+  background: var(--bg-input); border:1px solid var(--cyan);
+  color: var(--text-primary); font-family: inherit; font-size: inherit;
+  font-weight: inherit; padding: 2px 6px; border-radius: 4px;
+  width: 100%; max-width: 180px; text-align: inherit;
+  outline:none; box-shadow:0 0 0 3px rgba(86,212,221,.15);
+}
+
+/* ═══════════════════════════════════════════
+   COMPARISON BARS (current vs target on same row)
+   ═══════════════════════════════════════════ */
+.cmp-bar {
+  position: relative; height: 8px; background: var(--bg-card-alt);
+  border-radius: 4px; overflow: visible; margin: 6px 0 2px;
+}
+.cmp-bar-fill {
+  position: absolute; top:0; left:0; height: 100%;
+  border-radius: 4px; transition: width .35s ease;
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+}
+.cmp-bar-fill.short { background: linear-gradient(90deg, var(--amber), var(--red)); }
+.cmp-bar-target {
+  position: absolute; top: -3px; bottom: -3px;
+  width: 2px; background: var(--gold);
+  border-radius: 1px;
+}
+.cmp-bar-target::after {
+  content: attr(data-label); position: absolute; bottom: 100%;
+  left: 50%; transform: translateX(-50%);
+  font-size: .65rem; color: var(--gold); white-space: nowrap;
+  padding: 1px 5px; margin-bottom: 3px;
+  background: var(--bg-card); border: 1px solid var(--gold);
+  border-radius: 3px; font-family: var(--font-body); font-weight: 500;
+}
+.cmp-bar-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: .82rem; margin-top: 14px;
+}
+.cmp-bar-row .cmp-name { color: var(--text-secondary); }
+.cmp-bar-row .cmp-vals { font-variant-numeric: tabular-nums; }
+.cmp-bar-row .cmp-vals .cmp-cur { color: var(--text-primary); font-weight: 500; }
+.cmp-bar-row .cmp-vals .cmp-tgt { color: var(--text-tertiary); }
+
+/* ═══════════════════════════════════════════
+   GOAL MODAL (life-plan editor)
+   ═══════════════════════════════════════════ */
+.gm-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  z-index:200; opacity:0; pointer-events:none;
+  transition:opacity .2s ease;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+}
+.gm-backdrop.open { opacity:1; pointer-events:auto; }
+.gm-modal {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg);
+  width:100%; max-width:720px; max-height:90vh; overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  transform:translateY(8px) scale(.985); transition:transform .2s ease;
+}
+.gm-backdrop.open .gm-modal { transform:translateY(0) scale(1); }
+.gm-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 22px; border-bottom:1px solid var(--border);
+  position:sticky; top:0; background:var(--bg-card); z-index:2;
+}
+.gm-title { display:flex; align-items:center; gap:10px; }
+.gm-title .gm-icon { font-size:1.3rem; line-height:1; }
+.gm-title .gm-name {
+  font-family:var(--font-display); font-size:1.25rem; font-weight:500; color:var(--text-primary);
+}
+.gm-title .gm-name em { font-style:italic; color:var(--cyan); font-weight:400; }
+.gm-close {
+  background:none; border:none; color:var(--text-secondary); cursor:pointer;
+  font-size:1.4rem; line-height:1; padding:4px 8px; border-radius:6px;
+  transition:background .15s, color .15s;
+}
+.gm-close:hover { background:var(--bg-hover); color:var(--text-primary); }
+.gm-body { padding:18px 22px 8px; }
+.gm-desc {
+  font-size:.85rem; color:var(--text-secondary); line-height:1.55;
+  margin-bottom:18px; padding:10px 14px; background:var(--bg-card-alt);
+  border-left:2px solid var(--cyan); border-radius:4px;
+}
+.gm-section {
+  margin-top:18px;
+}
+.gm-section-label {
+  display:flex; align-items:center; gap:6px;
+  font-size:.68rem; text-transform:uppercase; letter-spacing:.14em;
+  color:var(--gold); font-weight:600; margin-bottom:10px;
+}
+.gm-section-label .gm-section-sub {
+  color:var(--text-tertiary); letter-spacing:.06em; font-weight:500; text-transform:none;
+}
+.gm-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+}
+.gm-grid.gm-grid-1 { grid-template-columns:1fr; }
+.gm-field { display:flex; flex-direction:column; gap:4px; }
+.gm-field-label {
+  font-size:.68rem; text-transform:uppercase; letter-spacing:.12em;
+  color:var(--text-tertiary); font-weight:600;
+}
+.gm-field input, .gm-field select {
+  background:var(--bg-input); border:1px solid var(--border); color:var(--text-primary);
+  padding:9px 12px; border-radius:8px; font-family:var(--font-body); font-size:.92rem;
+  width:100%; transition:border-color .15s, box-shadow .15s;
+}
+.gm-field input:focus, .gm-field select:focus {
+  outline:none; border-color:var(--border-focus);
+  box-shadow:0 0 0 3px rgba(207,181,116,.12);
+}
+.gm-field-hint {
+  font-size:.7rem; color:var(--text-tertiary); margin-top:2px; line-height:1.45;
+}
+.gm-cost-ref {
+  width:100%; border-collapse:collapse; font-size:.82rem;
+  background:var(--bg-card-alt); border-radius:8px; overflow:hidden;
+}
+.gm-cost-ref td {
+  padding:7px 12px; border-bottom:1px solid var(--border);
+}
+.gm-cost-ref tr:last-child td { border-bottom:none; }
+.gm-cost-ref td:first-child { color:var(--text-secondary); }
+.gm-cost-ref td:last-child { text-align:right; color:var(--text-primary); font-family:var(--font-body); font-variant-numeric:tabular-nums; }
+
+.gm-summary {
+  margin:22px 0 6px; padding:14px 16px;
+  background:linear-gradient(180deg, var(--cyan-dim), rgba(86,212,221,0));
+  border:1px solid rgba(86,212,221,.18); border-radius:10px;
+}
+.gm-summary-row {
+  display:flex; align-items:flex-start; gap:8px;
+  font-size:.86rem; color:var(--text-primary); line-height:1.55;
+  padding:3px 0;
+}
+.gm-summary-row .gm-bullet { flex-shrink:0; width:18px; text-align:center; }
+.gm-summary-row.gm-warn { color:var(--amber); }
+.gm-summary-row strong { color:var(--cyan); font-weight:600; }
+.gm-summary-row .pos { color:var(--green); font-weight:600; }
+.gm-summary-row .neg { color:var(--red); font-weight:600; }
+
+.gm-foot {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:16px 22px; border-top:1px solid var(--border);
+  position:sticky; bottom:0; background:var(--bg-card);
+}
+.gm-foot .gm-side { display:flex; gap:10px; }
+.gm-btn {
+  padding:10px 18px; border-radius:999px; border:1px solid var(--border);
+  background:transparent; color:var(--text-secondary); font-family:var(--font-body);
+  font-size:.88rem; cursor:pointer; transition:all .15s;
+}
+.gm-btn:hover { color:var(--text-primary); border-color:var(--border-hover); }
+.gm-btn-danger { color:var(--red); border-color:rgba(240,96,96,.3); }
+.gm-btn-danger:hover { background:var(--red-dim); border-color:var(--red); color:var(--red); }
+.gm-btn-primary {
+  background:linear-gradient(135deg, var(--cyan), #67e0ea);
+  color:var(--bg-base); border-color:transparent; font-weight:600;
+  box-shadow:0 6px 18px rgba(86,212,221,.22);
+}
+.gm-btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 22px rgba(86,212,221,.32); color:var(--bg-base); }
+
+@media (max-width: 600px) {
+  .gm-backdrop { padding:12px; align-items:flex-end; }
+  .gm-modal { max-height:94vh; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
+  .gm-grid { grid-template-columns:1fr; }
+  .gm-foot { flex-direction:column-reverse; align-items:stretch; }
+  .gm-foot .gm-side { justify-content:space-between; }
+  .gm-btn { width:100%; text-align:center; }
+}
+
 /* ═══════════════════════════════════════════
    PROJECTION TABLE
    ═══════════════════════════════════════════ */
@@ -779,6 +1125,116 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
   font-family:var(--font-body);
 }
 .pol-filter.on { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+
+/* Policy table (replaces card grid in Insurance Coverage) */
+.policy-table-wrap { overflow-x:auto; }
+.policy-table { width:100%; border-collapse:collapse; font-size:.86rem; }
+.policy-table thead th {
+  font-family:var(--font-body); font-weight:600; font-size:.66rem;
+  text-transform:uppercase; letter-spacing:.12em; color:var(--text-tertiary);
+  text-align:left; padding:10px 12px; border-bottom:1px solid var(--border);
+  background:var(--bg-card);
+}
+.policy-table thead th.num { text-align:right; }
+.policy-table tbody td {
+  padding:14px 12px; border-bottom:1px solid var(--border);
+  color:var(--text-primary); vertical-align:middle;
+}
+.policy-table tbody tr:hover { background:var(--bg-hover); }
+.policy-table tbody tr:last-child td { border-bottom:none; }
+.policy-table .ptype {
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:500;
+}
+.policy-table .pdot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+.policy-table .pname { color:var(--text-primary); font-weight:500; }
+.policy-table .pinsurer { color:var(--text-secondary); font-size:.82rem; }
+.policy-table .pnum { text-align:right; font-variant-numeric:tabular-nums; font-family:var(--font-body); }
+.policy-table .precommended { color:var(--text-tertiary); }
+.policy-table .precommended.ok { color:var(--green); }
+.policy-table .precommended.gap { color:var(--amber); }
+
+/* Insurance × Dividends — Policies + Plans summary cards */
+.ix-card-head {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.ix-card-total {
+  font-family:var(--font-display);
+  font-size:1.4rem; font-weight:500; color:var(--gold-light);
+  letter-spacing:-.01em;
+}
+.ix-pol-row {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:10px; padding:10px 0; border-bottom:1px solid var(--border);
+}
+.ix-pol-row:last-child { border-bottom:none; }
+.ix-pol-row-l { flex:1; min-width:0; }
+.ix-pol-row-name { font-size:.88rem; color:var(--text-primary); font-weight:500; margin-bottom:2px; }
+.ix-pol-row-meta { font-size:.74rem; color:var(--text-tertiary); }
+.ix-pol-row-r {
+  text-align:right; flex-shrink:0;
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+}
+.ix-pol-row-r .mo { font-size:.95rem; font-weight:500; color:var(--text-primary); }
+.ix-pol-row-r .yr { font-size:.72rem; color:var(--text-tertiary); margin-top:2px; }
+.ix-tag-age {
+  display:inline-block; padding:1px 7px; border-radius:8px;
+  font-size:.65rem; letter-spacing:.06em; text-transform:uppercase;
+  background:var(--bg-card-alt); color:var(--cyan);
+  margin-left:6px;
+}
+
+/* Client Report — allocation legend rows */
+.alloc-row {
+  display:grid; grid-template-columns:18px 1fr auto auto;
+  align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px solid var(--border);
+  font-size:.88rem;
+}
+.alloc-row:last-child { border-bottom:none; }
+.alloc-dot { width:10px; height:10px; border-radius:3px; }
+.alloc-name { color:var(--text-primary); }
+.alloc-cur {
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+  color:var(--text-secondary);
+}
+.alloc-vs-target {
+  font-size:.7rem; color:var(--text-tertiary);
+  padding:2px 8px; border-radius:10px; background:var(--bg-card-alt);
+  white-space:nowrap;
+}
+.alloc-vs-target.alloc-ok { color:var(--green); background:var(--green-dim); }
+.alloc-vs-target.alloc-warn { color:var(--amber); background:var(--amber-dim); }
+
+/* Client Report — wealth-protection card grid */
+.rpt-cover-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+  gap:12px;
+}
+.rpt-cover-card {
+  padding:14px 16px; border:1px solid var(--border); border-radius:8px;
+  background:var(--bg-card-alt);
+  display:flex; flex-direction:column; gap:8px;
+}
+.rpt-cover-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.rpt-cover-card-title { display:flex; align-items:center; gap:8px; }
+.rpt-cover-card-title .rcc-emoji { font-size:1.2rem; }
+.rpt-cover-card-title .rcc-name { font-size:.82rem; color:var(--text-secondary); }
+.rpt-cover-amount { font-family:var(--font-display); font-size:1.2rem; font-weight:500; color:var(--gold-light); }
+.rpt-cover-badge {
+  font-size:.62rem; text-transform:uppercase; letter-spacing:.1em;
+  padding:2px 9px; border-radius:10px; font-weight:600;
+}
+.rpt-cover-badge.suff { color:var(--green); background:var(--green-dim); }
+.rpt-cover-badge.gap { color:var(--amber); background:var(--amber-dim); }
+.rpt-cover-badge.miss { color:var(--red); background:var(--red-dim); }
+.rpt-cover-bar {
+  height:4px; background:var(--bg-card); border-radius:2px; overflow:hidden;
+}
+.rpt-cover-bar-fill { height:100%; border-radius:2px; }
+.rpt-cover-meta { font-size:.72rem; color:var(--text-tertiary); }
 
 .prop-toggle-row {
   display:flex; align-items:flex-start; justify-content:space-between; gap:18px;
@@ -1214,7 +1670,8 @@ input[type=range]::-moz-range-thumb {
     <p>Enter client data to generate a personalised financial overview</p>
   </div>
 
-  <div class="form-card">
+  <div class="setup-grid">
+  <div class="form-card form-card--full">
     <h3>Client Information</h3>
     <div class="form-grid">
       <div class="form-group"><label>Client Name</label><input id="clientName" placeholder="e.g. John Tan"></div>
@@ -1255,15 +1712,15 @@ input[type=range]::-moz-range-thumb {
   </div>
 
   <div class="form-card">
-    <h3>Investments</h3>
-    <div id="invList"></div>
-    <button class="btn-add-row" onclick="addInv()">+ Add Investment</button>
-  </div>
-
-  <div class="form-card">
-    <h3>Property</h3>
-    <div id="propList"></div>
-    <button class="btn-add-row" onclick="addProp()">+ Add Property</button>
+    <h3>Monthly Income</h3>
+    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Enter gross monthly figures. Annual bonus auto-amortised over 12 months.</p>
+    <div class="form-grid">
+      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="number" placeholder="0"></div>
+    </div>
   </div>
 
   <div class="form-card">
@@ -1277,19 +1734,19 @@ input[type=range]::-moz-range-thumb {
     </div>
   </div>
 
-  <div class="form-card">
-    <h3>Monthly Income</h3>
-    <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Enter gross monthly figures. Annual bonus auto-amortised over 12 months.</p>
-    <div class="form-grid">
-      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="number" placeholder="0"></div>
-    </div>
+  <div class="form-card form-card--full">
+    <h3>Investments</h3>
+    <div id="invList"></div>
+    <button class="btn-add-row" onclick="addInv()">+ Add Investment</button>
   </div>
 
-  <div class="form-card">
+  <div class="form-card form-card--full">
+    <h3>Property</h3>
+    <div id="propList"></div>
+    <button class="btn-add-row" onclick="addProp()">+ Add Property</button>
+  </div>
+
+  <div class="form-card form-card--full">
     <h3>Monthly Expenses</h3>
     <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Insurance premiums are auto-calculated from the Insurance Policies section &mdash; add every policy below for an accurate picture.</p>
     <div class="form-grid">
@@ -1307,13 +1764,15 @@ input[type=range]::-moz-range-thumb {
     </div>
   </div>
 
-  <div class="form-card">
+  <div class="form-card form-card--full">
     <h3>Insurance Policies</h3>
     <div id="insList"></div>
     <button class="btn-add-row" onclick="addIns()">+ Add Policy</button>
   </div>
+  </div><!-- /.setup-grid -->
 
-  <button class="btn-go" onclick="generate()">Generate Dashboard</button>
+  <div id="setupBannerHost"></div>
+  <button class="btn-go" onclick="tryGenerate()">Generate Dashboard</button>
 </div>
 </div>
 
@@ -1403,12 +1862,18 @@ input[type=range]::-moz-range-thumb {
     </div>
     <div class="panel" id="p-investments">
       <div class="print-section-title">Investments</div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
+      <div class="kpis kpis-4" id="invKpis"></div>
+      <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Portfolio Projection</div>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Adjust contribution, return, and horizon — the projected portfolio value updates live.</p>
+        <div class="whatif" id="invWhatif"></div>
+      </div>
+      <div class="card anim d1"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
         <div class="cols2"><div><table id="tInv"></table></div><div class="chart-box sm"><canvas id="cInv"></canvas></div></div>
       </div>
     </div>
     <div class="panel" id="p-cashflow">
       <div class="print-section-title">Cashflow</div>
+      <div class="kpis kpis-4" id="cfKpis"></div>
       <div class="cols2">
         <div class="card anim"><div class="card-title"><span class="accent"></span>Monthly Cashflow</div><div class="chart-box"><canvas id="cCF"></canvas></div></div>
         <div class="card anim d1"><div class="card-title"><span class="accent"></span>Passive Income</div><table id="tPassive"></table><div id="passiveBar" style="margin-top:18px"></div></div>
@@ -1424,16 +1889,43 @@ input[type=range]::-moz-range-thumb {
     </div>
     <div class="panel" id="p-insurance">
       <div class="print-section-title">Insurance Coverage</div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Insurance Coverage</div><div class="ins-grid" id="insGrid"></div></div>
+      <div class="kpis kpis-4" id="insKpis"></div>
+      <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Controls</div>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Adjust coverage multipliers and watch the target lines slide on the bars below.</p>
+        <div class="whatif" id="insWhatif"></div>
+      </div>
+      <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Coverage vs Target</div>
+        <div id="insCmpBars"></div>
+      </div>
+      <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Coverage Adequacy</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.82rem;color:var(--text-secondary)">
+          <span>Filter:</span>
+          <button class="pol-filter on" data-pf="all" onclick="setPolFilter2('all')">All policies</button>
+          <button class="pol-filter" data-pf="life" onclick="setPolFilter2('life')">Life / TPD</button>
+          <button class="pol-filter" data-pf="ci" onclick="setPolFilter2('ci')">Critical Illness</button>
+          <button class="pol-filter" data-pf="health" onclick="setPolFilter2('health')">Hospitalisation</button>
+          <button class="pol-filter" data-pf="dis" onclick="setPolFilter2('dis')">Disability / LTC</button>
+        </div>
+      </div>
+      <div class="card anim d2"><div class="card-title"><span class="accent"></span>Policy Table</div>
+        <div class="policy-table-wrap"><table class="policy-table" id="insPolicyTable"></table></div>
+      </div>
     </div>
 
     <div class="panel" id="p-retirement">
       <div class="print-section-title">Retirement Planning</div>
       <div class="kpis" id="retireKpis"></div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Retirement Projection</div>
+      <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Controls</div>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Drag any slider to see KPIs, chart, and summary re-flow in real time.</p>
+        <div class="whatif" id="retireWhatif"></div>
+      </div>
+      <div class="card anim d1" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>Projected vs Required at Retirement</div>
+        <div id="retireCmpBar"></div>
+      </div>
+      <div class="card anim d1"><div class="card-title"><span class="accent"></span>Retirement Projection</div>
         <div class="chart-box"><canvas id="cRetire"></canvas></div>
       </div>
-      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Retirement Summary</div>
+      <div class="card anim d2" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Retirement Summary</div>
         <table id="tRetire"></table>
       </div>
     </div>
@@ -1457,6 +1949,24 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-report">
       <div class="print-section-title">Client Report</div>
       <div class="card anim"><div id="reportBody"></div></div>
+      <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>&#x1F4CA; Financial Analysis &mdash; Cashflow Allocation</div>
+        <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:18px">Current allocation vs recommended targets. Healthy benchmark in <span style="color:var(--green)">green</span>.</div>
+        <div class="cols2">
+          <div style="display:flex;align-items:center;justify-content:center"><div class="chart-box" style="width:280px;height:280px"><canvas id="rptCashAlloc"></canvas></div></div>
+          <div id="rptCashAllocLegend"></div>
+        </div>
+      </div>
+      <div class="card anim d2" style="margin-top:14px"><div class="card-title"><span class="accent"></span>&#x1F6E1;&#xFE0F; Wealth Protection &mdash; Existing Coverage</div>
+        <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:18px">Adequacy assessment against Singapore industry standards.</div>
+        <div id="rptCoverGrid"></div>
+      </div>
+      <div class="card anim d3" style="margin-top:14px"><div class="card-title"><span class="accent"></span>&#x1F4C8; Investment Portfolio &mdash; Composition</div>
+        <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:18px">Current holdings breakdown with type-level concentration.</div>
+        <div class="cols2">
+          <div style="display:flex;align-items:center;justify-content:center"><div class="chart-box" style="width:280px;height:280px"><canvas id="rptPortfolio"></canvas></div></div>
+          <div id="rptPortfolioSummary"></div>
+        </div>
+      </div>
     </div>
 
     <div class="panel" id="p-netWorth">
@@ -1489,7 +1999,17 @@ input[type=range]::-moz-range-thumb {
     <div class="panel" id="p-dividends">
       <div class="print-section-title">Insurance &times; Dividends</div>
       <div class="kpis" id="divKpis"></div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Strategy Controls</div>
+      <div class="cols2" style="margin-bottom:14px">
+        <div class="card anim"><div class="ix-card-head"><div class="card-title" style="margin-bottom:4px"><span class="accent"></span>&#x1F6E1;&#xFE0F; Insurance Policies</div><div class="ix-card-total" id="divPoliciesTotal">$0/mo</div></div>
+          <div style="font-size:.8rem;color:var(--text-tertiary);margin-bottom:12px">Premium obligations tracked</div>
+          <div id="divPoliciesList"></div>
+        </div>
+        <div class="card anim d1"><div class="ix-card-head"><div class="card-title" style="margin-bottom:4px"><span class="accent"></span>&#x1F4B0; Dividend Plans</div><div class="ix-card-total" id="divPlansTotal">$0/mo</div></div>
+          <div style="font-size:.8rem;color:var(--text-tertiary);margin-bottom:12px">Dividend income by age</div>
+          <div id="divPlansList"></div>
+        </div>
+      </div>
+      <div class="card anim d2"><div class="card-title"><span class="accent"></span>Strategy Controls</div>
         <div class="ix-controls" id="divControls"></div>
       </div>
       <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Dividends vs Premiums Over Time</div>
@@ -1553,7 +2073,14 @@ input[type=range]::-moz-range-thumb {
 
     <div class="panel" id="p-goals">
       <div class="print-section-title">Goals &amp; Milestones</div>
-      <div class="card anim"><div class="card-title"><span class="accent"></span>Quick-add Life Plans</div>
+      <div class="card anim">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px">
+          <div style="flex:1">
+            <div class="card-title" style="margin-bottom:4px"><span class="accent"></span>Quick-add Life Plans</div>
+            <div style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Life planning · every goal impacts cashflow automatically</div>
+          </div>
+          <button class="btn-custom-goal" onclick="openGoalModal('custom')">+ Custom Goal</button>
+        </div>
         <div class="goal-quickadd" id="goalQuickAdd"></div>
       </div>
       <div class="card anim d1" style="margin-top:14px"><div class="card-title"><span class="accent"></span>Active Life Goals</div>
@@ -1594,6 +2121,27 @@ input[type=range]::-moz-range-thumb {
       Mobile: 86602521 &middot; LuJiaJun@rep.greateasternfa.sg
     </div>
   </div>
+
+  <!-- ═══════ GOAL MODAL ═══════ -->
+  <div class="gm-backdrop" id="gmBackdrop" onclick="closeGoalModalOnBackdrop(event)">
+    <div class="gm-modal" id="gmModal" role="dialog" aria-modal="true" aria-labelledby="gmTitleName">
+      <div class="gm-head">
+        <div class="gm-title">
+          <span class="gm-icon" id="gmIcon"></span>
+          <span class="gm-name" id="gmTitleName"></span>
+        </div>
+        <button class="gm-close" onclick="closeGoalModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="gm-body" id="gmBody"></div>
+      <div class="gm-foot">
+        <div class="gm-side">
+          <button class="gm-btn" onclick="closeGoalModal()">Cancel</button>
+          <button class="gm-btn gm-btn-danger" id="gmRemove" onclick="removeGoalFromModal()" hidden>Remove from Plan</button>
+        </div>
+        <button class="gm-btn gm-btn-primary" id="gmSave" onclick="saveGoalFromModal()">Add to Plan &amp; Link Cashflow</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1601,6 +2149,59 @@ const $=id=>document.getElementById(id), v=id=>parseFloat($(id).value)||0;
 let sym='$', charts={};
 const fmt=n=>sym+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
 const fmts=n=>(n<0?'-':'')+fmt(n);
+
+// ═══════════════════════════════════════════
+// FIELD VALIDATION HELPERS
+// ═══════════════════════════════════════════
+// Lenient non-empty regex: matches any non-whitespace character.
+// Whitespace-only counts as empty; numeric 0 is allowed because it's not blank.
+const NON_EMPTY_RE = /\S/;
+
+function clearFieldError(el){
+  if(!el) return;
+  el.classList.remove('input-error');
+  const grp=el.closest('.form-group, .gm-field');
+  if(grp){
+    const existing=grp.querySelector('.field-error-msg');
+    if(existing) existing.remove();
+  }
+}
+function markFieldError(el, msg){
+  if(!el) return;
+  el.classList.add('input-error');
+  const grp=el.closest('.form-group, .gm-field');
+  if(grp){
+    let m=grp.querySelector('.field-error-msg');
+    if(!m){ m=document.createElement('div'); m.className='field-error-msg'; grp.appendChild(m); }
+    m.textContent=msg;
+  }
+  // Auto-clear on next input
+  if(!el.dataset.vbound){
+    el.addEventListener('input',()=>clearFieldError(el),{once:true});
+    el.dataset.vbound='1';
+  }
+}
+function validateNonEmpty(el, label){
+  if(!el) return true;
+  const v=(el.value||'').toString();
+  if(!NON_EMPTY_RE.test(v)){
+    markFieldError(el, (label||'This field')+' is required');
+    return false;
+  }
+  clearFieldError(el);
+  return true;
+}
+function showFormBanner(containerEl, msg){
+  if(!containerEl) return;
+  let b=containerEl.querySelector(':scope > .form-banner-error');
+  if(!b){ b=document.createElement('div'); b.className='form-banner-error'; containerEl.insertBefore(b, containerEl.firstChild); }
+  b.textContent=msg;
+}
+function clearFormBanner(containerEl){
+  if(!containerEl) return;
+  const b=containerEl.querySelector(':scope > .form-banner-error');
+  if(b) b.remove();
+}
 
 // ── Tabs ──
 document.addEventListener('click',e=>{
@@ -1610,6 +2211,11 @@ document.addEventListener('click',e=>{
   e.target.classList.add('on');
   $('p-'+e.target.dataset.t).classList.add('on');
   if(typeof updateGuidance==='function') updateGuidance();
+  // Re-size any charts inside the newly visible panel (Chart.js needs this
+  // when the canvas was 0x0 at create time because the panel was hidden).
+  requestAnimationFrame(()=>{
+    Object.values(charts).forEach(c=>{ try{ c.resize(); }catch(e){} });
+  });
 });
 
 // ── Repeaters ──
@@ -1709,6 +2315,53 @@ Chart.defaults.font.family="'Outfit',sans-serif";
 
 const COLS=['#3ecf8e','#579dff','#b28dff','#f0b429','#f06060','#56d4dd','#f472b6','#818cf8','#fb923c','#84cc16','#e879f9','#6b7280'];
 
+function tryGenerate(){
+  const host=$('setupBannerHost'); clearFormBanner(host);
+  let ok=true;
+  // Required setup essentials
+  ok = validateNonEmpty($('clientName'), 'Client name') && ok;
+  // Either DOB or Age must be supplied
+  const dobOk=NON_EMPTY_RE.test($('clientDOB').value||'');
+  const ageOk=NON_EMPTY_RE.test($('clientAge').value||'');
+  if(!dobOk && !ageOk){
+    markFieldError($('clientDOB'),'Provide DOB or Age');
+    markFieldError($('clientAge'),'Provide DOB or Age');
+    ok=false;
+  } else {
+    clearFieldError($('clientDOB')); clearFieldError($('clientAge'));
+  }
+  ok = validateNonEmpty($('salary'), 'Base salary') && ok;
+
+  // Repeater rows: if any field in a row is populated, that row must have a Name + key amount
+  const rowRules=[
+    {list:'invList', name:'iN', amount:'iV', kind:'Investment', amountLabel:'Current Value'},
+    {list:'propList', name:'pN', amount:'pV', kind:'Property', amountLabel:'Market Value'},
+    {list:'insList', name:'sN', amount:'sP', kind:'Insurance policy', amountLabel:'Monthly Premium'},
+  ];
+  rowRules.forEach(r=>{
+    document.querySelectorAll('#'+r.list+' .repeater').forEach(row=>{
+      const inputs=row.querySelectorAll('input,select');
+      const anyFilled=Array.from(inputs).some(el=>{
+        if(el.tagName==='SELECT') return false; // selects always have a default value
+        return NON_EMPTY_RE.test(el.value||'');
+      });
+      if(!anyFilled) return; // empty row — fine, just skipped at collect time
+      const nameEl=row.querySelector(`[id^="${r.name}"]`);
+      const amtEl=row.querySelector(`[id^="${r.amount}"]`);
+      if(!validateNonEmpty(nameEl, r.kind+' name')) ok=false;
+      if(!validateNonEmpty(amtEl, r.amountLabel)) ok=false;
+    });
+  });
+
+  if(!ok){
+    showFormBanner(host,'Some required fields are missing — fill them in and try again.');
+    const firstBad=document.querySelector('.input-error');
+    if(firstBad) firstBad.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  generate();
+}
+
 function generate(){
   const d=collectData(); destroyCharts();
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
@@ -1745,6 +2398,30 @@ function generate(){
     {l:'Liabilities',v:fmt(totLiab),s:'Debt-to-asset '+(totAssets>0?(totLiab/totAssets*100).toFixed(1):0)+'%',c:'var(--red)'},
   ];
   $('kpiGrid').innerHTML=kpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // ─── Cashflow panel KPI strip ───────────────────────────────────────────
+  // 4 cards: monthly income, monthly expenses, surplus, savings rate
+  const annInc=inflow*12;
+  const expRatio=inflow>0?(totExp/inflow*100):0;
+  const ef=totExp>0?(d.cash/totExp):0;
+  // Largest expense category (for the sub on Expenses card)
+  const expEntries=Object.entries(d.exp).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const topExp=expEntries[0]?`${expEntries[0][0]} ${fmt(expEntries[0][1])}`:'—';
+  const savRateColor=savRate>=20?'var(--green)':savRate>=10?'var(--amber)':'var(--red)';
+  const savRateLabel=savRate>=20?'Excellent (≥ 20%)':savRate>=10?'Adequate (10–20%)':savRate>=0?'Below target (<10%)':'Deficit';
+  const cfKpis=[
+    {l:'Monthly Income',v:fmt(inflow),s:'Annual ~'+fmts(annInc),c:'var(--green)'},
+    {l:'Monthly Expenses',v:fmt(totExp),s:'Top: '+topExp,c:'var(--red)'},
+    {l:'Monthly Surplus',v:fmts(surplus),s:expRatio>0?`Expense ratio ${expRatio.toFixed(0)}%`:'—',c:surplus>=0?'var(--cyan)':'var(--red)'},
+    {l:'Savings Rate',v:savRate.toFixed(1)+'%',s:savRateLabel,c:savRateColor},
+  ];
+  $('cfKpis').innerHTML=cfKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // ─── Insurance panel KPI strip ──────────────────────────────────────────
+  buildInsuranceKpis(d);
+
+  // ─── Investment panel KPI strip + projection ────────────────────────────
+  if($('invKpis')) buildInvestmentKpis(d);
 
   // Net Worth Donut
   const nwL=['Cash','CPF','SRS','Investments','Property','Insurance CV'];
@@ -1785,17 +2462,22 @@ function generate(){
 
   // Passive
   $('tPassive').innerHTML=`<thead><tr><th>Source</th><th style="text-align:right">Monthly</th><th style="text-align:right">Annual</th></tr></thead><tbody>
-    <tr><td>Rental</td><td class="num">${fmt(d.rental)}</td><td class="num">${fmt(d.rental*12)}</td></tr>
-    <tr><td>Dividends</td><td class="num">${fmt(d.dividends)}</td><td class="num">${fmt(d.dividends*12)}</td></tr>
+    <tr><td>Rental</td><td class="num"><span class="editable" data-edit-form="rentalIncome" data-edit-val="${d.rental}">${fmt(d.rental)}</span></td><td class="num">${fmt(d.rental*12)}</td></tr>
+    <tr><td>Dividends</td><td class="num"><span class="editable" data-edit-form="dividendIncome" data-edit-val="${d.dividends}">${fmt(d.dividends)}</span></td><td class="num">${fmt(d.dividends*12)}</td></tr>
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(passive)}</td><td class="num" style="color:var(--gold-light)">${fmt(passive*12)}</td></tr></tbody>`;
   $('passiveBar').innerHTML=`<div class="prog"><span class="prog-label">Passive ratio</span><div class="prog-track"><div class="prog-fill" style="width:${Math.min(passiveR,100)}%"></div></div><span class="prog-val">${passiveR.toFixed(1)}%</span></div>`;
 
-  // Spending
+  // Spending — each category is click-to-edit
+  const EXP_FORM_ID={Housing:'expHousing','Food & Dining':'expFood',Transport:'expTransport',Utilities:'expUtilities',Shopping:'expShopping',Entertainment:'expEntertainment',Education:'expEducation',Healthcare:'expHealthcare','Family':'expFamily','Savings':'expSavings',Others:'expOthers'};
   const sL=Object.keys(d.exp).filter(k=>d.exp[k]>0), sD=sL.map(k=>d.exp[k]);
   if(sL.length){
     charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{display:false}}}});
     let st='<thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr></thead><tbody>';
-    sL.forEach((l,i)=>{st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${fmt(sD[i])}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;});
+    sL.forEach((l,i)=>{
+      const fid=EXP_FORM_ID[l];
+      const cell=fid?`<span class="editable" data-edit-form="${fid}" data-edit-val="${sD[i]}">${fmt(sD[i])}</span>`:fmt(sD[i]);
+      st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${cell}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;
+    });
     st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExp)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
     $('tSpend').innerHTML=st;
   }
@@ -1807,12 +2489,8 @@ function generate(){
   if(!d.prop.length) pr+='<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:28px">No properties entered</td></tr>';
   pr+='</tbody>';$('tProp').innerHTML=pr;
 
-  // Insurance
-  let ih='';
-  d.ins.forEach((p,i)=>{ih+=`<div class="ins-card anim d${Math.min(i+1,6)}"><div class="ins-type">${p.type}</div><div class="ins-name">${p.name}</div><div class="ins-row">Insurer: <span>${p.insurer||'\u2014'}</span></div><div class="ins-row">Coverage: <span>${fmt(p.cover)}</span></div><div class="ins-row">Premium: <span>${fmt(p.premium)}/mo</span></div>${p.cv?`<div class="ins-row">Cash Value: <span>${fmt(p.cv)}</span></div>`:''}
-  </div>`;});
-  if(!d.ins.length) ih='<p style="color:var(--text-tertiary);text-align:center;padding:28px">No insurance policies entered</p>';
-  $('insGrid').innerHTML=ih;
+  // Insurance Coverage policy table (tabular replacement for card grid)
+  buildInsurancePolicyTable(d);
 
   // Gap Analysis
   gapState = { active: gapState.active || {}, open: gapState.open || null, lastData: d };
@@ -1839,7 +2517,7 @@ function generate(){
   updateGuidance();
   activateSidebar();
   $('sbClientName').textContent=d.client||'—';
-  $('sbClientMeta').textContent=`Age ${d.age||'—'} · ${d.marital||'Single'} · ${d.dependants?d.dependants+' dependant(s)':'No dependants'}`;
+  $('sbClientMeta').textContent=`Age ${d.age||'—'} · ${d.marital||'Single'} · ${d.dependants?d.dependants+' dependant(s)':'No dependants'} · ${d.nationality||'Singapore Citizen'} · ${d.riskProfile||'Balanced'} risk`;
   updateClientList();
   labelTables();
   if(!window._obsInit){ observeForLabels(); window._obsInit=true; }
@@ -1904,11 +2582,17 @@ function updateProj(){
     const age=start+i, year=year0+i;
     const incomeFactor=Math.pow(1+ig,i);
     const expFactor=Math.pow(1+inf,i);
-    const inc=age<retAge?(d.salary+(d.bonusMonthly||0)+d.side)*incomeFactor:0;
+    // Dividend column = max(portfolio×4.5% yield, declared monthly dividends).
+    // Honours the user's form value when their portfolio doesn't justify it.
+    const div=Math.max(invAcct*0.045/12, d.dividends*incomeFactor);
+    // Salary stops at retirement, but rental keeps flowing. Dividends are
+    // counted via `div` above (don't double-count by adding d.dividends here).
+    const workIncome=age<retAge?(d.salary+(d.bonusMonthly||0)+d.side)*incomeFactor:0;
+    const rentalIncome=d.rental*incomeFactor;
+    const inc=workIncome+rentalIncome+div;
     const exp=(totExp0+(goalMonthly[age]||0))*expFactor;
-    const div=invAcct*0.045/12;
     const lump=goalLump[age]||0;
-    const annSurp=(inc+div-exp)*12;
+    const annSurp=(inc-exp)*12;
     cash=cash*(1+0.025)+annSurp-lump; // 2.5% cash interest
     invAcct=invAcct*(1+nr)+Math.max(0,annSurp*0.3);
     nw=nw*(1+nr)+annSurp;
@@ -1976,18 +2660,199 @@ function buildHealthScore(d){
 // ═══════════════════════════════════════════
 // RETIREMENT
 // ═══════════════════════════════════════════
-function buildRetirement(d){
+// ═══════════════════════════════════════════
+// CLICK-TO-EDIT (Cashflow tables, Passive income)
+// ═══════════════════════════════════════════
+// Any element with class="editable" + data-edit-form="<formInputId>" becomes
+// click-to-edit. On commit (Enter or blur), we sync the value back to the
+// form input and re-run generate() so every downstream panel reflows.
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('.editable[data-edit-form]');
+  if (!target || target.querySelector('input')) return;
+  const formId = target.dataset.editForm;
+  const formEl = document.getElementById(formId);
+  if (!formEl) return;
+  const currentVal = +target.dataset.editVal || +formEl.value || 0;
+  const originalText = target.textContent;
+  const input = document.createElement('input');
+  input.type = 'number'; input.className = 'editable-input';
+  input.value = currentVal; input.min = '0';
+  target.textContent = ''; target.appendChild(input);
+  input.focus(); input.select();
+  let cancelled = false;
+  const commit = () => {
+    if (cancelled) return;
+    cancelled = true;
+    const newVal = +input.value;
+    if (isNaN(newVal) || newVal === currentVal) {
+      target.textContent = originalText;
+      return;
+    }
+    formEl.value = newVal;
+    formEl.dispatchEvent(new Event('input', {bubbles: true}));
+    generate();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') input.blur();
+    else if (ev.key === 'Escape') { cancelled = true; target.textContent = originalText; }
+  });
+});
+
+// ═══════════════════════════════════════════
+// INVESTMENT PLAN (what-if sliders)
+// ═══════════════════════════════════════════
+let invSim = { contribution:null, returnPct:7, horizonYrs:null };
+function resetInvSim(){ invSim={contribution:null, returnPct:7, horizonYrs:null}; if(lastData) buildInvestmentKpis(lastData); }
+function setInvSim(k,v){ invSim[k]=v===''?null:+v; if(lastData) buildInvestmentKpis(lastData); }
+
+function buildInvestmentKpis(d){
   const age=d.age||35, retAge=d.retireAge||65;
+  const totInv=d.inv.reduce((s,i)=>s+i.value,0);
+  const totCost=d.inv.reduce((s,i)=>s+(i.cost||0),0);
+  const unrealized=totInv-totCost;
+  const defaultContrib=Math.max(0, d.exp.Savings||Math.round((d.salary||0)*0.1));
+  const defaultHorizon=Math.max(1, retAge-age);
+
+  const contrib=invSim.contribution ?? defaultContrib;
+  const r=(invSim.returnPct||7)/100;
+  const yrs=invSim.horizonYrs ?? defaultHorizon;
+  // FV = P(1+r)^n + PMT × ((1+r)^n - 1)/r
+  const growthFactor=Math.pow(1+r,yrs);
+  const projFV=totInv*growthFactor + contrib*12*((growthFactor-1)/r);
+  const totalContrib=totInv+contrib*12*yrs;
+  const totalGains=projFV-totalContrib;
+  const gainPct=totalContrib>0?(totalGains/totalContrib*100):0;
+
+  $('invKpis').innerHTML=[
+    {l:'Current Portfolio',v:fmt(totInv),s:`${d.inv.length} holdings · cost basis ${fmt(totCost)}`,c:'var(--cyan)'},
+    {l:'Unrealised P/L',v:fmts(unrealized),s:totCost>0?`${(unrealized/totCost*100).toFixed(1)}% from cost`:'No cost basis',c:unrealized>=0?'var(--green)':'var(--red)'},
+    {l:`Projected at age ${age+yrs}`,v:fmt(Math.round(projFV)),s:`${yrs}yr at ${(r*100).toFixed(2)}% · ${fmt(contrib)}/mo`,c:'var(--gold)'},
+    {l:'Total Gains',v:fmts(Math.round(totalGains)),s:`${gainPct.toFixed(1)}% return on ${fmt(Math.round(totalContrib))} contributed`,c:totalGains>=0?'var(--green)':'var(--red)'},
+  ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  if($('invWhatif')){
+    const dirty = invSim.contribution!=null || invSim.returnPct!==7 || invSim.horizonYrs!=null;
+    $('invWhatif').innerHTML=[
+      {key:'contribution', label:'Monthly Contribution', min:0, max:10000, step:100, val:contrib, prefix:'$'},
+      {key:'returnPct', label:'Expected Annual Return', min:2, max:15, step:0.25, val:invSim.returnPct, suffix:'%'},
+      {key:'horizonYrs', label:'Time Horizon', min:1, max:40, step:1, val:yrs, suffix:' yrs'},
+    ].map(s=>`<div class="whatif-ctrl">
+      <div class="whatif-head"><span class="whatif-label">${s.label}</span>
+      <span class="whatif-val ${(s.key!=='returnPct'&&invSim[s.key]==null)?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span></div>
+      <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setInvSim('${s.key}',this.value)">
+    </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetInvSim()">↺ Reset to defaults</button></div>`:'');
+  }
+}
+
+// ═══════════════════════════════════════════
+// INSURANCE COVERAGE (what-if sliders + comparison bars)
+// ═══════════════════════════════════════════
+let insSim = { lifeMult:10, ciMult:4, incomeOverride:null };
+function resetInsSim(){ insSim={lifeMult:10, ciMult:4, incomeOverride:null}; if(lastData) buildInsuranceKpis(lastData); }
+function setInsSim(k,v){ insSim[k]=v===''?null:+v; if(lastData) buildInsuranceKpis(lastData); }
+
+function buildInsuranceKpis(d){
+  const isLifePolicy=p=>/life|death|whole|term/i.test(p.type);
+  const isCIPolicy=p=>/critical|\bci\b/i.test(p.type);
+  const lifeCover=d.ins.filter(isLifePolicy).reduce((s,p)=>s+(p.cover||0),0);
+  const ciCover=d.ins.filter(isCIPolicy).reduce((s,p)=>s+(p.cover||0),0);
+  const premiumsM=d.ins.reduce((s,p)=>s+(p.premium||0),0);
+  const annualIncome=(insSim.incomeOverride ?? d.salary*12);
+  const lifeMult=insSim.lifeMult, ciMult=insSim.ciMult;
+  const lifeTarget=Math.round(annualIncome*lifeMult);
+  const ciTarget=Math.round(annualIncome*ciMult);
+  const lifeGap=Math.max(0,lifeTarget-lifeCover);
+  const ciGap=Math.max(0,ciTarget-ciCover);
+  const totalGap=lifeGap+ciGap;
+  const inflow=d.salary+(d.bonusMonthly||0)+d.rental+d.dividends+d.side;
+  const premRatio=inflow>0?(premiumsM/inflow*100):0;
+  const premHealth=premRatio>=5&&premRatio<=15?'Healthy band (5–15%)':premRatio>15?'High burden (>15%)':premRatio>0?'Low (<5%)':'No premiums';
+  const premColor=premRatio>=5&&premRatio<=15?'var(--cyan)':premRatio>15?'var(--red)':'var(--amber)';
+  const lifePct=lifeTarget>0?Math.min(100,lifeCover/lifeTarget*100):0;
+  const ciPct=ciTarget>0?Math.min(100,ciCover/ciTarget*100):0;
+  const lifeSub=annualIncome>0?`${lifePct.toFixed(0)}% of ${lifeMult}× income target`:`${d.ins.filter(isLifePolicy).length} policies`;
+  const ciSub=annualIncome>0?`${ciPct.toFixed(0)}% of ${ciMult}× income target`:`${d.ins.filter(isCIPolicy).length} policies`;
+  const gapVal=totalGap>0?fmts(totalGap):'—';
+  const gapSub=totalGap>0?`Life ${fmt(lifeGap)} · CI ${fmt(ciGap)}`:'Cover meets industry targets';
+  const insKpis=[
+    {l:'Total Life Cover',v:fmts(lifeCover),s:lifeSub,c:lifeCover>=lifeTarget&&lifeTarget>0?'var(--green)':'var(--amber)'},
+    {l:'Critical Illness Cover',v:fmts(ciCover),s:ciSub,c:ciCover>=ciTarget&&ciTarget>0?'var(--green)':'var(--amber)'},
+    {l:'Premiums /mo',v:fmt(premiumsM),s:premRatio>0?`${premRatio.toFixed(1)}% of income · ${premHealth}`:premHealth,c:premColor},
+    {l:'Coverage Gap',v:gapVal,s:gapSub,c:totalGap>0?'var(--red)':'var(--green)'},
+  ];
+  $('insKpis').innerHTML=insKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // ── Comparison bars: current cover vs target, with goal line ──
+  if($('insCmpBars')){
+    const bars=[
+      {name:'Life / TPD cover',cur:lifeCover,tgt:lifeTarget,pct:lifePct},
+      {name:'Critical Illness cover',cur:ciCover,tgt:ciTarget,pct:ciPct},
+    ].map(b=>{
+      const fillPct=b.tgt>0?Math.min(100,b.cur/b.tgt*100):0;
+      const cls=fillPct>=100?'':'short';
+      return `<div class="cmp-bar-row"><span class="cmp-name">${b.name}</span>
+        <span class="cmp-vals"><span class="cmp-cur">${fmts(b.cur)}</span> <span class="cmp-tgt">/ target ${fmts(b.tgt)}</span></span></div>
+        <div class="cmp-bar">
+          <div class="cmp-bar-fill ${cls}" style="width:${Math.max(2,fillPct)}%"></div>
+          <div class="cmp-bar-target" data-label="target" style="left:calc(${Math.min(100,fillPct>=100?100:100)}% - 1px)"></div>
+        </div>`;
+    }).join('');
+    $('insCmpBars').innerHTML=bars;
+  }
+
+  // ── What-if controls ──
+  if($('insWhatif')){
+    const dirty = insSim.lifeMult!==10 || insSim.ciMult!==4 || insSim.incomeOverride!=null;
+    $('insWhatif').innerHTML=[
+      {key:'lifeMult', label:'Life Cover Multiplier', min:5, max:20, step:1, val:insSim.lifeMult, suffix:'× income'},
+      {key:'ciMult', label:'CI Cover Multiplier', min:2, max:10, step:1, val:insSim.ciMult, suffix:'× income'},
+      {key:'incomeOverride', label:'Annual Income Basis', min:30000, max:300000, step:5000, val:annualIncome, prefix:'$'},
+    ].map(s=>`<div class="whatif-ctrl">
+      <div class="whatif-head"><span class="whatif-label">${s.label}</span>
+      <span class="whatif-val ${(s.key==='incomeOverride'&&insSim.incomeOverride==null)?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span></div>
+      <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setInsSim('${s.key}',this.value)">
+    </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetInsSim()">↺ Reset to defaults (10× life, 4× CI)</button></div>`:'');
+  }
+}
+
+let retireSim = { retAge:null, desired:null, growthPct:5, retireYrs:20, savings:null };
+function resetRetireSim(){ retireSim={ retAge:null, desired:null, growthPct:5, retireYrs:20, savings:null }; if(lastData) buildRetirement(lastData); }
+function setRetireSim(k,v){ retireSim[k]=v===''?null:+v; if(lastData) buildRetirement(lastData); }
+
+function buildRetirement(d){
+  const age=d.age||35;
+  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
+
+  // Effective values (slider overrides win over form data)
+  const retAge=retireSim.retAge ?? (d.retireAge||65);
+  const desired=retireSim.desired ?? (d.retireIncome||totExp);
+  const monthlySav=retireSim.savings ?? (d.exp.Savings||0);
+  const r=(retireSim.growthPct||5)/100;
+  const retireYrs=retireSim.retireYrs||20;
+
   const yrs=Math.max(retAge-age,1);
   const totInv=d.inv.reduce((s,i)=>s+i.value,0);
   const cpf=d.cpfOA+d.cpfSA+d.cpfMA;
-  const totExp=Object.values(d.exp).reduce((s,x)=>s+x,0);
-  const desired=d.retireIncome||totExp;
-  const required=desired*12*20; // 20yr retirement
-  const monthlySav=d.exp.Savings||0;
-  const r=0.05;
+  const required=desired*12*retireYrs;
   const proj=(totInv+cpf)*Math.pow(1+r,yrs)+monthlySav*12*((Math.pow(1+r,yrs)-1)/r);
   const gap=required-proj;
+
+  // Render slider controls (idempotent — re-renders each call so values stay in sync)
+  const dirty = Object.entries(retireSim).some(([k,v])=>v!=null && !(k==='growthPct'&&v===5) && !(k==='retireYrs'&&v===20));
+  $('retireWhatif').innerHTML = [
+    {key:'retAge', label:'Retirement Age', min:50, max:75, step:1, val:retAge, suffix:''},
+    {key:'desired', label:'Desired Monthly Income', min:1000, max:20000, step:250, val:desired, prefix:'$'},
+    {key:'growthPct', label:'Pre-Retirement Growth', min:2, max:10, step:0.25, val:retireSim.growthPct, suffix:'%'},
+    {key:'retireYrs', label:'Years of Retirement', min:10, max:35, step:1, val:retireSim.retireYrs, suffix:' yrs'},
+    {key:'savings', label:'Monthly Savings', min:0, max:8000, step:100, val:monthlySav, prefix:'$'},
+  ].map(s=>`<div class="whatif-ctrl">
+    <div class="whatif-head">
+      <span class="whatif-label">${s.label}</span>
+      <span class="whatif-val ${retireSim[s.key]==null?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span>
+    </div>
+    <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setRetireSim('${s.key}',this.value)">
+  </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetRetireSim()">↺ Reset to form values</button></div>`:'');
 
   $('retireKpis').innerHTML=[
     {l:'Years to Retire',v:yrs+' yrs',c:'var(--gold)'},
@@ -1995,6 +2860,24 @@ function buildRetirement(d){
     {l:'Projected Assets',v:fmt(Math.round(proj)),c:proj>=required?'var(--green)':'var(--amber)'},
     {l:'Gap',v:gap>0?fmt(Math.round(gap)):'None',c:gap>0?'var(--red)':'var(--green)'},
   ].map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  // ── Comparison bar: projected vs required at retirement ──
+  if($('retireCmpBar')){
+    const fillPct = required>0 ? Math.min(100, proj/required*100) : 100;
+    const cls = fillPct>=100?'':'short';
+    $('retireCmpBar').innerHTML = `
+      <div class="cmp-bar-row"><span class="cmp-name">Projected portfolio at age ${retAge}</span>
+        <span class="cmp-vals"><span class="cmp-cur">${fmt(Math.round(proj))}</span> <span class="cmp-tgt">/ required ${fmt(Math.round(required))}</span></span></div>
+      <div class="cmp-bar">
+        <div class="cmp-bar-fill ${cls}" style="width:${Math.max(2,fillPct)}%"></div>
+        <div class="cmp-bar-target" data-label="goal" style="left:calc(100% - 1px)"></div>
+      </div>
+      <p style="font-size:.78rem;color:var(--text-tertiary);margin-top:14px">
+        ${gap>0
+          ? `Shortfall of <strong style="color:var(--red)">${fmt(Math.round(gap))}</strong> at current pace. Try raising monthly savings, extending retirement age, or increasing pre-retirement growth.`
+          : `On track — projected to exceed required corpus by <strong style="color:var(--green)">${fmt(Math.round(-gap))}</strong>.`}
+      </p>`;
+  }
 
   // Projection chart
   const labels=[], dataProj=[], dataReq=[];
@@ -2015,10 +2898,10 @@ function buildRetirement(d){
     <tr><td>Retirement Age</td><td class="num">${retAge}</td></tr>
     <tr><td>Years to Retirement</td><td class="num">${yrs}</td></tr>
     <tr><td>Desired Monthly Income</td><td class="num">${fmt(desired)}/mo</td></tr>
-    <tr><td>Required Capital (20yr)</td><td class="num">${fmt(Math.round(required))}</td></tr>
+    <tr><td>Required Capital (${retireYrs}yr)</td><td class="num">${fmt(Math.round(required))}</td></tr>
     <tr><td>Current Investable (Inv + CPF)</td><td class="num">${fmt(totInv+cpf)}</td></tr>
     <tr><td>Monthly Savings</td><td class="num">${fmt(monthlySav)}</td></tr>
-    <tr><td>Assumed Growth Rate</td><td class="num">5% p.a.</td></tr>
+    <tr><td>Assumed Growth Rate</td><td class="num">${(r*100).toFixed(2)}% p.a.</td></tr>
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Projected at ${retAge}</td><td class="num" style="color:var(--gold-light)">${fmt(Math.round(proj))}</td></tr>
     <tr class="tr-total-${gap>0?'red':'green'}"><td>${gap>0?'Shortfall':'Surplus'}</td><td class="num">${fmt(Math.round(Math.abs(gap)))}</td></tr>
   </tbody>`;
@@ -2155,6 +3038,144 @@ function buildReport(d){
     </div>
     <div class="report-section"><div class="report-h">Recommendations</div>
       ${recs.map(r=>`<div class="report-rec">${r}</div>`).join('')}
+    </div>`;
+
+  buildReportCashAlloc(d, inflow, totExp);
+  buildReportCoverage(d, lifeCover, ciCover, lifeTarget, ciTarget);
+  buildReportPortfolio(d, totInv);
+}
+
+// ═════ Client Report — Financial Analysis donut ═════
+function buildReportCashAlloc(d, inflow, totExp){
+  if(!$('rptCashAlloc')) return;
+  // Categorise inflow allocation: Insurance, Savings, Investments, Living, Debt repayment, Other
+  // Take-home = inflow - taxes? Here we assume inflow == take-home (no income tax modelling).
+  const insMo=d.exp.Insurance||0;
+  const debtRepay=Math.round((d.carLoan+d.studentLoan+(d.renoLoan||0)+d.otherLoan)/240); // proxy 20yr amort
+  const savings=Math.max(0, inflow - totExp); // surplus = remaining savings
+  // Investment contribution proxied by 'Savings' expense bucket if used (else 0)
+  const invMo=d.exp.Savings||0;
+  // Living expenses = totExp minus Insurance + Savings buckets to avoid double-count
+  const living=Math.max(0, totExp - insMo - invMo);
+  const total=Math.max(1, inflow);
+  const segs=[
+    {l:'Living Expenses', v:living, cur:living/total, tgt:0.36, c:'#579dff', tgtRule:'<=40%'},
+    {l:'Savings (surplus)', v:savings, cur:savings/total, tgt:0.20, c:'#3ecf8e', tgtRule:'>=20%'},
+    {l:'Investments', v:invMo, cur:invMo/total, tgt:0.30, c:'#b28dff', tgtRule:'>=30%'},
+    {l:'Insurance', v:insMo, cur:insMo/total, tgt:0.08, c:'#f0b429', tgtRule:'5-15%'},
+    {l:'Debt Repayment', v:debtRepay, cur:debtRepay/total, tgt:0, c:'#f06060', tgtRule:'<=35%'},
+  ];
+  if(charts.rptCashAlloc) charts.rptCashAlloc.destroy();
+  charts.rptCashAlloc=new Chart($('rptCashAlloc'),{
+    type:'doughnut',
+    data:{labels:segs.map(s=>s.l),datasets:[{data:segs.map(s=>s.v),backgroundColor:segs.map(s=>s.c),borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'66%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+(c.parsed/total*100).toFixed(1)+'%)'}}}}
+  });
+  $('rptCashAllocLegend').innerHTML=`<div style="font-size:.78rem;color:var(--text-tertiary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.12em">Take-home <strong style="color:var(--text-primary);font-size:1.15rem;display:block;margin-top:4px;text-transform:none;letter-spacing:0">${fmt(inflow)}/mo</strong></div>`+
+    segs.map(s=>{
+      const cur=(s.cur*100).toFixed(1)+'%';
+      let cls='', txt=`Target ${s.tgtRule}`;
+      if(s.l==='Savings (surplus)') { cls=s.cur>=0.20?'alloc-ok':'alloc-warn'; }
+      else if(s.l==='Investments') { cls=s.cur>=0.30?'alloc-ok':(s.cur>=0.15?'alloc-warn':''); }
+      else if(s.l==='Insurance') { cls=(s.cur>=0.05&&s.cur<=0.15)?'alloc-ok':'alloc-warn'; }
+      else if(s.l==='Living Expenses') { cls=s.cur<=0.40?'alloc-ok':'alloc-warn'; }
+      else if(s.l==='Debt Repayment') { cls=s.cur<=0.35?'alloc-ok':'alloc-warn'; }
+      return `<div class="alloc-row">
+        <div class="alloc-dot" style="background:${s.c}"></div>
+        <div class="alloc-name">${s.l}</div>
+        <div class="alloc-cur">${cur}</div>
+        <div class="alloc-vs-target ${cls}">${txt}</div>
+      </div>`;
+    }).join('');
+}
+
+// ═════ Client Report — Wealth Protection cards ═════
+function buildReportCoverage(d, lifeCover, ciCover, lifeTarget, ciTarget){
+  if(!$('rptCoverGrid')) return;
+  const annualIncome=d.salary*12;
+  const isCat=(p,re)=>re.test((p.type||'').toLowerCase());
+  const lifeNum=lifeCover;
+  const earlyCI=d.ins.filter(p=>isCat(p,/early.?(ci|critical)/)).reduce((s,p)=>s+(p.cover||0),0);
+  const dis=d.ins.filter(p=>isCat(p,/disability|payassure/)).reduce((s,p)=>s+(p.cover||0),0); // monthly benefit
+  const accident=d.ins.filter(p=>isCat(p,/accident/)).reduce((s,p)=>s+(p.cover||0),0);
+  const hosp=d.ins.filter(p=>isCat(p,/hospital|integrated|shield/)).length>0;
+  const ltc=d.ins.filter(p=>isCat(p,/careshield|long.?term|ltc/)).reduce((s,p)=>s+(p.cover||0),0); // monthly benefit
+  const cards=[
+    {emoji:'👨‍👩‍👧', name:'Death / TPD / TI', amount:lifeNum, target:lifeTarget, kind:'amount', dur:'Now → 100', color:'#3ecf8e'},
+    {emoji:'🫀', name:'Critical Illness', amount:ciCover, target:ciTarget, kind:'amount', dur:'Now → 85', color:'#f06060'},
+    {emoji:'⚡', name:'Early CI', amount:earlyCI, target:Math.round(annualIncome*2), kind:'amount', dur:'Now → 85', color:'#f472b6'},
+    {emoji:'♿', name:'Disability Income', amount:dis, target:Math.round(d.salary*0.75), kind:'monthly', dur:'Now → 65', color:'#f0b429'},
+    {emoji:'🚨', name:'Personal Accident', amount:accident, target:Math.round(annualIncome*2), kind:'amount', dur:'Now → 100', color:'#579dff'},
+    {emoji:'🏥', name:'Hospitalisation', amount:hosp?1:0, target:1, kind:'binary', dur:'Lifetime', color:'#b28dff'},
+    {emoji:'👴', name:'Long-Term Care', amount:ltc, target:3000, kind:'monthly', dur:'Now → Life', color:'#56d4dd'},
+  ];
+  $('rptCoverGrid').className='rpt-cover-grid';
+  $('rptCoverGrid').innerHTML=cards.map(c=>{
+    let badge='miss', badgeText='No cover', pct=0;
+    if(c.kind==='binary'){
+      if(c.amount>0){ badge='suff'; badgeText='✓ In place'; pct=100; }
+    } else {
+      pct=c.target>0?Math.min(100,c.amount/c.target*100):0;
+      if(c.amount>=c.target && c.target>0){ badge='suff'; badgeText='✓ Sufficient'; }
+      else if(c.amount>0){ badge='gap'; badgeText='Below target'; }
+    }
+    const amtDisp=c.kind==='binary'
+      ? (c.amount>0?'IP plan covered':'Not covered')
+      : (c.kind==='monthly'?(c.amount>0?fmt(c.amount)+'/mo':'—'):fmt(c.amount));
+    const targetDisp=c.kind==='binary'?'':(c.kind==='monthly'?'Target '+fmt(c.target)+'/mo':'Target '+fmt(c.target));
+    return `<div class="rpt-cover-card">
+      <div class="rpt-cover-card-head">
+        <div class="rpt-cover-card-title"><span class="rcc-emoji">${c.emoji}</span><span class="rcc-name">${c.name}</span></div>
+        <span class="rpt-cover-badge ${badge}">${badgeText}</span>
+      </div>
+      <div class="rpt-cover-amount">${amtDisp}</div>
+      <div class="rpt-cover-bar"><div class="rpt-cover-bar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      <div class="rpt-cover-meta">${targetDisp}${targetDisp?' · ':''}${c.dur}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═════ Client Report — Investment Portfolio composition ═════
+function buildReportPortfolio(d, totInv){
+  if(!$('rptPortfolio')) return;
+  const sum=$('rptPortfolioSummary');
+  if(!d.inv.length){
+    if(charts.rptPort) charts.rptPort.destroy();
+    sum.innerHTML='<p style="color:var(--text-tertiary);text-align:center;padding:32px">No investment holdings entered.</p>';
+    return;
+  }
+  const labels=d.inv.map(i=>i.name);
+  const values=d.inv.map(i=>i.value);
+  const cols=COLS.slice(0,d.inv.length);
+  if(charts.rptPort) charts.rptPort.destroy();
+  charts.rptPort=new Chart($('rptPortfolio'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:values,backgroundColor:cols,borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'66%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+(c.parsed/totInv*100).toFixed(1)+'%)'}}}}
+  });
+  // Concentration heuristic: top-1 share
+  const sorted=[...d.inv].sort((a,b)=>b.value-a.value);
+  const topShare=sorted[0]?(sorted[0].value/totInv*100):0;
+  let concentrationFlag='Diversified', concentrationColor='var(--green)';
+  if(topShare>=40){ concentrationFlag='Concentrated'; concentrationColor='var(--amber)'; }
+  if(topShare>=60){ concentrationFlag='Highly concentrated'; concentrationColor='var(--red)'; }
+  // Total gain (vs cost basis if available)
+  const totCost=d.inv.reduce((s,i)=>s+(i.cost||0),0);
+  const gainPct=totCost>0?((totInv-totCost)/totCost*100):0;
+  const gainCls=gainPct>=0?'pos':'neg';
+  sum.innerHTML=`<div style="font-size:.78rem;color:var(--text-tertiary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.12em">Portfolio value <strong style="color:var(--text-primary);font-size:1.15rem;display:block;margin-top:4px;text-transform:none;letter-spacing:0">${fmt(totInv)}</strong></div>`+
+    d.inv.map((i,idx)=>{
+      const pct=(i.value/totInv*100).toFixed(1)+'%';
+      return `<div class="alloc-row">
+        <div class="alloc-dot" style="background:${cols[idx]}"></div>
+        <div class="alloc-name">${i.name}<div style="font-size:.7rem;color:var(--text-tertiary);margin-top:1px">${i.type||'—'}</div></div>
+        <div class="alloc-cur">${fmt(i.value)}</div>
+        <div class="alloc-vs-target">${pct}</div>
+      </div>`;
+    }).join('')+
+    `<div style="margin-top:14px;padding:10px 12px;background:var(--bg-card-alt);border-radius:8px;font-size:.78rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--text-tertiary)">Concentration</span><span style="color:${concentrationColor};font-weight:600">${concentrationFlag} (top ${topShare.toFixed(0)}%)</span></div>
+      ${totCost>0?`<div style="display:flex;justify-content:space-between"><span style="color:var(--text-tertiary)">Total gain / loss</span><span class="${gainCls}" style="font-weight:600">${gainPct>=0?'+':''}${gainPct.toFixed(1)}% (${fmts(totInv-totCost)})</span></div>`:''}
     </div>`;
 }
 
@@ -2620,6 +3641,92 @@ function updateHospSim(){
 // INSURANCE × DIVIDENDS (interactive)
 // ═══════════════════════════════════════════
 let divSim={yield:4.5, growth:5, premInflation:3, addMonthly:0, lumpsum:0, horizon:20};
+// ═══════════════════════════════════════════
+// INSURANCE COVERAGE — tabular policy table with filter
+// ═══════════════════════════════════════════
+let insTableFilter='all';
+function classifyPolicy(p){
+  const t=(p.type||'').toLowerCase();
+  // CareShield/LTC first — "shield" must NOT fall through to hospitalisation
+  if(/disability|payassure|careshield|long.?term|\bltc\b/.test(t)) return 'dis';
+  if(/critical|\bci\b/.test(t)) return 'ci';
+  if(/hospital|integrated|integratedshield|health.?plan|medishield/.test(t)) return 'health';
+  if(/life|death|whole|term|tpd/.test(t)) return 'life';
+  if(/accident|personal/.test(t)) return 'accident';
+  return 'other';
+}
+function policyTypeColor(cat){
+  return ({
+    life:'var(--cyan)',
+    ci:'var(--red)',
+    health:'var(--purple)',
+    dis:'var(--amber)',
+    accident:'var(--blue)',
+    other:'var(--text-secondary)',
+  })[cat]||'var(--text-secondary)';
+}
+function setPolFilter2(t){
+  insTableFilter=t;
+  document.querySelectorAll('.card .pol-filter').forEach(b=>{
+    b.classList.toggle('on',b.dataset.pf===t);
+  });
+  if(lastData) buildInsurancePolicyTable(lastData);
+}
+function buildInsurancePolicyTable(d){
+  const el=$('insPolicyTable'); if(!el) return;
+  if(!d.ins.length){
+    el.innerHTML='<tbody><tr><td style="text-align:center;color:var(--text-tertiary);padding:32px">No insurance policies entered</td></tr></tbody>';
+    return;
+  }
+  const annualIncome=d.salary*12;
+  const recommended={
+    life:annualIncome*10,
+    ci:annualIncome*4,
+    dis:Math.round(d.salary*0.75), // 75% of income, monthly benefit
+    health:1000000,                // Hospital As-Charged target
+    accident:annualIncome*2,
+    other:null,
+  };
+  // Group cover by category to evaluate Recommended column per-row
+  const totalByCat={};
+  d.ins.forEach(p=>{
+    const c=classifyPolicy(p);
+    totalByCat[c]=(totalByCat[c]||0)+(p.cover||0);
+  });
+  const filtered=insTableFilter==='all'?d.ins:d.ins.filter(p=>classifyPolicy(p)===insTableFilter);
+  let html=`<thead><tr>
+    <th>Type</th><th>Insurer</th><th>Plan Name</th>
+    <th class="num">Coverage</th><th>Recommended</th><th class="num">Premium /mo</th>
+  </tr></thead><tbody>`;
+  filtered.forEach(p=>{
+    const cat=classifyPolicy(p);
+    const color=policyTypeColor(cat);
+    let recCell='—', recCls='';
+    if(cat==='health'){
+      // Hospital plans are as-charged, not lump-sum. Show plan tier instead.
+      const isPrivate=/private|p plus|p signature/i.test(p.name||'');
+      const isRider=/rider|cash|signature/i.test(p.name||'');
+      recCell=isPrivate?'Private ward':(isRider?'Rider (cash)':'Public ward');
+      recCls='ok';
+    } else if(recommended[cat]!=null && recommended[cat]>0){
+      const target=recommended[cat];
+      const groupTotal=totalByCat[cat]||0;
+      if(groupTotal>=target){ recCell='✓ Target met'; recCls='ok'; }
+      else { recCell='Gap '+fmt(target-groupTotal); recCls='gap'; }
+    }
+    html+=`<tr>
+      <td><span class="ptype"><span class="pdot" style="background:${color}"></span>${p.type||'Other'}</span></td>
+      <td class="pinsurer">${p.insurer||'—'}</td>
+      <td class="pname">${p.name||'—'}</td>
+      <td class="pnum">${typeof p.cover==='number' && p.cover>0?fmt(p.cover):(cat==='health'?'As charged':'—')}</td>
+      <td class="precommended ${recCls}">${recCell}</td>
+      <td class="pnum">${fmt(p.premium||0)}</td>
+    </tr>`;
+  });
+  html+='</tbody>';
+  el.innerHTML=html;
+}
+
 function buildDividends(d){
   $('divControls').innerHTML=`
     <div class="ix-row"><span class="ix-label">Dividend yield</span><input type="range" min="2" max="8" step="0.25" value="${divSim.yield}" oninput="divSim.yield=+this.value; updateDivSim()"><span class="ix-val" id="dv1">${divSim.yield}%</span></div>
@@ -2636,14 +3743,60 @@ function updateDivSim(){
   ['dv1','dv2','dv3','dv4','dv5','dv6'].forEach((id,i)=>{const el=$(id);if(!el)return;const v=Object.values(divSim)[i];el.textContent=i<3?v+'%':i===5?v+' yrs':fmt(v);});
   const annualPrem=d.ins.reduce((s,p)=>s+p.premium*12,0);
   const start=d.age||35;
+
+  // ─── Side-by-side summary cards (Policies + Dividend Plans) ───
+  const polsEl=$('divPoliciesList'), plansEl=$('divPlansList');
+  if(polsEl){
+    const totalMo=d.ins.reduce((s,p)=>s+(p.premium||0),0);
+    $('divPoliciesTotal').textContent=fmt(totalMo)+'/mo';
+    if(!d.ins.length){
+      polsEl.innerHTML='<p style="color:var(--text-tertiary);font-size:.85rem;padding:8px 0">No policies entered yet.</p>';
+    } else {
+      polsEl.innerHTML=d.ins.map(p=>{
+        const cat=classifyPolicy(p);
+        const color=policyTypeColor(cat);
+        const ageBanded=/hospital|integratedshield|integrated.?shield|medishield/i.test(p.type||'')||/integratedshield|p plus|p signature|supremehealth|totalcare/i.test(p.name||'');
+        return `<div class="ix-pol-row"><div class="ix-pol-row-l">
+          <div class="ix-pol-row-name"><span style="color:${color}">●</span> ${p.name||p.type||'Policy'}${ageBanded?'<span class="ix-tag-age">↑ age-banded</span>':''}</div>
+          <div class="ix-pol-row-meta">${p.type||'—'} · ${p.insurer||'—'}</div>
+        </div><div class="ix-pol-row-r"><div class="mo">${fmt(p.premium||0)}/mo</div><div class="yr">${fmt((p.premium||0)*12)}/yr</div></div></div>`;
+      }).join('');
+    }
+  }
+  if(plansEl){
+    // Dividend plans = simulator settings as a single line plus current investments
+    const annualDivStart=d.inv.reduce((s,i)=>s+i.value,0)*(divSim.yield/100);
+    // Project to retire age (or +30) to get the headline "dividend at retirement"
+    const yrsToRet=Math.max(0,(d.retireAge||65)-(d.age||30));
+    let projFV=d.inv.reduce((s,i)=>s+i.value,0)+divSim.lumpsum;
+    for(let i=0;i<yrsToRet;i++){ projFV=projFV*(1+divSim.growth/100)+divSim.addMonthly*12; }
+    const projDiv=projFV*(divSim.yield/100);
+    $('divPlansTotal').textContent=fmt(Math.round(projDiv/12))+'/mo';
+    const startAge=d.age||30, planEndAge=startAge+divSim.horizon;
+    plansEl.innerHTML=`<div class="ix-pol-row"><div class="ix-pol-row-l">
+      <div class="ix-pol-row-name"><span style="color:var(--green)">●</span> Dividend Plan · ${fmt(divSim.addMonthly)}/mo premium</div>
+      <div class="ix-pol-row-meta">Age ${startAge} → ${planEndAge} · Now: ${fmt(Math.round(annualDivStart/12))}/mo · ${divSim.yield}% yield</div>
+    </div><div class="ix-pol-row-r"><div class="mo">${fmt(Math.round(projDiv/12))}/mo</div><div class="yr">at age ${d.retireAge||65}</div></div></div>
+    <div class="ix-pol-row"><div class="ix-pol-row-l">
+      <div class="ix-pol-row-name"><span style="color:var(--blue)">●</span> Existing Portfolio</div>
+      <div class="ix-pol-row-meta">${fmt(d.inv.reduce((s,i)=>s+i.value,0))} invested · ${d.inv.length} holdings</div>
+    </div><div class="ix-pol-row-r"><div class="mo">${fmt(Math.round(annualDivStart/12))}/mo</div><div class="yr">at ${divSim.yield}% yield</div></div></div>`;
+  }
+
   const yieldR=divSim.yield/100, growthR=divSim.growth/100, premR=divSim.premInflation/100;
   let invFV=d.inv.reduce((s,i)=>s+i.value,0)+divSim.lumpsum;
+  // Declared cash dividends from the setup form (e.g. existing dividend-paying
+  // funds / SRS / endowments). Forms a floor on the projection so the page
+  // honors what the user told us instead of relying on portfolio×yield alone.
+  const declaredAnnualDiv=(d.dividends||0)*12;
   const labels=[], divArr=[], premArr=[];
   let selfSuffAge=null;
   let html='<thead><tr><th>Age</th><th style="text-align:right">Portfolio</th><th style="text-align:right">Dividends /yr</th><th style="text-align:right">Premiums /yr</th><th style="text-align:right">Net Surplus</th><th>Status</th></tr></thead><tbody>';
   for(let i=0;i<=divSim.horizon;i++){
     const age=start+i;
-    const yDiv=invFV*yieldR;
+    const portfolioDiv=invFV*yieldR;
+    const declaredGrown=declaredAnnualDiv*Math.pow(1+growthR,i);
+    const yDiv=Math.max(portfolioDiv,declaredGrown);
     const yPrem=annualPrem*Math.pow(1+premR,i);
     const surplus=yDiv-yPrem;
     labels.push(age); divArr.push(Math.round(yDiv)); premArr.push(Math.round(yPrem));
@@ -2655,7 +3808,7 @@ function updateDivSim(){
   html+='</tbody>';
   $('tDivPrem').innerHTML=html;
 
-  const annualDiv0=d.inv.reduce((s,i)=>s+i.value,0)*yieldR;
+  const annualDiv0=Math.max(d.inv.reduce((s,i)=>s+i.value,0)*yieldR,declaredAnnualDiv);
   $('divKpis').innerHTML=[
     {l:'Annual Premiums Now',v:fmt(annualPrem),c:'var(--red)'},
     {l:'Annual Dividends Now',v:fmt(Math.round(annualDiv0)),c:'var(--green)'},
@@ -2900,39 +4053,425 @@ const goalTemplates={
   baby:{icon:'\u{1F476}',name:'Baby Planning',target:50000,monthly:2000,age:30,end:54,desc:'Pre/post-natal + child expenses'},
   wedding:{icon:'\u{1F492}',name:'Wedding',target:40000,monthly:0,age:32,end:null,desc:'Banquet, venue, ROM'},
   property:{icon:'\u{1F3E0}',name:'Property Purchase',target:50000,monthly:360,age:35,end:60,desc:'HDB Downpayment'},
-  upgrade:{icon:'\u{1F3D9}️',name:'Property Upgrade',target:100000,monthly:0,age:35,end:60,desc:'HDB → Condo'},
+  upgrade:{icon:'\u{1F3D9}\u{FE0F}',name:'Property Upgrade',target:100000,monthly:0,age:35,end:60,desc:'HDB → Condo'},
   car:{icon:'\u{1F697}',name:'Car Purchase',target:35000,monthly:2150,age:35,end:42,desc:'Downpayment + running cost'},
   reno:{icon:'\u{1F528}',name:'Renovation',target:60000,monthly:0,age:35,end:null,desc:'One-off'},
   education:{icon:'\u{1F393}',name:'Education Fund',target:150000,monthly:500,age:30,end:48,desc:'University tuition'},
-  travel:{icon:'✈️',name:'Travel Fund',target:10000,monthly:0,age:35,end:null,desc:'Annual / dream trip'},
+  travel:{icon:'✈\u{FE0F}',name:'Travel Fund',target:10000,monthly:0,age:35,end:null,desc:'Annual / dream trip'},
   retire:{icon:'\u{1F33C}',name:'Retirement Corpus',target:1500000,monthly:2000,age:35,end:65,desc:'20yr drawdown fund'},
-  emergency:{icon:'\u{1F6E1}️',name:'Emergency Fund',target:50000,monthly:500,age:35,end:null,desc:'6 months expenses'},
+  emergency:{icon:'\u{1F6E1}\u{FE0F}',name:'Emergency Fund',target:50000,monthly:500,age:35,end:null,desc:'6 months expenses'},
   eldercare:{icon:'\u{1F9D3}',name:'Eldercare',target:80000,monthly:300,age:40,end:65,desc:'Parents care + assisted living'},
   medical:{icon:'\u{1F3E5}',name:'Medical Buffer',target:30000,monthly:0,age:40,end:null,desc:'Out-of-pocket reserve'},
+  custom:{icon:'✨',name:'Custom Goal',target:0,monthly:0,age:35,end:null,desc:'Any other life or financial goal'},
 };
 let activeGoals=[];
 
+// ═══════════════════════════════════════════
+// GOAL DETAIL CONFIGS (per-template smart modals)
+// ═══════════════════════════════════════════
+const PROPERTY_TYPES={
+  hdb_hdb:{label:'HDB · HDB Loan (2.6% · 75% LTV · 0% cash min)',rate:0.026,ltv:0.75,cashMin:0,maxYears:25,price:600000},
+  hdb_bank:{label:'HDB · Bank Loan (4% · 75% LTV · 5% cash min)',rate:0.04,ltv:0.75,cashMin:0.05,maxYears:25,price:600000},
+  condo_bank:{label:'Condo / Private · Bank Loan (4% · 75% LTV · 5% cash min)',rate:0.04,ltv:0.75,cashMin:0.05,maxYears:30,price:1500000},
+};
+
+// Singapore BSD (Buyer's Stamp Duty) — residential, owner-occupied
+function calcBSD(price){
+  const tiers=[[180000,0.01],[180000,0.02],[640000,0.03],[500000,0.04],[1500000,0.05],[Infinity,0.06]];
+  let bsd=0, remaining=price;
+  for(const [span,rate] of tiers){
+    if(remaining<=0) break;
+    const slice=Math.min(remaining,span);
+    bsd+=slice*rate;
+    remaining-=slice;
+  }
+  return Math.round(bsd);
+}
+
+// Monthly mortgage payment (principal + interest)
+function calcMortgage(principal,annualRate,years){
+  if(years<=0||principal<=0) return 0;
+  const r=annualRate/12, n=years*12;
+  if(r===0) return Math.round(principal/n);
+  return Math.round(principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1));
+}
+
+const fmtK=v=>{
+  const n=Math.abs(v);
+  if(n>=1e6) return (v<0?'-':'')+'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
+  if(n>=1e3) return (v<0?'-':'')+'$'+Math.round(n/1e3)+'K';
+  return (v<0?'-':'')+'$'+Math.round(n);
+};
+
+// Each config returns { fields: [{key,label,type,default,hint,opts?}], compute(state, client) -> {target, monthly, summary[]} }
+const goalDetailConfigs={
+  property:{
+    desc:'Singapore property purchase. Adjust the property type, loan tenure, CPF-OA & HDB sale proceeds — downpayment, BSD, legal, and monthly mortgage update automatically.',
+    section:'Property Details — auto-calculated',
+    extraFields:[
+      {key:'propertyType',label:'Property Type',type:'select',default:'condo_bank',
+        opts:Object.entries(PROPERTY_TYPES).map(([k,v])=>({value:k,label:v.label}))},
+      {key:'price',label:'Purchase Price (SGD)',type:'number',default:1500000,hint:'Negotiated property price'},
+      {key:'tenure',label:'Loan Tenure (years)',type:'number',default:30,hint:'Max 25yr (HDB) · 30yr (private)'},
+      {key:'cpfOA',label:'CPF-OA Available (SGD)',type:'number',default:100000,hint:'Used first for downpayment · edit to override'},
+      {key:'hdbProceeds',label:'HDB Sale Cash Proceeds (after CPF refund)',type:'number',default:0,hint:'Net cash you pocket from selling HDB · offsets new purchase outlay'},
+    ],
+    compute(s,client){
+      const t=PROPERTY_TYPES[s.propertyType]||PROPERTY_TYPES.condo_bank;
+      const price=+s.price||t.price;
+      const tenure=Math.min(+s.tenure||t.maxYears,t.maxYears);
+      const ltv=t.ltv, rate=t.rate, cashMinRate=t.cashMin;
+      const loan=Math.round(price*ltv);
+      const downpayment=price-loan;
+      const cashMin=Math.round(price*cashMinRate);
+      const cpfOAAvail=+s.cpfOA||0;
+      const cpfUsed=Math.min(cpfOAAvail,downpayment-cashMin);
+      const cashDownpayment=downpayment-cpfUsed;
+      const bsd=calcBSD(price);
+      const legal=3000;
+      const hdbProceeds=+s.hdbProceeds||0;
+      const totalCashOut=Math.max(0,cashDownpayment+bsd+legal-hdbProceeds);
+      const monthly=calcMortgage(loan,rate,tenure);
+      const cpfPortion=Math.min(monthly,Math.round(cpfOAAvail*0.01)); // very rough proxy
+      const cashMonthly=Math.max(0,monthly-cpfPortion);
+      const isUpgrade=hdbProceeds>0;
+      const typeName=t.label.split(' ·')[0];
+      const summary=[
+        {icon:'\u{1F3E0}',html:`<strong>${fmtK(price)}</strong> purchase · ${typeName} · ${(rate*100).toFixed(1)}% · ${(ltv*100)}% LTV`},
+        {icon:'\u{1F3DB}\u{FE0F}',html:`Loan: <strong>${fmtK(loan)}</strong> · Downpayment: <strong>${fmtK(downpayment)}</strong> (${Math.round((1-ltv)*100)}%)${cashMinRate>0?` — min ${(cashMinRate*100)}% cash rule`:''}`},
+        {icon:'\u{1F3DB}\u{FE0F}',html:`Downpayment split: <strong>${fmtK(cpfUsed)}</strong> CPF-OA + <strong>${fmtK(cashDownpayment)}</strong> cash`},
+      ];
+      if(hdbProceeds>0) summary.push({icon:'\u{1F4B0}',html:`HDB sale cash proceeds: <strong>${fmtK(hdbProceeds)}</strong> offsets cash outlay`});
+      summary.push({icon:'\u{1F4CB}',html:`BSD: <strong>${fmtK(bsd)}</strong> · Legal fees: $3,000`});
+      summary.push({icon:'\u{1F527}',html:`Total cash out of pocket at purchase: <strong class="${totalCashOut>0?'neg':'pos'}">${fmtK(totalCashOut)}</strong> — deducted from cash-at-bank at age ${s.age||35}`});
+      summary.push({icon:'\u{1F4C5}',html:`Monthly mortgage: <strong>${fmtK(monthly)}</strong>/mo (${tenure}-yr loan @ ${(rate*100).toFixed(1)}%)`});
+      if(isUpgrade) summary.push({icon:'⚠\u{FE0F}',cls:'gm-warn',html:`Sell HDB first to avoid 20% ABSD. CPF-OA refunded from HDB sale (principal + 2.5% accrued) is reusable for new purchase up to VL.`});
+      return {target:totalCashOut, monthly, summary};
+    },
+  },
+  upgrade:{
+    desc:'HDB → Condo upgrade. Captures BSD, ABSD-avoidance, CPF-OA refund from HDB sale, and the cash you actually pay out of pocket.',
+    section:'Upgrade Details — auto-calculated',
+    extraFields:[
+      {key:'propertyType',label:'New Property Type',type:'select',default:'condo_bank',
+        opts:Object.entries(PROPERTY_TYPES).map(([k,v])=>({value:k,label:v.label}))},
+      {key:'price',label:'New Property Price (SGD)',type:'number',default:1500000,hint:'Target condo / private price'},
+      {key:'tenure',label:'Loan Tenure (years)',type:'number',default:30,hint:'Max 25yr (HDB) · 30yr (private)'},
+      {key:'cpfOA',label:'CPF-OA Available After HDB Refund (SGD)',type:'number',default:100000,hint:'Includes refunded OA from HDB sale (principal + 2.5% accrued)'},
+      {key:'hdbProceeds',label:'HDB Sale Cash Proceeds (SGD)',type:'number',default:300000,hint:'Net cash after CPF refund · offsets new purchase outlay'},
+    ],
+    compute(s,client){ return goalDetailConfigs.property.compute(s,client); },
+  },
+  car:{
+    desc:'Singapore car prices: $100–160K (mass market). Downpayment ≥30% cash ($33–48K). Loan: max 60% LTV, max 7 years. Monthly instalment ~$1,500–2,200. Insurance $150–250/mo. Petrol $150–300/mo. Parking $200–400/mo. Road tax ~$100/mo. COE renewal ~$100–150K at 10yr.',
+    section:'Adjust for this client',
+    costReference:[
+      ['Car price (mass market)','$100,000 – $160,000'],
+      ['Downpayment (30%)','$30,000 – $48,000'],
+      ['Monthly instalment (7yr)','$1,500 – $2,200'],
+      ['Insurance /mo','$150 – $250'],
+      ['Petrol + parking /mo','$350 – $700'],
+    ],
+    extraFields:[
+      {key:'monthlyLoan',label:'Monthly Loan Instalment',type:'number',default:1700,hint:'After downpayment, over loan tenure'},
+      {key:'monthlyRunning',label:'Insurance + Road Tax + Petrol /mo',type:'number',default:450,hint:'Recurring running costs'},
+    ],
+    compute(s){
+      const lump=+s.target||35000;
+      const ml=+s.monthlyLoan||0, mr=+s.monthlyRunning||0;
+      const monthly=ml+mr;
+      const yrs=Math.max(0,(s.end||s.age)-s.age);
+      const totalOngoing=monthly*12*yrs;
+      return {target:lump, monthly, summary:[
+        {icon:'\u{1F4B0}',html:`<strong>${fmtK(lump)}</strong> deducted from cash-at-bank at age ${s.age} — lump-sum downpayment`},
+        {icon:'\u{1F4C5}',html:`Ongoing: <strong>${fmtK(monthly)}</strong>/mo added to expense breakdown from age ${s.age}${yrs>0?' → '+s.end+' ('+yrs+' yrs)':''}${yrs>0?` = <strong>${fmtK(totalOngoing)}</strong> total`:''}`},
+      ]};
+    },
+  },
+  baby:{
+    desc:'Pre-natal, delivery & post-natal lump-sum, plus ongoing child-rearing expenses to age 24 (university completion).',
+    section:'Adjust for this client',
+    costReference:[
+      ['Pre-natal scans + delivery (private)','$5,000 – $15,000'],
+      ['Confinement nanny (28 days)','$3,000 – $4,500'],
+      ['Childcare /mo (subsidised)','$300 – $1,000'],
+      ['Enrichment /mo','$200 – $800'],
+      ['University — SG (4 yrs)','$32,000 – $50,000'],
+    ],
+    extraFields:[
+      {key:'monthlyChild',label:'Monthly Child Expense',type:'number',default:2000,hint:'Childcare + enrichment + food + healthcare'},
+    ],
+    compute(s){
+      const lump=+s.target||9000;
+      const mc=+s.monthlyChild||0;
+      const yrs=Math.max(0,(s.end||s.age)-s.age);
+      return {target:lump, monthly:mc, summary:[
+        {icon:'\u{1F476}',html:`<strong>${fmtK(lump)}</strong> deducted from cash-at-bank at age ${s.age} — birth + setup`},
+        {icon:'\u{1F4C5}',html:`Ongoing: <strong>${fmtK(mc)}</strong>/mo until age ${s.end||s.age}${yrs>0?` (${yrs} yrs = `+fmtK(mc*12*yrs)+')':''}`},
+      ]};
+    },
+  },
+  education:{
+    desc:'Tertiary education fund. Reduce ongoing monthly savings if you plan to use SRS / Endowment / ILP instead of cash savings.',
+    section:'Singapore Cost Reference',
+    costReference:[
+      ['Local university (4 yrs)','$32,000 – $50,000'],
+      ['Local university + hostel','$60,000 – $80,000'],
+      ['Overseas — ASEAN/AU (3–4 yrs)','$120,000 – $200,000'],
+      ['Overseas — UK/US (3–4 yrs)','$200,000 – $400,000'],
+    ],
+    compute(s){
+      const lump=+s.target||0, mon=+s.monthly||0;
+      const yrs=Math.max(0,(s.end||s.age)-s.age);
+      return {target:lump, monthly:mon, summary:[
+        {icon:'\u{1F393}',html:`<strong>${fmtK(lump)}</strong> needed by age ${s.age}`},
+        mon>0?{icon:'\u{1F4C5}',html:`Saving <strong>${fmtK(mon)}</strong>/mo until age ${s.end||s.age}${yrs>0?` (${yrs} yrs = `+fmtK(mon*12*yrs)+')':''}`}:null,
+      ].filter(Boolean)};
+    },
+  },
+  retire:{
+    desc:'Retirement corpus = 25× desired annual drawdown (4% safe withdrawal rate). Adjust monthly savings to hit the target by retirement age.',
+    section:'Singapore Cost Reference',
+    costReference:[
+      ['Modest lifestyle ($3K/mo drawdown)','~$900,000 corpus'],
+      ['Comfortable ($5K/mo drawdown)','~$1,500,000 corpus'],
+      ['Premium ($8K/mo drawdown)','~$2,400,000 corpus'],
+    ],
+    compute(s){
+      const lump=+s.target||0, mon=+s.monthly||0;
+      const monthlyDrawdown=Math.round(lump*0.04/12);
+      const yrs=Math.max(0,(s.end||s.age)-s.age);
+      return {target:lump, monthly:mon, summary:[
+        {icon:'\u{1F33C}',html:`Corpus target <strong>${fmtK(lump)}</strong> by age ${s.age} → ~${fmtK(monthlyDrawdown)}/mo drawdown at 4% SWR`},
+        mon>0?{icon:'\u{1F4B0}',html:`Saving <strong>${fmtK(mon)}</strong>/mo until age ${s.end||s.age}${yrs>0?` (${yrs} yrs = `+fmtK(mon*12*yrs)+')':''}`}:null,
+      ].filter(Boolean)};
+    },
+  },
+  emergency:{
+    desc:'Emergency fund target = 6× monthly expenses. Once reached, redirect monthly savings to investments.',
+    compute(s,client){
+      const lump=+s.target||50000, mon=+s.monthly||0;
+      const expCovered=client?Math.round(lump/Math.max(1,Object.values(client.exp||{}).reduce((a,b)=>a+b,0))):0;
+      return {target:lump, monthly:mon, summary:[
+        {icon:'\u{1F6E1}\u{FE0F}',html:`<strong>${fmtK(lump)}</strong> emergency reserve${expCovered>0?` — covers ~${expCovered} months of current expenses`:''}`},
+        mon>0?{icon:'\u{1F4B0}',html:`Saving <strong>${fmtK(mon)}</strong>/mo until target reached`}:null,
+      ].filter(Boolean)};
+    },
+  },
+};
+
+// Generic config used as fallback for any goal without a custom config
+const GENERIC_CONFIG={
+  desc:'Adjust the lump-sum target, monthly savings, and age range. Goal automatically links into the Cashflow Projection Table.',
+  compute(s){
+    const lump=+s.target||0, mon=+s.monthly||0;
+    const yrs=Math.max(0,(s.end||s.age)-s.age);
+    return {target:lump, monthly:mon, summary:[
+      lump>0?{icon:'\u{1F4B0}',html:`<strong>${fmtK(lump)}</strong> deducted from cash-at-bank at age ${s.age}`}:null,
+      mon>0?{icon:'\u{1F4C5}',html:`Ongoing <strong>${fmtK(mon)}</strong>/mo${s.end?` from age ${s.age} → ${s.end} (${yrs} yrs = `+fmtK(mon*12*yrs)+')':''}`}:null,
+    ].filter(Boolean)};
+  },
+};
+
+let gmState=null; // current modal state
+
+function openGoalModal(key){
+  const tpl=goalTemplates[key]; if(!tpl) return;
+  const cfg=goalDetailConfigs[key]||GENERIC_CONFIG;
+  const existing=activeGoals.find(g=>g.key===key);
+
+  // Initial state: prefer existing values, fall back to template defaults, fall back to extraField defaults
+  const init={key,age:tpl.age,end:tpl.end,target:tpl.target,monthly:tpl.monthly};
+  if(existing) Object.assign(init,existing);
+  if(cfg.extraFields) cfg.extraFields.forEach(f=>{ if(init[f.key]===undefined) init[f.key]=f.default; });
+  gmState={key, cfg, tpl, values:init, isExisting:!!existing};
+
+  $('gmIcon').textContent=tpl.icon;
+  $('gmTitleName').innerHTML=tpl.name.replace(/(Purchase|Upgrade|Planning|Fund|Corpus|Buffer|Plan)$/i,m=>`<em>${m}</em>`);
+  $('gmRemove').hidden=!existing;
+  $('gmSave').textContent=existing?'Save Changes':'Add to Plan & Link Cashflow';
+  renderGoalModalBody();
+  $('gmBackdrop').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{ const firstInput=$('gmBody').querySelector('input,select'); firstInput?.focus(); },80);
+}
+
+function renderGoalModalBody(){
+  if(!gmState) return;
+  const {cfg,values}=gmState;
+  const v=values;
+  const endHint='Leave blank if one-off. Child → 24, Car → goal+7, Mortgage → goal+25';
+
+  // Core fields — every goal gets these
+  let html=`<div class="gm-desc">${cfg.desc||GENERIC_CONFIG.desc}</div>`;
+
+  // Cost reference table (if provided)
+  if(cfg.costReference){
+    html+=`<div class="gm-section">
+      <div class="gm-section-label">\u{1F3DB}\u{FE0F} Singapore Cost Reference</div>
+      <table class="gm-cost-ref">${cfg.costReference.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>
+    </div>`;
+  }
+
+  // Property-style extra section with calculated summary inputs
+  if(cfg.section && cfg.extraFields){
+    html+=`<div class="gm-section">
+      <div class="gm-section-label">⚙️ ${cfg.section}</div>
+      <div class="gm-grid gm-grid-1">`;
+    cfg.extraFields.forEach(f=>{
+      if(f.type==='select'){
+        html+=`<div class="gm-field"><div class="gm-field-label">${f.label}</div>
+          <select onchange="updateGoalModal('${f.key}',this.value)">
+            ${f.opts.map(o=>`<option value="${o.value}"${v[f.key]===o.value?' selected':''}>${o.label}</option>`).join('')}
+          </select>${f.hint?`<div class="gm-field-hint">${f.hint}</div>`:''}</div>`;
+      } else {
+        html+=`<div class="gm-field"><div class="gm-field-label">${f.label}</div>
+          <input type="${f.type||'number'}" value="${v[f.key]??f.default}" oninput="updateGoalModal('${f.key}',this.value)">
+          ${f.hint?`<div class="gm-field-hint">${f.hint}</div>`:''}</div>`;
+      }
+    });
+    html+=`</div></div>`;
+  }
+
+  // Core lump-sum / ongoing / age fields (always shown)
+  html+=`<div class="gm-section">
+    <div class="gm-section-label">\u{1F4DD} Goal Inputs</div>
+    <div class="gm-grid">
+      <div class="gm-field"><div class="gm-field-label">Goal Name</div>
+        <input type="text" value="${gmState.tpl.name}" disabled style="opacity:.6"></div>
+      <div class="gm-field"><div class="gm-field-label">Lump-Sum Target (SGD)</div>
+        <input type="number" value="${v.target||0}" oninput="updateGoalModal('target',this.value)">
+        <div class="gm-field-hint">Deducted from cash-at-bank at goal age</div></div>
+      <div class="gm-field"><div class="gm-field-label">Monthly Ongoing (SGD)</div>
+        <input type="number" value="${v.monthly||0}" oninput="updateGoalModal('monthly',this.value)">
+        <div class="gm-field-hint">Added to expense breakdown until end age</div></div>
+      <div class="gm-field"><div class="gm-field-label">Already Saved (SGD)</div>
+        <input type="number" value="${v.alreadySaved||0}" oninput="updateGoalModal('alreadySaved',this.value)">
+        <div class="gm-field-hint">Reduces net deduction at goal age</div></div>
+      <div class="gm-field"><div class="gm-field-label">Goal Age (lump-sum deducted here)</div>
+        <input type="number" value="${v.age||30}" oninput="updateGoalModal('age',this.value)"></div>
+      <div class="gm-field"><div class="gm-field-label">End Age (ongoing costs stop)</div>
+        <input type="number" value="${v.end??''}" placeholder="—" oninput="updateGoalModal('end',this.value)">
+        <div class="gm-field-hint">${endHint}</div></div>
+    </div>
+  </div>`;
+
+  // Compute and render summary
+  const client=window.lastData||null;
+  const out=cfg.compute?cfg.compute(v,client):GENERIC_CONFIG.compute(v,client);
+  // Sync auto-calc result back into state so save uses it (only for configs that compute target/monthly)
+  if(cfg.extraFields && cfg.compute){
+    gmState.values._computedTarget=out.target;
+    gmState.values._computedMonthly=out.monthly;
+  }
+
+  html+=`<div class="gm-summary">
+    ${(out.summary||[]).map(s=>`<div class="gm-summary-row ${s.cls||''}"><span class="gm-bullet">${s.icon||'•'}</span><span>${s.html||s}</span></div>`).join('')}
+  </div>`;
+
+  $('gmBody').innerHTML=html;
+}
+
+function updateGoalModal(field,val){
+  if(!gmState) return;
+  if(field==='end') gmState.values[field]=val===''?null:+val;
+  else if(['propertyType'].includes(field)) gmState.values[field]=val;
+  else gmState.values[field]=val===''?0:+val;
+  // Clear validation error for this field on input — user is fixing it.
+  if(gmState.errors){ delete gmState.errors[field]; }
+  renderGoalModalBody();
+  // Re-apply persistent errors (other fields still in error state)
+  if(gmState.errors){
+    Object.entries(gmState.errors).forEach(([k,msg])=>{
+      const el=$('gmBody').querySelector(`[oninput*="updateGoalModal('${k}'"]`);
+      if(el) markFieldError(el,msg);
+    });
+  }
+}
+
+function saveGoalFromModal(){
+  if(!gmState) return;
+  const {key,cfg,tpl,values}=gmState;
+
+  // ── Validate required fields before saving ──
+  const fieldInput=(field)=>$('gmBody').querySelector(`[oninput*="updateGoalModal('${field}'"]`);
+  const check=(fieldKey, label)=>{
+    const el=fieldInput(fieldKey);
+    if(el && !NON_EMPTY_RE.test(el.value||'')){
+      gmState.errors[fieldKey]=label+' is required';
+      markFieldError(el, label+' is required');
+      return false;
+    } else if(el){ clearFieldError(el); delete gmState.errors[fieldKey]; }
+    return true;
+  };
+  gmState.errors = gmState.errors||{};
+  let ok=true;
+  ok = check('age','Goal age') && ok;
+  // For configs that auto-compute target (property/upgrade), require the upstream
+  // number fields (price, tenure). Optional fields like cpfOA / hdbProceeds can
+  // stay blank — they default to 0.
+  if(cfg.extraFields && cfg.compute){
+    const REQUIRED_KEYS = ['price','tenure','monthlyLoan'];
+    cfg.extraFields.forEach(f=>{
+      if(f.type==='number' && REQUIRED_KEYS.includes(f.key)){
+        ok = check(f.key, f.label||'Value') && ok;
+      }
+    });
+  } else {
+    ok = check('target','Lump-sum target') && ok;
+  }
+  if(!ok){
+    const firstBad=$('gmBody').querySelector('.input-error');
+    if(firstBad) firstBad.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
+  // If config auto-computes target/monthly (property/upgrade), use the computed values
+  const target=values._computedTarget!=null?values._computedTarget:+values.target;
+  const monthly=values._computedMonthly!=null?values._computedMonthly:+values.monthly;
+  const next={
+    key, icon:tpl.icon, name:tpl.name, desc:tpl.desc,
+    target, monthly, age:+values.age, end:values.end?+values.end:null,
+    alreadySaved:+values.alreadySaved||0,
+    // Preserve config-specific inputs for re-editing
+    _meta:cfg.extraFields?Object.fromEntries(cfg.extraFields.map(f=>[f.key,values[f.key]])):undefined,
+  };
+  const i=activeGoals.findIndex(g=>g.key===key);
+  if(i>=0) activeGoals[i]=next; else activeGoals.push(next);
+  closeGoalModal();
+  if(lastData) buildGoalsModule(lastData);
+  if(typeof updateProj==='function') updateProj();
+}
+
+function removeGoalFromModal(){
+  if(!gmState) return;
+  const i=activeGoals.findIndex(g=>g.key===gmState.key);
+  if(i>=0) activeGoals.splice(i,1);
+  closeGoalModal();
+  if(lastData) buildGoalsModule(lastData);
+  if(typeof updateProj==='function') updateProj();
+}
+
+function closeGoalModal(){
+  $('gmBackdrop').classList.remove('open');
+  document.body.style.overflow='';
+  gmState=null;
+}
+function closeGoalModalOnBackdrop(e){
+  if(e.target.id==='gmBackdrop') closeGoalModal();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('gmBackdrop')?.classList.contains('open')) closeGoalModal(); });
+
 function buildGoalsModule(d){
-  $('goalQuickAdd').innerHTML=Object.entries(goalTemplates).map(([k,g])=>{
+  $('goalQuickAdd').innerHTML=Object.entries(goalTemplates).filter(([k])=>k!=='custom').map(([k,g])=>{
     const active=activeGoals.some(x=>x.key===k);
-    return `<button class="goal-chip${active?' active':''}" onclick="toggleGoal('${k}')">${g.icon} ${g.name}</button>`;
+    return `<button class="goal-chip${active?' active':''}" onclick="openGoalModal('${k}')">${g.icon} ${g.name}</button>`;
   }).join('');
 
   const ag=$('activeGoals');
   if(activeGoals.length===0){ ag.innerHTML='<p style="color:var(--text-tertiary);text-align:center;padding:24px">No active goals. Click a quick-add chip above.</p>'; }
   else {
-    let html=`<div class="goal-row goal-row-head"><div>Goal</div><div>Target</div><div>Monthly</div><div>Goal Age</div><div>End Age</div><div></div></div>`;
-    activeGoals.forEach((g,i)=>{
-      html+=`<div class="goal-row">
-        <div class="goal-icon-cell">${g.icon} ${g.name}</div>
-        <div><input type="number" value="${g.target}" onchange="updateGoal(${i},'target',this.value)"></div>
-        <div><input type="number" value="${g.monthly}" onchange="updateGoal(${i},'monthly',this.value)"></div>
-        <div><input type="number" value="${g.age}" onchange="updateGoal(${i},'age',this.value)"></div>
-        <div><input type="number" value="${g.end||''}" placeholder="—" onchange="updateGoal(${i},'end',this.value)"></div>
-        <div><button class="btn-del" onclick="removeGoal(${i})">&times;</button></div>
-      </div>`;
-    });
-    ag.innerHTML=html;
+    ag.innerHTML=activeGoals.map(g=>renderGoalCard(g)).join('');
   }
 
   // Cashflow impact
@@ -2954,6 +4493,59 @@ function toggleGoal(key){
 }
 function updateGoal(i,field,val){ activeGoals[i][field]=field==='end'?(val?+val:null):+val; if(lastData) buildGoalsModule(lastData); }
 function removeGoal(i){ activeGoals.splice(i,1); if(lastData) buildGoalsModule(lastData); }
+
+// ═════ Goal card renderer (clean read-only row; click to open modal) ═════
+function renderGoalCard(g){
+  const target=+g.target||0, saved=+g.alreadySaved||0, monthly=+g.monthly||0;
+  const pct=target>0?Math.min(100,(saved/target)*100):(saved>0?100:0);
+  let badge='gc-badge-pending', badgeText='Pending';
+  if(pct>=100){ badge='gc-badge-reached'; badgeText='✓ Reached'; }
+  else if(pct>0){ badge='gc-badge-progress'; badgeText='In Progress'; }
+
+  const meta=[];
+  meta.push(`Age ${g.age}${g.end?` → ${g.end}`:''}`);
+  // Show saving rate if user has set it (could be derived later)
+  meta.push(`Saving ${fmt(0)}/mo`);
+  if(monthly>0) meta.push(`<span style="color:var(--amber)">${fmt(monthly)}/mo ongoing</span>`);
+  meta.push(`<span style="color:var(--text-secondary)">${pct.toFixed(0)}% to target</span>`);
+
+  // Goal-specific detail line (property/upgrade get a richer breakdown line)
+  let detail='';
+  if((g.key==='property'||g.key==='upgrade') && g._meta){
+    const m=g._meta;
+    const t=PROPERTY_TYPES[m.propertyType]||PROPERTY_TYPES.condo_bank;
+    const price=+m.price||t.price, tenure=+m.tenure||30;
+    const loan=Math.round(price*t.ltv);
+    const dp=price-loan;
+    const cashMin=Math.round(price*t.cashMin);
+    const cpfUsed=Math.min(+m.cpfOA||0, dp-cashMin);
+    const cashDp=dp-cpfUsed;
+    const bsd=calcBSD(price);
+    const proceeds=+m.hdbProceeds||0;
+    const mortMonthly=calcMortgage(loan,t.rate,tenure);
+    if(g.key==='upgrade' && proceeds>0){
+      detail=`<span class="gcd-icon">💼</span>CPF-OA: <strong>${fmt(cpfUsed)}</strong> downpayment + <strong>${fmt(mortMonthly)}/mo</strong> mortgage · Cash: <strong>${fmt(cashDp)}</strong> downpayment + <strong>${fmt(bsd)} BSD</strong> + $3,000 legal · HDB proceeds <strong>${fmt(proceeds)}</strong> offset upfront outlay`;
+    } else {
+      detail=`<span class="gcd-icon">💼</span>CPF-OA: <strong>${fmt(cpfUsed)}</strong> downpayment + <strong>${fmt(mortMonthly)}/mo</strong> mortgage · Cash: <strong>${fmt(cashDp)}</strong> downpayment + <strong>${fmt(bsd)} BSD</strong> + $3,000 legal`;
+    }
+  } else if(g.key==='car' && g._meta){
+    const ml=+g._meta.monthlyLoan||0, mr=+g._meta.monthlyRunning||0;
+    detail=`<span class="gcd-icon">🚗</span>Lump-sum downpayment <strong>${fmt(target)}</strong> · Loan <strong>${fmt(ml)}/mo</strong> + Running costs <strong>${fmt(mr)}/mo</strong>`;
+  }
+
+  return `<div class="goal-card" onclick="openGoalModal('${g.key}')" role="button">
+    <div class="goal-card-head">
+      <div class="goal-card-name"><span class="gc-icon">${g.icon}</span>${g.name}</div>
+      <div class="goal-card-stats">
+        <span class="gc-progress-text">${fmt(saved)} / ${fmt(target)}</span>
+        <span class="gc-badge ${badge}">${badgeText}</span>
+      </div>
+    </div>
+    <div class="goal-card-meta">${meta.join(' · ')}</div>
+    <div class="goal-progress-track"><div class="goal-progress-track-fill" style="width:${pct}%"></div></div>
+    ${detail?`<div class="goal-card-detail">${detail}</div>`:''}
+  </div>`;
+}
 
 // ═══════════════════════════════════════════
 // MEETING NOTES
