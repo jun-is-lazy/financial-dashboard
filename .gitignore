@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build / deploy caches
+.netlify/
+dist/
+build/
+
+# Editor / IDE
+.claude/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Orphan working directories from prior branch layouts
+dashboard/
+preview_new/
+preview_v2/
+
+# Reference / scratch
+*.log
+*.tmp
