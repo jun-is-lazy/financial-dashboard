@@ -1864,8 +1864,9 @@ input[type=range]::-moz-range-thumb {
       <div class="print-section-title">Investments</div>
       <div class="kpis kpis-4" id="invKpis"></div>
       <div class="card anim" style="margin-bottom:14px"><div class="card-title"><span class="accent"></span>What-if Portfolio Projection</div>
-        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Adjust contribution, return, and horizon — the projected portfolio value updates live.</p>
+        <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:12px">Adjust contribution, return, and horizon — both the projected end value AND the trajectory below update live.</p>
         <div class="whatif" id="invWhatif"></div>
+        <div class="chart-box" style="margin-top:18px"><canvas id="cInvProj"></canvas></div>
       </div>
       <div class="card anim d1"><div class="card-title"><span class="accent"></span>Investment Portfolio</div>
         <div class="cols2"><div><table id="tInv"></table></div><div class="chart-box sm"><canvas id="cInv"></canvas></div></div>
@@ -2743,6 +2744,30 @@ function buildInvestmentKpis(d){
       <span class="whatif-val ${(s.key!=='returnPct'&&invSim[s.key]==null)?'dimmed':''}">${s.prefix||''}${s.val.toLocaleString()}${s.suffix||''}</span></div>
       <input type="range" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.val}" oninput="setInvSim('${s.key}',this.value)">
     </div>`).join('') + (dirty?`<div style="grid-column:1/-1"><button class="whatif-reset" onclick="resetInvSim()">↺ Reset to defaults</button></div>`:'');
+  }
+
+  // Year-by-year projection chart — shows where the trajectory comes from.
+  // Split into "From contributions" (linear) and "From growth" (compounding gap)
+  // so the curve visibly bends upward as compounding takes over.
+  if($('cInvProj')){
+    const labels=[], totalSeries=[], contribSeries=[];
+    let val=totInv, contribCum=totInv;
+    for(let i=0;i<=yrs;i++){
+      labels.push(age+i);
+      totalSeries.push(Math.round(val));
+      contribSeries.push(Math.round(contribCum));
+      val=val*(1+r)+contrib*12;
+      contribCum=contribCum+contrib*12;
+    }
+    if(charts.invProj) charts.invProj.destroy();
+    charts.invProj=new Chart($('cInvProj'),{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Projected Value',data:totalSeries,borderColor:COLS[0],backgroundColor:'rgba(62,207,142,.10)',fill:true,tension:.3,pointRadius:0,borderWidth:2.5},
+        {label:'Contributions Only',data:contribSeries,borderColor:COLS[3],backgroundColor:'transparent',borderDash:[6,4],fill:false,tension:.3,pointRadius:0,borderWidth:2},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:11}}},tooltip:{callbacks:{label:(ctx)=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:v=>fmt(v)}},x:{grid:{display:false},title:{display:true,text:'Age',color:'#5a6170'}}}}
+    });
   }
 }
 
