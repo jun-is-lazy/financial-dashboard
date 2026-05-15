@@ -2237,6 +2237,10 @@ function clearFormBanner(containerEl){
 // ── Tabs ──
 document.addEventListener('click',e=>{
   if(!e.target.classList.contains('tab'))return;
+  // Close any open modal so it doesn't bleed across panels.
+  if(typeof closeGoalModal==='function' && $('gmBackdrop')?.classList.contains('open')){
+    closeGoalModal();
+  }
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   e.target.classList.add('on');
@@ -4588,8 +4592,17 @@ function removeGoalFromModal(){
 }
 
 function closeGoalModal(){
-  $('gmBackdrop').classList.remove('open');
+  const bd=$('gmBackdrop');
+  if(bd){
+    bd.classList.remove('open');
+    // Defensive: clear any inline body content from a previous open so a
+    // stale half-open state can't leave Cancel/Save buttons floating over
+    // another panel. Also reset stuck print-only flag in case Export PDF
+    // didn't restore cleanly.
+    const body=$('gmBody'); if(body) body.innerHTML='';
+  }
   document.body.style.overflow='';
+  document.body.classList.remove('print-report-only');
   gmState=null;
 }
 function closeGoalModalOnBackdrop(e){
@@ -4837,16 +4850,23 @@ function exportPDF(){
   // render at proper size (they were 0×0 if the panel was hidden before).
   Object.values(charts).forEach(c => { if(c && c.resize) c.resize(); });
 
+  const restore = () => {
+    document.body.classList.remove('print-report-only');
+    panels.forEach(p => p.classList.remove('on'));
+    if(activePanel) activePanel.classList.add('on');
+  };
+
   // Two RAFs so layout settles + charts paint before the print dialog.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      window.print();
-      // Restore: clear the print-only flag and the user's original tab.
-      document.body.classList.remove('print-report-only');
-      panels.forEach(p => p.classList.remove('on'));
-      if(activePanel) activePanel.classList.add('on');
+      try { window.print(); } finally { restore(); }
     });
   });
+
+  // Belt-and-suspenders: if anything goes wrong above and restore() didn't
+  // run, this fires on the next user interaction so they're not stuck in
+  // print-only mode with hidden panels.
+  window.addEventListener('focus', restore, { once: true });
 }
 </script>
 </body>
