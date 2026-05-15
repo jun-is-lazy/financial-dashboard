@@ -1586,8 +1586,21 @@ input[type=range]::-moz-range-thumb {
   .topbar-meta { font-size:.6rem !important; }
   .tabs, .btn-top { display:none !important; }
 
-  /* Show ALL panels in print */
-  .panel { display:block !important; padding:0 !important; margin:0 !important; }
+  /* Default: show ALL panels (used when the user hits the browser's
+     native Ctrl+P / Cmd+P shortcut without going through Export PDF). */
+  body:not(.print-report-only) .panel { display:block !important; padding:0 !important; margin:0 !important; }
+
+  /* Export-PDF flow: show ONLY the Report panel. The .on class is set
+     on #p-report by exportPDF() before window.print() fires. */
+  body.print-report-only .panel { display:none !important; }
+  body.print-report-only .panel.on { display:block !important; padding:0 !important; margin:0 !important; }
+  body.print-report-only .topbar { display:none !important; }
+  body.print-report-only .sidebar, body.print-report-only .scrim { display:none !important; }
+  body.print-report-only .guidance { display:none !important; }
+  body.print-report-only .gm-backdrop { display:none !important; }
+  body.print-report-only .footer { display:block !important; }
+  body.print-report-only .main { padding:0 !important; margin:0 !important; }
+  body.print-report-only .dash { display:block !important; }
 
   /* Section headers visible only in print */
   .print-section-title { display:block !important; font-family:var(--font-display); font-size:.9rem; font-weight:600; color:var(--gold-light); margin:8px 0 4px; padding:3px 0; border-bottom:1px solid rgba(207,181,116,.2); }
@@ -4804,19 +4817,32 @@ function updateClientList(){
 function editData(){$('setupOverlay').classList.remove('hidden');$('dash').classList.add('hidden');}
 
 function exportPDF(){
-  // Show all panels so charts can render at proper size
+  // Print ONLY the Client Report panel. The previous behaviour included
+  // every panel which made the PDF a 20-page wall of charts + overlapping
+  // popovers. The Report panel is the one designed for client-facing
+  // print output.
   const panels = document.querySelectorAll('.panel');
   const activePanel = document.querySelector('.panel.on');
-  panels.forEach(p => p.classList.add('on'));
+  const reportPanel = document.getElementById('p-report');
+  if(!reportPanel){ window.print(); return; }
 
-  // Force Chart.js to resize all canvases while visible
+  // Tag body so @media print can scope styles to "only show .panel.on".
+  document.body.classList.add('print-report-only');
+
+  // Hide every panel except the Report.
+  panels.forEach(p => p.classList.remove('on'));
+  reportPanel.classList.add('on');
+
+  // Force Chart.js to resize all canvases inside the Report panel so they
+  // render at proper size (they were 0×0 if the panel was hidden before).
   Object.values(charts).forEach(c => { if(c && c.resize) c.resize(); });
 
-  // Small delay to let charts render, then print
+  // Two RAFs so layout settles + charts paint before the print dialog.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       window.print();
-      // Restore: hide all panels, show only the one that was active
+      // Restore: clear the print-only flag and the user's original tab.
+      document.body.classList.remove('print-report-only');
       panels.forEach(p => p.classList.remove('on'));
       if(activePanel) activePanel.classList.add('on');
     });
