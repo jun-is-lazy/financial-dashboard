@@ -856,19 +856,35 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
   font-variant-numeric: tabular-nums;
 }
 .whatif-val.dimmed { color: var(--text-secondary); }
+/* Slider — explicit cyan-thumb pattern, but the input itself must have
+   enough height for the hit-test to cover the visible thumb. We give the
+   input a 22px height (transparent), then paint the track via the
+   runnable-track pseudo-element so the visible track stays thin (4px). */
 .whatif input[type=range] {
-  -webkit-appearance: none; appearance: none; width:100%; height:4px;
-  background: var(--bg-input); border-radius: 2px; outline: none;
-  border:1px solid var(--border);
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 22px;
+  background: transparent; outline: none; border: none;
+  padding: 0; margin: 0; cursor: pointer;
+}
+.whatif input[type=range]::-webkit-slider-runnable-track {
+  height: 4px; background: var(--bg-input); border-radius: 2px;
+  border: 1px solid var(--border);
+}
+.whatif input[type=range]::-moz-range-track {
+  height: 4px; background: var(--bg-input); border-radius: 2px;
+  border: 1px solid var(--border);
 }
 .whatif input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; appearance:none; width:14px; height:14px;
-  border-radius:50%; background: var(--cyan); cursor:pointer;
-  border: 2px solid var(--bg-card); box-shadow:0 0 0 1px var(--cyan);
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--cyan); cursor: pointer;
+  border: 2px solid var(--bg-card); box-shadow: 0 0 0 1px var(--cyan);
+  margin-top: -7px; /* center 16px thumb on 4px track */
 }
 .whatif input[type=range]::-moz-range-thumb {
-  width:14px; height:14px; border-radius:50%; background: var(--cyan);
-  cursor:pointer; border:2px solid var(--bg-card);
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--cyan); cursor: pointer;
+  border: 2px solid var(--bg-card); box-shadow: 0 0 0 1px var(--cyan);
 }
 .whatif-reset {
   margin-top:10px; font-size:.72rem; color:var(--text-tertiary);
@@ -1876,7 +1892,7 @@ input[type=range]::-moz-range-thumb {
       <div class="print-section-title">Cashflow</div>
       <div class="kpis kpis-4" id="cfKpis"></div>
       <div class="cols2">
-        <div class="card anim"><div class="card-title"><span class="accent"></span>Monthly Cashflow</div><div class="chart-box"><canvas id="cCF"></canvas></div></div>
+        <div class="card anim"><div class="card-title"><span class="accent"></span>Monthly Cashflow</div><div class="chart-box"><canvas id="cCF"></canvas></div><div id="cfUpcoming"></div></div>
         <div class="card anim d1"><div class="card-title"><span class="accent"></span>Passive Income</div><table id="tPassive"></table><div id="passiveBar" style="margin-top:18px"></div></div>
       </div>
       <div class="card anim d2" style="margin-top:18px">
@@ -2381,12 +2397,18 @@ function generate(){
   const passiveR=inflow>0?passive/inflow*100:0;
   const savRate=inflow>0?surplus/inflow*100:0;
 
+  // Tab/panel switch only on the FIRST generate (when the dash is still hidden).
+  // Subsequent re-renders (e.g. after a goal save) keep the user on their
+  // current tab to avoid yanking them back to Overview.
+  const isFirstGen = $('dash').classList.contains('hidden');
   $('setupOverlay').classList.add('hidden');
   $('dash').classList.remove('hidden');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
-  document.querySelector('[data-t="overview"]').classList.add('on');
-  $('p-overview').classList.add('on');
+  if (isFirstGen) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    document.querySelector('[data-t="overview"]').classList.add('on');
+    $('p-overview').classList.add('on');
+  }
 
   $('dClient').textContent=d.client+(d.age?', '+d.age:'')+(d.date?' \u2022 As of '+d.date:'');
 
@@ -2402,20 +2424,35 @@ function generate(){
   $('kpiGrid').innerHTML=kpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
   // ─── Cashflow panel KPI strip ───────────────────────────────────────────
-  // 4 cards: monthly income, monthly expenses, surplus, savings rate
+  // 4 cards: monthly income, monthly expenses (incl. active goals), surplus, savings rate
+  // Goals contribute to "current" monthly expenses only if the user is already
+  // within the goal's age window (g.age <= currentAge <= g.end). Future-age
+  // goals are surfaced separately as upcoming commitments.
+  const currentAge = d.age || 30;
+  const goalNow = (typeof activeGoals !== 'undefined' ? activeGoals : []).filter(g =>
+    currentAge >= g.age && currentAge <= (g.end || g.age) && (+g.monthly || 0) > 0);
+  const goalMonthlyNow = goalNow.reduce((s, g) => s + (+g.monthly || 0), 0);
+  const goalUpcoming = (typeof activeGoals !== 'undefined' ? activeGoals : []).filter(g =>
+    g.age > currentAge && ((+g.monthly || 0) > 0 || (+g.target || 0) > 0));
+
+  const totExpWithGoals = totExp + goalMonthlyNow;
+  const surplusWithGoals = inflow - totExpWithGoals;
+  const savRateWithGoals = inflow > 0 ? (surplusWithGoals / inflow * 100) : 0;
   const annInc=inflow*12;
-  const expRatio=inflow>0?(totExp/inflow*100):0;
-  const ef=totExp>0?(d.cash/totExp):0;
+  const expRatio=inflow>0?(totExpWithGoals/inflow*100):0;
   // Largest expense category (for the sub on Expenses card)
   const expEntries=Object.entries(d.exp).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   const topExp=expEntries[0]?`${expEntries[0][0]} ${fmt(expEntries[0][1])}`:'—';
-  const savRateColor=savRate>=20?'var(--green)':savRate>=10?'var(--amber)':'var(--red)';
-  const savRateLabel=savRate>=20?'Excellent (≥ 20%)':savRate>=10?'Adequate (10–20%)':savRate>=0?'Below target (<10%)':'Deficit';
+  const expSub = goalMonthlyNow > 0
+    ? `${fmt(totExp)} living + ${fmt(goalMonthlyNow)} goals`
+    : 'Top: '+topExp;
+  const savRateColor=savRateWithGoals>=20?'var(--green)':savRateWithGoals>=10?'var(--amber)':'var(--red)';
+  const savRateLabel=savRateWithGoals>=20?'Excellent (≥ 20%)':savRateWithGoals>=10?'Adequate (10–20%)':savRateWithGoals>=0?'Below target (<10%)':'Deficit';
   const cfKpis=[
     {l:'Monthly Income',v:fmt(inflow),s:'Annual ~'+fmts(annInc),c:'var(--green)'},
-    {l:'Monthly Expenses',v:fmt(totExp),s:'Top: '+topExp,c:'var(--red)'},
-    {l:'Monthly Surplus',v:fmts(surplus),s:expRatio>0?`Expense ratio ${expRatio.toFixed(0)}%`:'—',c:surplus>=0?'var(--cyan)':'var(--red)'},
-    {l:'Savings Rate',v:savRate.toFixed(1)+'%',s:savRateLabel,c:savRateColor},
+    {l:'Monthly Expenses',v:fmt(totExpWithGoals),s:expSub,c:'var(--red)'},
+    {l:'Monthly Surplus',v:fmts(surplusWithGoals),s:expRatio>0?`Expense ratio ${expRatio.toFixed(0)}%`:'—',c:surplusWithGoals>=0?'var(--cyan)':'var(--red)'},
+    {l:'Savings Rate',v:savRateWithGoals.toFixed(1)+'%',s:savRateLabel,c:savRateColor},
   ];
   $('cfKpis').innerHTML=cfKpis.map((k,i)=>`<div class="kpi anim d${i+1}"><div class="kpi-bar" style="background:linear-gradient(90deg,${k.c},transparent)"></div><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
@@ -2459,8 +2496,17 @@ function generate(){
     charts.inv=new Chart($('cInv'),{type:'doughnut',data:{labels:d.inv.map(i=>i.name),datasets:[{data:d.inv.map(i=>i.value),backgroundColor:COLS.slice(0,d.inv.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10,usePointStyle:true,pointStyle:'circle',font:{size:11}}}}}});
   }
 
-  // Cashflow
-  charts.cf=new Chart($('cCF'),{type:'bar',data:{labels:['Salary','Rental','Dividends','Side Income','Expenses'],datasets:[{data:[d.salary,d.rental,d.dividends,d.side,-totExp],backgroundColor:[COLS[0],COLS[5],COLS[2],COLS[1],COLS[4]],borderRadius:8,borderSkipped:false,barThickness:32}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{callback:v=>fmts(v)}},x:{grid:{display:false}}}}});
+  // Cashflow — when goals are active for the current age, show "Goal Commitments"
+  // as a separate negative bar so the user can see goals impact at a glance.
+  const cfLabels = ['Salary', 'Rental', 'Dividends', 'Side Income', 'Living Expenses'];
+  const cfData = [d.salary, d.rental, d.dividends, d.side, -totExp];
+  const cfColors = [COLS[0], COLS[5], COLS[2], COLS[1], COLS[4]];
+  if (goalMonthlyNow > 0) {
+    cfLabels.push('Goal Commitments');
+    cfData.push(-goalMonthlyNow);
+    cfColors.push(COLS[3]); // amber/purple to distinguish from regular expenses
+  }
+  charts.cf=new Chart($('cCF'),{type:'bar',data:{labels:cfLabels,datasets:[{data:cfData,backgroundColor:cfColors,borderRadius:8,borderSkipped:false,barThickness:32}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{callback:v=>fmts(v)}},x:{grid:{display:false}}}}});
 
   // Passive
   $('tPassive').innerHTML=`<thead><tr><th>Source</th><th style="text-align:right">Monthly</th><th style="text-align:right">Annual</th></tr></thead><tbody>
@@ -2469,19 +2515,48 @@ function generate(){
     <tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(passive)}</td><td class="num" style="color:var(--gold-light)">${fmt(passive*12)}</td></tr></tbody>`;
   $('passiveBar').innerHTML=`<div class="prog"><span class="prog-label">Passive ratio</span><div class="prog-track"><div class="prog-fill" style="width:${Math.min(passiveR,100)}%"></div></div><span class="prog-val">${passiveR.toFixed(1)}%</span></div>`;
 
-  // Spending — each category is click-to-edit
+  // Spending — each category is click-to-edit. Goal commitments appear as
+  // their own rows (with the goal's icon + name) when currently active.
   const EXP_FORM_ID={Housing:'expHousing','Food & Dining':'expFood',Transport:'expTransport',Utilities:'expUtilities',Shopping:'expShopping',Entertainment:'expEntertainment',Education:'expEducation',Healthcare:'expHealthcare','Family':'expFamily','Savings':'expSavings',Others:'expOthers'};
   const sL=Object.keys(d.exp).filter(k=>d.exp[k]>0), sD=sL.map(k=>d.exp[k]);
-  if(sL.length){
-    charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:sL,datasets:[{data:sD,backgroundColor:COLS.slice(0,sL.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{display:false}}}});
+  // Append goal rows (these are NOT in d.exp — they come from activeGoals)
+  const goalRows = goalNow.map(g => ({label: g.icon+' '+g.name+' (goal)', amount: +g.monthly||0, isGoal: true}));
+  const allLabels = [...sL, ...goalRows.map(r=>r.label)];
+  const allData = [...sD, ...goalRows.map(r=>r.amount)];
+  if(allLabels.length){
+    charts.sp=new Chart($('cSpend'),{type:'doughnut',data:{labels:allLabels,datasets:[{data:allData,backgroundColor:COLS.slice(0,allLabels.length),borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{display:false}}}});
     let st='<thead><tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">%</th></tr></thead><tbody>';
     sL.forEach((l,i)=>{
       const fid=EXP_FORM_ID[l];
       const cell=fid?`<span class="editable" data-edit-form="${fid}" data-edit-val="${sD[i]}">${fmt(sD[i])}</span>`:fmt(sD[i]);
-      st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${cell}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExp*100).toFixed(1)}%</td></tr>`;
+      st+=`<tr><td><span class="cdot" style="background:${COLS[i]}"></span>${l}</td><td class="num">${cell}</td><td class="num" style="color:var(--text-tertiary)">${(sD[i]/totExpWithGoals*100).toFixed(1)}%</td></tr>`;
     });
-    st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExp)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
+    goalRows.forEach((g, i) => {
+      const colorIdx = sL.length + i;
+      st += `<tr><td><span class="cdot" style="background:${COLS[colorIdx % COLS.length]}"></span><span style="color:var(--amber);font-weight:500">${g.label}</span></td><td class="num">${fmt(g.amount)}</td><td class="num" style="color:var(--text-tertiary)">${(g.amount/totExpWithGoals*100).toFixed(1)}%</td></tr>`;
+    });
+    st+=`<tr class="tr-total-gold"><td style="color:var(--gold-light)">Total</td><td class="num" style="color:var(--gold-light)">${fmt(totExpWithGoals)}</td><td class="num" style="color:var(--gold-light)">100%</td></tr></tbody>`;
     $('tSpend').innerHTML=st;
+  }
+
+  // Upcoming goal commitments banner (between Cashflow chart and Spending) —
+  // only render if there are goals with start age > current age.
+  if ($('cfUpcoming')) {
+    if (goalUpcoming.length) {
+      $('cfUpcoming').innerHTML = `
+        <div style="padding:12px 14px;background:var(--amber-dim);border:1px solid rgba(240,180,41,.3);border-radius:8px;margin-top:14px">
+          <div style="font-size:.72rem;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:8px">⏳ Upcoming Goal Commitments</div>
+          ${goalUpcoming.map(g => {
+            const monthly = +g.monthly||0, lump = +g.target||0;
+            const parts = [];
+            if (lump > 0) parts.push(`<strong>${fmt(lump)}</strong> lump-sum`);
+            if (monthly > 0) parts.push(`<strong>${fmt(monthly)}</strong>/mo${g.end?` until age ${g.end}`:''}`);
+            return `<div style="font-size:.85rem;color:var(--text-secondary);padding:3px 0">${g.icon} ${g.name} — kicks in at age ${g.age}: ${parts.join(' + ')}</div>`;
+          }).join('')}
+        </div>`;
+    } else {
+      $('cfUpcoming').innerHTML = '';
+    }
   }
 
   // Property
@@ -4486,8 +4561,9 @@ function saveGoalFromModal(){
   const i=activeGoals.findIndex(g=>g.key===key);
   if(i>=0) activeGoals[i]=next; else activeGoals.push(next);
   closeGoalModal();
-  if(lastData) buildGoalsModule(lastData);
-  if(typeof updateProj==='function') updateProj();
+  // Full re-render so Cashflow KPIs/chart/spending-table pick up the new goal.
+  // generate() now preserves the active tab when dash is already visible.
+  if(lastData) generate();
 }
 
 function removeGoalFromModal(){
@@ -4495,8 +4571,7 @@ function removeGoalFromModal(){
   const i=activeGoals.findIndex(g=>g.key===gmState.key);
   if(i>=0) activeGoals.splice(i,1);
   closeGoalModal();
-  if(lastData) buildGoalsModule(lastData);
-  if(typeof updateProj==='function') updateProj();
+  if(lastData) generate();
 }
 
 function closeGoalModal(){
@@ -4538,8 +4613,8 @@ function toggleGoal(key){
   else activeGoals.push({key, ...goalTemplates[key]});
   if(lastData) buildGoalsModule(lastData);
 }
-function updateGoal(i,field,val){ activeGoals[i][field]=field==='end'?(val?+val:null):+val; if(lastData) buildGoalsModule(lastData); }
-function removeGoal(i){ activeGoals.splice(i,1); if(lastData) buildGoalsModule(lastData); }
+function updateGoal(i,field,val){ activeGoals[i][field]=field==='end'?(val?+val:null):+val; if(lastData) generate(); }
+function removeGoal(i){ activeGoals.splice(i,1); if(lastData) generate(); }
 
 // ═════ Goal card renderer (clean read-only row; click to open modal) ═════
 function renderGoalCard(g){
