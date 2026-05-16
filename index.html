@@ -1729,9 +1729,6 @@ input[type=range]::-moz-range-thumb {
       <div class="form-group"><label>Retirement Age</label><input id="retireAge" type="number" placeholder="65" value="65"></div>
       <div class="form-group"><label>Desired Passive Income / mo</label><input id="retireIncome" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
       <div class="form-group"><label>Dashboard Date</label><input id="dashDate" type="date"></div>
-      <div class="form-group"><label>Currency</label>
-        <select id="currency"><option value="SGD">SGD ($)</option><option value="USD">USD ($)</option><option value="MYR">MYR (RM)</option></select>
-      </div>
     </div>
   </div>
 
@@ -2360,7 +2357,8 @@ function calcAge(){
 }
 
 function collectData(){
-  const cur=$('currency').value; sym=cur==='MYR'?'RM ':'$';
+  // Currency is fixed to SGD — dashboard is Singapore-specific (CPF, MediShield, IP plans, BSD, etc.).
+  const cur='SGD'; sym='$';
   const bonus=v('bonus'); // annual bonus → monthly portion
   const d={
     client:$('clientName').value||'Client',
