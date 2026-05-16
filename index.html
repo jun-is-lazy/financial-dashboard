@@ -807,6 +807,12 @@ body.has-sidebar .guidance + .topbar { margin-left:240px; }
 /* ═══════════════════════════════════════════
    FIELD VALIDATION (empty-field guard)
    ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   CURRENCY INPUTS — formatted "13,000.00" on blur, raw "13000" on focus
+   ═══════════════════════════════════════════ */
+.currency-input { font-variant-numeric: tabular-nums; text-align: right; }
+.currency-input::placeholder { text-align: right; opacity: .35; }
+
 .input-error, .input-error:focus {
   border-color:var(--red) !important;
   box-shadow:0 0 0 3px rgba(240,96,96,.12) !important;
@@ -1721,7 +1727,7 @@ input[type=range]::-moz-range-thumb {
         <select id="riskProfile"><option>Conservative</option><option>Moderate</option><option selected>Balanced</option><option>Growth</option><option>Aggressive</option></select>
       </div>
       <div class="form-group"><label>Retirement Age</label><input id="retireAge" type="number" placeholder="65" value="65"></div>
-      <div class="form-group"><label>Desired Retirement Income / mo</label><input id="retireIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Desired Retirement Income / mo</label><input id="retireIncome" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
       <div class="form-group"><label>Dashboard Date</label><input id="dashDate" type="date"></div>
       <div class="form-group"><label>Currency</label>
         <select id="currency"><option value="SGD">SGD ($)</option><option value="USD">USD ($)</option><option value="MYR">MYR (RM)</option></select>
@@ -1732,11 +1738,11 @@ input[type=range]::-moz-range-thumb {
   <div class="form-card">
     <h3>Cash &amp; Savings</h3>
     <div class="form-grid">
-      <div class="form-group"><label>Cash / Bank Savings</label><input id="cash" type="number" placeholder="0"></div>
-      <div class="form-group"><label>CPF OA</label><input id="cpfOA" type="number" placeholder="0"></div>
-      <div class="form-group"><label>CPF SA</label><input id="cpfSA" type="number" placeholder="0"></div>
-      <div class="form-group"><label>CPF MA</label><input id="cpfMA" type="number" placeholder="0"></div>
-      <div class="form-group"><label>SRS Balance</label><input id="srs" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Cash / Bank Savings</label><input id="cash" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>CPF OA</label><input id="cpfOA" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>CPF SA</label><input id="cpfSA" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>CPF MA</label><input id="cpfMA" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>SRS Balance</label><input id="srs" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
     </div>
   </div>
 
@@ -1744,11 +1750,11 @@ input[type=range]::-moz-range-thumb {
     <h3>Monthly Income</h3>
     <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Enter gross monthly figures. Annual bonus auto-amortised over 12 months.</p>
     <div class="form-grid">
-      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Base Salary /mo</label><input id="salary" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Annual Bonus</label><input id="bonus" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Rental Income /mo</label><input id="rentalIncome" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Dividends / Interest /mo</label><input id="dividendIncome" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Side Income / Freelance /mo</label><input id="sideIncome" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
     </div>
   </div>
 
@@ -1756,10 +1762,10 @@ input[type=range]::-moz-range-thumb {
     <h3>Other Liabilities</h3>
     <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Property loans are captured per-property above &mdash; only enter non-property debts here.</p>
     <div class="form-grid">
-      <div class="form-group"><label>Car Loan</label><input id="carLoan" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Student Loan</label><input id="studentLoan" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Renovation Loan</label><input id="renoLoan" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Credit Card / Personal</label><input id="otherLoan" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Car Loan</label><input id="carLoan" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Student Loan</label><input id="studentLoan" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Renovation Loan</label><input id="renoLoan" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Credit Card / Personal</label><input id="otherLoan" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
     </div>
   </div>
 
@@ -1779,17 +1785,17 @@ input[type=range]::-moz-range-thumb {
     <h3>Monthly Expenses</h3>
     <p style="font-size:.82rem;color:var(--text-tertiary);margin-bottom:14px">Insurance premiums are auto-calculated from the Insurance Policies section &mdash; add every policy below for an accurate picture.</p>
     <div class="form-grid">
-      <div class="form-group"><label>Housing</label><input id="expHousing" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Food &amp; Dining</label><input id="expFood" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Transport</label><input id="expTransport" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Utilities</label><input id="expUtilities" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Shopping</label><input id="expShopping" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Entertainment</label><input id="expEntertainment" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Education</label><input id="expEducation" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Healthcare</label><input id="expHealthcare" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Family / Allowances</label><input id="expFamily" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Savings / Investments</label><input id="expSavings" type="number" placeholder="0"></div>
-      <div class="form-group"><label>Others</label><input id="expOthers" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Housing</label><input id="expHousing" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Food &amp; Dining</label><input id="expFood" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Transport</label><input id="expTransport" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Utilities</label><input id="expUtilities" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Shopping</label><input id="expShopping" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Entertainment</label><input id="expEntertainment" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Education</label><input id="expEducation" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Healthcare</label><input id="expHealthcare" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Family / Allowances</label><input id="expFamily" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Savings / Investments</label><input id="expSavings" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+      <div class="form-group"><label>Others</label><input id="expOthers" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
     </div>
   </div>
 
@@ -2176,7 +2182,9 @@ input[type=range]::-moz-range-thumb {
 </div>
 
 <script>
-const $=id=>document.getElementById(id), v=id=>parseFloat($(id).value)||0;
+const $=id=>document.getElementById(id);
+// Strip comma separators added by the currency-input formatter before parsing.
+const v=id=>{const s=String($(id)?.value||'').replace(/,/g,''); const n=parseFloat(s); return isNaN(n)?0:n;};
 let sym='$', charts={};
 const fmt=n=>sym+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
 const fmts=n=>(n<0?'-':'')+fmt(n);
@@ -2187,6 +2195,52 @@ const fmts=n=>(n<0?'-':'')+fmt(n);
 // Lenient non-empty regex: matches any non-whitespace character.
 // Whitespace-only counts as empty; numeric 0 is allowed because it's not blank.
 const NON_EMPTY_RE = /\S/;
+
+// ═══════════════════════════════════════════
+// CURRENCY INPUT FORMATTING
+// ═══════════════════════════════════════════
+// Display "13,000.00" on blur, "13000" on focus. Internally values are
+// still plain numbers — collectData uses parseCurrencyInput() which
+// strips commas before converting.
+function parseCurrencyInput(v){
+  if(typeof v==='number') return v;
+  const cleaned=String(v||'').replace(/[^\d.\-]/g,'');
+  const n=parseFloat(cleaned);
+  return isNaN(n)?0:n;
+}
+function formatCurrencyDisplay(n){
+  return Number(n).toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function makeCurrencyInput(el){
+  if(!el || el.dataset.currency) return;
+  el.type='text'; el.inputMode='decimal';
+  el.classList.add('currency-input');
+  el.dataset.currency='1';
+  if(el.value){
+    const n=parseCurrencyInput(el.value);
+    if(n) el.value=formatCurrencyDisplay(n);
+  }
+}
+// Apply formatting to currency inputs in a subtree (after dynamic insert).
+function attachCurrencyToRepeater(rowEl, prefixes){
+  prefixes.forEach(p=>{
+    const el=rowEl.querySelector(`[id^="${p}"]`);
+    if(el) makeCurrencyInput(el);
+  });
+}
+// Global focus/blur — strip commas while editing, reformat on blur.
+document.addEventListener('focusin', e=>{
+  const el=e.target;
+  if(!el.dataset || !el.dataset.currency) return;
+  // Strip commas + a meaningless trailing ".00" so editing starts clean.
+  el.value=String(el.value).replace(/,/g,'').replace(/\.00$/,'');
+});
+document.addEventListener('focusout', e=>{
+  const el=e.target;
+  if(!el.dataset || !el.dataset.currency) return;
+  const n=parseCurrencyInput(el.value);
+  el.value = n!==0 ? formatCurrencyDisplay(n) : '';
+});
 
 function clearFieldError(el){
   if(!el) return;
@@ -2261,8 +2315,8 @@ function addInv(){
   <div class="form-grid">
     <div class="form-group"><label>Name</label><input id="iN${i}" placeholder="e.g. STI ETF"></div>
     <div class="form-group"><label>Type</label><select id="iT${i}"><option>Stocks</option><option>ETF</option><option>Bonds</option><option>Unit Trust</option><option>ILP</option><option>Endowment</option><option>Crypto</option><option>Other</option></select></div>
-    <div class="form-group"><label>Current Value</label><input id="iV${i}" type="number" placeholder="0"></div>
-    <div class="form-group"><label>Cost Basis</label><input id="iC${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Current Value</label><input id="iV${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+    <div class="form-group"><label>Cost Basis</label><input id="iC${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
   </div>`;
   $('invList').appendChild(d);
 }
@@ -2273,9 +2327,9 @@ function addProp(){
     <div class="form-group"><label>Property Name</label><input id="pN${i}" placeholder="e.g. HDB 4-Room"></div>
     <div class="form-group"><label>Type</label><select id="pT${i}"><option>HDB</option><option>Condo</option><option>EC</option><option>Landed</option><option>Commercial</option><option>Other</option></select></div>
     <div class="form-group"><label>Usage</label><select id="pU${i}"><option>Owner-occupied</option><option>Rental</option><option>Investment</option></select></div>
-    <div class="form-group"><label>Market Value</label><input id="pV${i}" type="number" placeholder="0"></div>
-    <div class="form-group"><label>Loan Outstanding</label><input id="pL${i}" type="number" placeholder="0"></div>
-    <div class="form-group"><label>Monthly Mortgage</label><input id="pM${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Market Value</label><input id="pV${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+    <div class="form-group"><label>Loan Outstanding</label><input id="pL${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+    <div class="form-group"><label>Monthly Mortgage</label><input id="pM${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
     <div class="form-group"><label>Loan Tenure Left (yrs)</label><input id="pY${i}" type="number" placeholder="0"></div>
   </div>`;
   $('propList').appendChild(d);
@@ -2287,10 +2341,10 @@ function addIns(){
     <div class="form-group"><label>Policy Name</label><input id="sN${i}" placeholder="e.g. GREAT SupremeHealth"></div>
     <div class="form-group"><label>Type</label><select id="sT${i}"><option>Health / Hospitalisation</option><option>Life / Death</option><option>Critical Illness</option><option>Disability</option><option>Accident</option><option>Endowment</option><option>Whole Life</option><option>Term Life</option><option>Other</option></select></div>
     <div class="form-group"><label>Ward Tier <span style="opacity:.6">(IP plans)</span></label><select id="sW${i}"><option value="">— N/A —</option><option value="Private">Private hospital</option><option value="A">A ward (public)</option><option value="B1">B1 ward (public)</option><option value="Standard">Standard / MediShield Life only</option></select></div>
-    <div class="form-group"><label>Sum Assured</label><input id="sC${i}" type="number" placeholder="0"></div>
-    <div class="form-group"><label>Monthly Premium</label><input id="sP${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Sum Assured</label><input id="sC${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
+    <div class="form-group"><label>Monthly Premium</label><input id="sP${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
     <div class="form-group"><label>Insurer</label><input id="sI${i}" placeholder="e.g. Great Eastern"></div>
-    <div class="form-group"><label>Cash Value</label><input id="sV${i}" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Cash Value</label><input id="sV${i}" type="text" inputmode="decimal" class="currency-input" data-currency="1" placeholder="0"></div>
   </div>`;
   $('insList').appendChild(d);
 }
@@ -2325,17 +2379,19 @@ function collectData(){
   };
   // Back-compat
   d.homeLoan=0;
+  // Helper: strip commas added by currency-input formatter before parsing.
+  const num = el => parseCurrencyInput(el?.value);
   document.querySelectorAll('#invList .repeater').forEach((el,idx)=>{
     const n=el.querySelector('[id^="iN"]'),t=el.querySelector('[id^="iT"]'),val=el.querySelector('[id^="iV"]'),c=el.querySelector('[id^="iC"]');
-    if(n)d.inv.push({name:n.value||'Investment '+(idx+1),type:t?.value||'',value:+(val?.value)||0,cost:+(c?.value)||0});
+    if(n)d.inv.push({name:n.value||'Investment '+(idx+1),type:t?.value||'',value:num(val),cost:num(c)});
   });
   document.querySelectorAll('#propList .repeater').forEach((el,idx)=>{
     const n=el.querySelector('[id^="pN"]'),t=el.querySelector('[id^="pT"]'),u=el.querySelector('[id^="pU"]'),val=el.querySelector('[id^="pV"]'),l=el.querySelector('[id^="pL"]'),m=el.querySelector('[id^="pM"]'),y=el.querySelector('[id^="pY"]');
-    if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',usage:u?.value||'Owner-occupied',value:+(val?.value)||0,loan:+(l?.value)||0,monthlyMortgage:+(m?.value)||0,tenureYrs:+(y?.value)||0});
+    if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',usage:u?.value||'Owner-occupied',value:num(val),loan:num(l),monthlyMortgage:num(m),tenureYrs:+(y?.value)||0});
   });
   document.querySelectorAll('#insList .repeater').forEach((el,idx)=>{
     const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]'),w=el.querySelector('[id^="sW"]');
-    if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:+(c?.value)||0,premium:+(p?.value)||0,insurer:ins?.value||'',cv:+(cv?.value)||0,ward:w?.value||''});
+    if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:num(c),premium:num(p),insurer:ins?.value||'',cv:num(cv),ward:w?.value||''});
   });
   // Auto-compute Insurance expense from sum of policy premiums
   d.exp.Insurance=d.ins.reduce((s,p)=>s+(p.premium||0),0);
