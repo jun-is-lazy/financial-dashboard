@@ -2286,6 +2286,7 @@ function addIns(){
   <div class="form-grid">
     <div class="form-group"><label>Policy Name</label><input id="sN${i}" placeholder="e.g. GREAT SupremeHealth"></div>
     <div class="form-group"><label>Type</label><select id="sT${i}"><option>Health / Hospitalisation</option><option>Life / Death</option><option>Critical Illness</option><option>Disability</option><option>Accident</option><option>Endowment</option><option>Whole Life</option><option>Term Life</option><option>Other</option></select></div>
+    <div class="form-group"><label>Ward Tier <span style="opacity:.6">(IP plans)</span></label><select id="sW${i}"><option value="">— N/A —</option><option value="Private">Private hospital</option><option value="A">A ward (public)</option><option value="B1">B1 ward (public)</option><option value="Standard">Standard / MediShield Life only</option></select></div>
     <div class="form-group"><label>Sum Assured</label><input id="sC${i}" type="number" placeholder="0"></div>
     <div class="form-group"><label>Monthly Premium</label><input id="sP${i}" type="number" placeholder="0"></div>
     <div class="form-group"><label>Insurer</label><input id="sI${i}" placeholder="e.g. Great Eastern"></div>
@@ -2333,8 +2334,8 @@ function collectData(){
     if(n)d.prop.push({name:n.value||'Property '+(idx+1),type:t?.value||'',usage:u?.value||'Owner-occupied',value:+(val?.value)||0,loan:+(l?.value)||0,monthlyMortgage:+(m?.value)||0,tenureYrs:+(y?.value)||0});
   });
   document.querySelectorAll('#insList .repeater').forEach((el,idx)=>{
-    const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]');
-    if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:+(c?.value)||0,premium:+(p?.value)||0,insurer:ins?.value||'',cv:+(cv?.value)||0});
+    const n=el.querySelector('[id^="sN"]'),t=el.querySelector('[id^="sT"]'),c=el.querySelector('[id^="sC"]'),p=el.querySelector('[id^="sP"]'),ins=el.querySelector('[id^="sI"]'),cv=el.querySelector('[id^="sV"]'),w=el.querySelector('[id^="sW"]');
+    if(n)d.ins.push({name:n.value||'Policy '+(idx+1),type:t?.value||'',cover:+(c?.value)||0,premium:+(p?.value)||0,insurer:ins?.value||'',cv:+(cv?.value)||0,ward:w?.value||''});
   });
   // Auto-compute Insurance expense from sum of policy premiums
   d.exp.Insurance=d.ins.reduce((s,p)=>s+(p.premium||0),0);
@@ -3697,16 +3698,42 @@ function updateNWSim(){
 // ═══════════════════════════════════════════
 let hospSim={ward:'Private', cost:80000, hasIP:true, hasRider:false};
 function buildHospital(d){
-  const hosp=d.ins.filter(p=>/hospital|shield|careshield|integrated/i.test(p.type+p.name));
-  let html=`<thead><tr><th>Plan</th><th>Insurer</th><th>Ward Type</th><th style="text-align:right">Premium /mo</th></tr></thead><tbody>`;
+  // Treat anything classified as 'health' as a hospitalisation plan. Skip
+  // CareShield etc which classifyPolicy categorises as 'dis'.
+  const hosp=d.ins.filter(p=>classifyPolicy(p)==='health');
+  const WARD_RANK={Private:1,A:2,B1:3,Standard:4};
+  const WARD_LABEL={Private:'Private hospital',A:'A ward (public)',B1:'B1 ward (public)',Standard:'Standard / MediShield'};
+  // Resolve each policy's ward: prefer the explicit field, fall back to name
+  // regex for legacy policies entered before the ward picker existed.
+  const wardOf=(p)=> p.ward || (/private|p plus|p signature/i.test(p.name||'') ? 'Private'
+                              : /restructured|class a|\ba ward\b/i.test(p.name||'') ? 'A'
+                              : /b1/i.test(p.name||'') ? 'B1' : '');
+  // Sort hospital plans by ward tier (best first).
+  hosp.sort((a,b)=>(WARD_RANK[wardOf(a)||'Standard']||9)-(WARD_RANK[wardOf(b)||'Standard']||9));
+
+  let html=`<thead><tr><th>Plan</th><th>Insurer</th><th>Ward Tier</th><th style="text-align:right">Premium /mo</th></tr></thead><tbody>`;
   if(hosp.length){
-    hosp.forEach(p=>{html+=`<tr><td style="color:var(--text-primary)">${p.name}</td><td>${p.insurer||'—'}</td><td>${/private/i.test(p.name)?'Private':/restructured|class a/i.test(p.name)?'Class A':'Standard'}</td><td class="num">${fmt(p.premium)}</td></tr>`;});
+    hosp.forEach(p=>{
+      const w=wardOf(p);
+      const label=w?WARD_LABEL[w]:'Not set';
+      const cls=w==='Private'?'pos':w==='A'?'':w?'neg':'';
+      html+=`<tr><td style="color:var(--text-primary)">${p.name}</td><td>${p.insurer||'—'}</td><td class="${cls}">${label}</td><td class="num">${fmt(p.premium)}</td></tr>`;
+    });
   } else {
     html+='<tr><td colspan="4" style="text-align:center;color:var(--text-tertiary);padding:24px">No hospitalisation plans recorded</td></tr>';
   }
   html+='</tbody>';
   $('tHosp').innerHTML=html;
   hospSim.hasIP=hosp.length>0;
+  // Pre-fill simulator with the highest ward tier the client actually owns,
+  // so the "what would a stay cost?" estimate matches their real coverage.
+  if(hosp.length){
+    const best=hosp.reduce((best,p)=>{
+      const w=wardOf(p)||'Standard';
+      return (WARD_RANK[w]||9)<(WARD_RANK[best]||9)?w:best;
+    },'Standard');
+    if(best && best!=='Standard') hospSim.ward=best;
+  }
 
   $('hospControls').innerHTML=`
     <div class="ix-row"><span class="ix-label">Ward</span><select onchange="hospSim.ward=this.value; updateHospSim()"><option ${hospSim.ward==='B2'?'selected':''}>B2</option><option ${hospSim.ward==='B1'?'selected':''}>B1</option><option ${hospSim.ward==='A'?'selected':''}>A</option><option ${hospSim.ward==='Private'?'selected':''}>Private</option></select><span class="ix-val">${hospSim.ward}</span></div>
@@ -3811,7 +3838,20 @@ function buildInsurancePolicyTable(d){
     const c=classifyPolicy(p);
     totalByCat[c]=(totalByCat[c]||0)+(p.cover||0);
   });
-  const filtered=insTableFilter==='all'?d.ins:d.ins.filter(p=>classifyPolicy(p)===insTableFilter);
+  // Ward-tier ranking — lower = higher tier (Private = best).
+  const WARD_RANK={Private:1,A:2,B1:3,Standard:4,'':5};
+  const WARD_LABEL={Private:'Private hospital',A:'A ward (public)',B1:'B1 ward (public)',Standard:'Standard / MediShield',''  :'—'};
+  // Highest ward tier the client currently holds — drives the adequacy verdict.
+  const bestWard = d.ins.filter(p=>classifyPolicy(p)==='health' && p.ward)
+    .reduce((best,p)=>(WARD_RANK[p.ward]<WARD_RANK[best]?p.ward:best),'Standard');
+  // Sort: hospitalisation rows first by ward tier (Private → A → B1 → Standard).
+  const sortedAll=[...d.ins].sort((a,b)=>{
+    const aH=classifyPolicy(a)==='health', bH=classifyPolicy(b)==='health';
+    if(aH&&bH) return (WARD_RANK[a.ward||'']||5)-(WARD_RANK[b.ward||'']||5);
+    if(aH) return -1; if(bH) return 1;
+    return 0;
+  });
+  const filtered=insTableFilter==='all'?sortedAll:sortedAll.filter(p=>classifyPolicy(p)===insTableFilter);
   let html=`<thead><tr>
     <th>Type</th><th>Insurer</th><th>Plan Name</th>
     <th class="num">Coverage</th><th>Recommended</th><th class="num">Premium /mo</th>
@@ -3820,23 +3860,35 @@ function buildInsurancePolicyTable(d){
     const cat=classifyPolicy(p);
     const color=policyTypeColor(cat);
     let recCell='—', recCls='';
+    let coverCell;
     if(cat==='health'){
-      // Hospital plans are as-charged, not lump-sum. Show plan tier instead.
-      const isPrivate=/private|p plus|p signature/i.test(p.name||'');
-      const isRider=/rider|cash|signature/i.test(p.name||'');
-      recCell=isPrivate?'Private ward':(isRider?'Rider (cash)':'Public ward');
-      recCls='ok';
-    } else if(recommended[cat]!=null && recommended[cat]>0){
-      const target=recommended[cat];
-      const groupTotal=totalByCat[cat]||0;
-      if(groupTotal>=target){ recCell='✓ Target met'; recCls='ok'; }
-      else { recCell='Gap '+fmt(target-groupTotal); recCls='gap'; }
+      // Hospital plans are as-charged. The ward tier IS the coverage signal.
+      const ward=p.ward||'';
+      // Fall back to old name-regex inference only if user didn't pick a ward.
+      const inferred = !ward && /private|p plus|p signature/i.test(p.name||'') ? 'Private'
+                     : !ward && /rider|cash|signature/i.test(p.name||'')        ? 'A'
+                     : ward;
+      coverCell = inferred ? WARD_LABEL[inferred] : 'Ward not set';
+      // Verdict: A or Private is adequate; B1/Standard flagged as upgrade target.
+      const r=WARD_RANK[inferred]||5;
+      if(r<=2){ recCell='✓ '+(inferred==='Private'?'Top tier':'Adequate'); recCls='ok'; }
+      else if(r===3){ recCell='Consider A-ward upgrade'; recCls='gap'; }
+      else if(r===4){ recCell='Upgrade strongly advised'; recCls='gap'; }
+      else { recCell='Set ward tier'; recCls='gap'; }
+    } else {
+      coverCell = (typeof p.cover==='number' && p.cover>0) ? fmt(p.cover) : '—';
+      if(recommended[cat]!=null && recommended[cat]>0){
+        const target=recommended[cat];
+        const groupTotal=totalByCat[cat]||0;
+        if(groupTotal>=target){ recCell='✓ Target met'; recCls='ok'; }
+        else { recCell='Gap '+fmt(target-groupTotal); recCls='gap'; }
+      }
     }
     html+=`<tr>
       <td><span class="ptype"><span class="pdot" style="background:${color}"></span>${p.type||'Other'}</span></td>
       <td class="pinsurer">${p.insurer||'—'}</td>
       <td class="pname">${p.name||'—'}</td>
-      <td class="pnum">${typeof p.cover==='number' && p.cover>0?fmt(p.cover):(cat==='health'?'As charged':'—')}</td>
+      <td class="pnum">${coverCell}</td>
       <td class="precommended ${recCls}">${recCell}</td>
       <td class="pnum">${fmt(p.premium||0)}</td>
     </tr>`;
