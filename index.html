@@ -2839,6 +2839,11 @@ document.addEventListener('click', (e) => {
     }
     formEl.value = newVal;
     formEl.dispatchEvent(new Event('input', {bubbles: true}));
+    // Re-apply currency formatting if the source form input is a currency
+    // field, so the Edit form keeps "4,500.00" instead of bare "4500".
+    if (formEl.dataset.currency) {
+      formEl.dispatchEvent(new Event('focusout', {bubbles: true}));
+    }
     generate();
   };
   input.addEventListener('blur', commit);
@@ -4601,37 +4606,45 @@ function renderGoalModalBody(){
     </div>
   </div>`;
 
-  // Compute and render summary
+  // Summary lives in its own container so it can be updated in isolation
+  // on every keystroke without rebuilding the inputs (which would steal
+  // focus and break multi-character typing).
+  html+=`<div id="gmSummary" class="gm-summary"></div>`;
+
+  $('gmBody').innerHTML=html;
+  renderGoalSummary();
+}
+
+// Recompute and re-render ONLY the live impact summary. Called on every
+// input event from a modal field. Does not touch any input element, so
+// focus and selection are preserved.
+function renderGoalSummary(){
+  if(!gmState) return;
+  const {cfg,values}=gmState;
   const client=window.lastData||null;
-  const out=cfg.compute?cfg.compute(v,client):GENERIC_CONFIG.compute(v,client);
-  // Sync auto-calc result back into state so save uses it (only for configs that compute target/monthly)
+  const out=cfg.compute?cfg.compute(values,client):GENERIC_CONFIG.compute(values,client);
   if(cfg.extraFields && cfg.compute){
     gmState.values._computedTarget=out.target;
     gmState.values._computedMonthly=out.monthly;
   }
-
-  html+=`<div class="gm-summary">
-    ${(out.summary||[]).map(s=>`<div class="gm-summary-row ${s.cls||''}"><span class="gm-bullet">${s.icon||'•'}</span><span>${s.html||s}</span></div>`).join('')}
-  </div>`;
-
-  $('gmBody').innerHTML=html;
+  const target=document.getElementById('gmSummary');
+  if(!target) return;
+  target.innerHTML=(out.summary||[]).map(s=>`<div class="gm-summary-row ${s.cls||''}"><span class="gm-bullet">${s.icon||'•'}</span><span>${s.html||s}</span></div>`).join('');
 }
 
 function updateGoalModal(field,val){
   if(!gmState) return;
-  if(field==='end') gmState.values[field]=val===''?null:+val;
+  // Tolerate comma-formatted strings ("1,500,000") that paste-from-formatted
+  // currency might produce.
+  const parseNum = s => { const n=parseFloat(String(s||'').replace(/,/g,'')); return isNaN(n)?0:n; };
+  if(field==='end') gmState.values[field]=val===''?null:parseNum(val);
   else if(['propertyType'].includes(field)) gmState.values[field]=val;
-  else gmState.values[field]=val===''?0:+val;
+  else gmState.values[field]=val===''?0:parseNum(val);
   // Clear validation error for this field on input — user is fixing it.
   if(gmState.errors){ delete gmState.errors[field]; }
-  renderGoalModalBody();
-  // Re-apply persistent errors (other fields still in error state)
-  if(gmState.errors){
-    Object.entries(gmState.errors).forEach(([k,msg])=>{
-      const el=$('gmBody').querySelector(`[oninput*="updateGoalModal('${k}'"]`);
-      if(el) markFieldError(el,msg);
-    });
-  }
+  // ONLY re-render the live summary block — leave inputs untouched so the
+  // user keeps focus and cursor position while typing.
+  renderGoalSummary();
 }
 
 function saveGoalFromModal(){
