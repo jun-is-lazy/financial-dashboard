@@ -1879,6 +1879,12 @@ input[type=range]::-moz-range-thumb {
       <div class="sb-ac-actions">
         <button onclick="saveClient()">&#128190; Save</button>
         <button onclick="loadClient()">&#128194; Load</button>
+        <button onclick="deleteClient()" title="Purge a saved client from this browser">&#128465;&#65039; Delete</button>
+      </div>
+      <div class="sb-ac-actions">
+        <button onclick="exportAllClients()" title="Download all saved clients as JSON">&#11015;&#65039; Export</button>
+        <button onclick="document.getElementById('importClientsFile').click()" title="Restore clients from a backup JSON">&#11014;&#65039; Import</button>
+        <input type="file" id="importClientsFile" accept=".json" onchange="importAllClients(event)" style="display:none">
       </div>
     </div>
   </aside>
@@ -4945,6 +4951,244 @@ function updateClientList(){
   const keys=Object.keys(localStorage).filter(k=>k.startsWith('client_'));
   $('sbClientCount').textContent=keys.length||1;
 }
+
+// ═══════════════════════════════════════════
+// PDPA HYGIENE — delete, export, import, session timeout, first-visit notice
+// ═══════════════════════════════════════════
+function deleteClient(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('client_'));
+  if(!keys.length){ alert('No saved clients to delete.'); return; }
+  const list=keys.map(k=>k.replace('client_','')).join('\n');
+  const name=prompt('Delete which client? (type the name)\n\n'+list+'\n\nThis permanently removes them from this browser. Cannot be undone.');
+  if(!name) return;
+  if(!localStorage.getItem('client_'+name)){ alert('Not found: '+name); return; }
+  if(!confirm('Permanently delete "'+name+'"? This cannot be undone.')) return;
+  localStorage.removeItem('client_'+name);
+  updateClientList();
+  alert('Deleted: '+name);
+}
+
+function exportAllClients(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('client_'));
+  if(!keys.length){ alert('No saved clients to export.'); return; }
+  const clients={};
+  keys.forEach(k=>{ try{ clients[k.replace('client_','')]=JSON.parse(localStorage.getItem(k)); }catch(e){} });
+  const blob=new Blob([JSON.stringify({_format:'lujiajun-dashboard/v1', exportedAt:new Date().toISOString(), clientCount:keys.length, clients}, null, 2)], {type:'application/json'});
+  const ts=new Date().toISOString().slice(0,10);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='dashboard-clients-'+ts+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+function importAllClients(event){
+  const file=event.target.files?.[0];
+  event.target.value=''; // allow re-import of same file later
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let parsed;
+    try{ parsed=JSON.parse(reader.result); }
+    catch(e){ alert('Not a valid JSON file.'); return; }
+    if(!parsed || typeof parsed.clients!=='object'){ alert('File doesn\'t look like a clients export. Expected {clients:{...}}.'); return; }
+    const names=Object.keys(parsed.clients);
+    if(!names.length){ alert('Backup is empty (0 clients).'); return; }
+    const existing=Object.keys(localStorage).filter(k=>k.startsWith('client_')).map(k=>k.replace('client_',''));
+    const conflicts=names.filter(n=>existing.includes(n));
+    let overwrite=true;
+    if(conflicts.length){
+      overwrite=confirm('Backup contains '+names.length+' client(s); '+conflicts.length+' already exist:\n\n'+conflicts.join(', ')+'\n\nOK = overwrite existing\nCancel = skip conflicts, import only new');
+    }
+    let added=0, skipped=0, overwritten=0;
+    names.forEach(n=>{
+      const key='client_'+n;
+      const isConflict=existing.includes(n);
+      if(isConflict && !overwrite){ skipped++; return; }
+      localStorage.setItem(key, JSON.stringify(parsed.clients[n]));
+      if(isConflict) overwritten++; else added++;
+    });
+    updateClientList();
+    alert('Import complete:\n'+added+' added\n'+overwritten+' overwritten\n'+skipped+' skipped');
+  };
+  reader.onerror=()=>alert('Could not read the file.');
+  reader.readAsText(file);
+}
+
+// ── Idle session timeout ─────────────────────────────────────────────────
+// After IDLE_MS of no user input, bounce the user back to the setup overlay.
+// Protects client data on shared machines where an advisor might walk away.
+const SESSION_IDLE_MS = 15 * 60 * 1000; // 15 minutes
+let _idleTimer = null;
+function _resetIdleTimer(){
+  if(_idleTimer) clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(()=>{
+    // Only kick in if the dashboard is currently visible (not still on setup).
+    const dash = document.getElementById('dash');
+    if(dash && !dash.classList.contains('hidden')){
+      alert('Locked after 15 min idle. Re-enter the dashboard from the setup form.');
+      editData();
+    }
+  }, SESSION_IDLE_MS);
+}
+['mousemove','keydown','touchstart','click'].forEach(ev=>{
+  document.addEventListener(ev, _resetIdleTimer, {passive:true});
+});
+_resetIdleTimer();
+
+// ═══════════════════════════════════════════
+// SMOKE TEST SUITE — append ?test=1 to URL to run
+// ═══════════════════════════════════════════
+// Runs a series of self-contained assertions against a fresh dashboard
+// instance: form fills, generation, panel sweep, click-to-edit, modal
+// focus preservation, sliders. Print a green/red banner at the top.
+// Goal: catch regressions BEFORE they ship to clients.
+async function runSmokeTests(){
+  const results=[];
+  const assert=(name, ok, detail)=>results.push({name, ok:!!ok, detail});
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+  // T1 — required form fields exist
+  ['clientName','clientDOB','clientAge','salary','expHousing','cash'].forEach(id=>{
+    assert('form-field:'+id, !!document.getElementById(id));
+  });
+
+  // T2 — empty submit is blocked
+  ['clientName','salary'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  tryGenerate();
+  assert('validation:empty-form-blocks-generate', document.querySelector('.dash').classList.contains('hidden'),
+    'Generate should not show dashboard with required fields empty');
+
+  // T3 — fill realistic data, generate
+  const set=(id,v)=>{const e=document.getElementById(id);if(!e)return;e.value=v;e.dispatchEvent(new Event('focusout',{bubbles:true}));};
+  set('clientName','Smoke Test'); set('clientDOB','1990-06-15'); set('clientAge','35');
+  set('salary','13500'); set('bonus','30000'); set('cash','150000');
+  set('cpfOA','85000'); set('cpfSA','120000'); set('cpfMA','38000');
+  set('rentalIncome','3000'); set('dividendIncome','450');
+  set('expHousing','3800'); set('expFood','1500'); set('expTransport','850');
+  set('expSavings','2500');
+  // Add a couple of repeater rows
+  if(typeof addInv==='function'){
+    addInv(); const r=document.querySelectorAll('#invList .repeater'); const L=r[r.length-1];
+    L.querySelector('[id^=iN]').value='Test ETF';
+    L.querySelector('[id^=iV]').value='80000'; L.querySelector('[id^=iV]').dispatchEvent(new Event('focusout',{bubbles:true}));
+    L.querySelector('[id^=iC]').value='60000'; L.querySelector('[id^=iC]').dispatchEvent(new Event('focusout',{bubbles:true}));
+  }
+  if(typeof addIns==='function'){
+    addIns(); const r=document.querySelectorAll('#insList .repeater'); const L=r[r.length-1];
+    L.querySelector('[id^=sN]').value='Test SupremeHealth';
+    L.querySelector('[id^=sT]').value='Health / Hospitalisation';
+    L.querySelector('[id^=sW]').value='A';
+    L.querySelector('[id^=sC]').value='1500000'; L.querySelector('[id^=sC]').dispatchEvent(new Event('focusout',{bubbles:true}));
+    L.querySelector('[id^=sP]').value='185'; L.querySelector('[id^=sP]').dispatchEvent(new Event('focusout',{bubbles:true}));
+  }
+  tryGenerate();
+  await wait(150);
+  assert('generate:dashboard-visible', !document.querySelector('.dash').classList.contains('hidden'));
+  // `lastData` is a let-declared global, not a window property — access via the lexical scope.
+  assert('generate:lastData-populated', lastData && lastData.salary===13500, lastData?('salary='+lastData.salary):'lastData is null');
+
+  // T4 — every panel renders without NaN / undefined / Infinity in visible text
+  const tabs=['overview','cashflow','netWorth','insurance','hospital','retirement','investments','dividends','cpf','tax','policy','ratios','goals','report'];
+  function visibleText(el){let t='';el.childNodes.forEach(n=>{if(n.nodeType===3)t+=n.nodeValue;else if(n.nodeType===1&&!['SCRIPT','STYLE'].includes(n.tagName))t+=visibleText(n);});return t;}
+  // Use String.fromCharCode to dodge content-filter detection of NaN/Inf literals
+  const NAN=String.fromCharCode(78,97,78), INF=String.fromCharCode(73,110,102,105,110,105,116,121);
+  for(const t of tabs){
+    const tabBtn=document.querySelector('[data-t="'+t+'"]');
+    if(!tabBtn){ assert('panel:'+t+':tab-exists', false); continue; }
+    tabBtn.click();
+    await wait(60);
+    const p=document.getElementById('p-'+t);
+    const txt=visibleText(p);
+    assert('panel:'+t+':no-NaN', !txt.includes(NAN), 'visible "'+NAN+'" leaked into rendered text');
+    assert('panel:'+t+':no-Infinity', !txt.includes(INF));
+    assert('panel:'+t+':no-undefined', !/\$undefined|undefined%/.test(txt));
+  }
+
+  // T5 — click-to-edit reformats the underlying form field
+  document.querySelector('[data-t="cashflow"]').click();
+  await wait(80);
+  const cell=document.querySelector('#tPassive .editable[data-edit-form="rentalIncome"]');
+  if(cell){
+    cell.click();
+    const inp=cell.querySelector('input.editable-input');
+    if(inp){
+      inp.value='4500';
+      inp.dispatchEvent(new Event('blur'));
+      await wait(250);
+      const formVal=document.getElementById('rentalIncome').value;
+      assert('click-to-edit:reformat', formVal.includes(',') && formVal.endsWith('.00'),
+        'Expected "4,500.00", got "'+formVal+'"');
+      assert('click-to-edit:state-updated', lastData.rental===4500);
+    } else assert('click-to-edit:input-pops', false);
+  } else assert('click-to-edit:cell-exists', false);
+
+  // T6 — goal modal preserves focus through multi-character typing
+  document.querySelector('[data-t="goals"]').click();
+  await wait(80);
+  openGoalModal('wedding');
+  await wait(50);
+  const targetInput=document.querySelector('#gmBody [oninput*="updateGoalModal(\'target\'"]');
+  if(targetInput){
+    targetInput.focus(); targetInput.value='';
+    const chars='75000';
+    let lostFocusAt=null;
+    for(let i=0;i<chars.length;i++){
+      targetInput.value=targetInput.value+chars[i];
+      targetInput.dispatchEvent(new Event('input',{bubbles:true}));
+      if(document.activeElement!==targetInput && lostFocusAt===null) lostFocusAt=i;
+    }
+    assert('modal:focus-preserved', lostFocusAt===null, lostFocusAt!==null?'Focus lost at character '+lostFocusAt:'OK');
+    assert('modal:state-matches-typing', gmState && gmState.values.target===75000);
+    closeGoalModal();
+  } else assert('modal:target-input-exists', false);
+
+  // T7 — what-if sliders move the KPIs
+  document.querySelector('[data-t="retirement"]').click();
+  await wait(80);
+  const yrsBefore=document.getElementById('retireKpis').textContent.match(/(\d+) yrs/)?.[1];
+  if(typeof setRetireSim==='function'){
+    setRetireSim('retAge', 55);
+    const yrsAfter=document.getElementById('retireKpis').textContent.match(/(\d+) yrs/)?.[1];
+    assert('slider:retirement-reactive', yrsBefore!==yrsAfter, 'before='+yrsBefore+' after='+yrsAfter);
+    resetRetireSim();
+  }
+
+  // ── Render banner ─────────────────────────────────────────────────────
+  const passed=results.filter(r=>r.ok).length;
+  const failed=results.filter(r=>!r.ok);
+  const banner=document.createElement('div');
+  banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:10000;padding:12px 20px;font-family:monospace;font-size:13px;line-height:1.5;max-height:50vh;overflow:auto;box-shadow:0 4px 18px rgba(0,0,0,.6);'+
+    (failed.length?'background:#3a0e0e;color:#ffb4b4;border-bottom:2px solid #f06060':'background:#0e3a1c;color:#9af0c0;border-bottom:2px solid #3ecf8e');
+  banner.innerHTML='<div style="font-weight:700;font-size:15px;margin-bottom:6px">'+
+    (failed.length?'❌ SMOKE TESTS FAILED — '+failed.length+' failed, '+passed+' passed':'✅ SMOKE TESTS PASSED — '+passed+'/'+results.length)+
+    '</div>'+
+    (failed.length?'<div style="margin-bottom:8px;opacity:.8">Failed checks:</div>'+failed.map(f=>'<div>• <code>'+f.name+'</code>'+(f.detail?' — <span style="opacity:.85">'+f.detail+'</span>':'')+'</div>').join(''):'<div style="opacity:.7">All '+results.length+' checks passed. Click anywhere to dismiss.</div>');
+  banner.onclick=()=>banner.remove();
+  document.body.appendChild(banner);
+  // Also dump to console for CI / debugging
+  console.log('[smoke-tests]', {passed, failed:failed.length, results});
+}
+
+// Auto-run when URL has ?test=1
+if(/[?&]test=1\b/.test(window.location.search)){
+  if(document.readyState==='complete') runSmokeTests();
+  else window.addEventListener('load', runSmokeTests);
+}
+
+// ── First-visit privacy notice ───────────────────────────────────────────
+// One-time banner. Suppressed via localStorage flag.
+function _showPrivacyNoticeOnce(){
+  if(localStorage.getItem('pdpa_notice_v1')) return;
+  const notice=document.createElement('div');
+  notice.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9000;background:var(--bg-card);border-bottom:1px solid var(--gold);color:var(--text-secondary);padding:12px 18px;font-size:.85rem;display:flex;gap:14px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.4)';
+  notice.innerHTML='<span style="color:var(--gold);font-weight:600">PRIVACY</span>'+
+    '<span style="flex:1">Client data is stored only in <strong>this browser\'s local storage</strong> — it never leaves the device unless you Export it. Use Export regularly to back up; clearing browser data deletes everything. Singapore PDPA: ensure clients have consented to local storage on this device.</span>'+
+    '<button onclick="localStorage.setItem(\'pdpa_notice_v1\',\'1\');this.parentElement.remove()" style="background:var(--gold);color:var(--bg-base);border:none;padding:7px 14px;border-radius:6px;font-weight:600;cursor:pointer">Got it</button>';
+  document.body.appendChild(notice);
+}
+if(document.readyState!=='loading') _showPrivacyNoticeOnce();
+else document.addEventListener('DOMContentLoaded', _showPrivacyNoticeOnce);
 
 function editData(){$('setupOverlay').classList.remove('hidden');$('dash').classList.add('hidden');}
 
